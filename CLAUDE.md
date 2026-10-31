@@ -5,14 +5,17 @@ Instruksi wajib untuk AI assistant (Claude Code) di repo ini. Dibaca otomatis se
 **Urutan pengerjaan:** web & REST API dulu, bot Telegram di fase terakhir. Ikuti [docs/09-roadmap.md](docs/09-roadmap.md).
 
 ## Project
+
 Aplikasi keuangan keluarga **multi-tenant**: input via **Telegram** (grup & chat pribadi, teks + foto struk), dashboard & laporan via **web**, plus **REST API**. Detail lengkap di [README.md](README.md) dan [docs/](docs/).
 
 ## Komunikasi
+
 - Bahasa Indonesia ke user; kode, nama variabel, commit message dalam English.
 - Teks yang tampil ke user aplikasi (UI, pesan bot, validasi) dalam Bahasa Indonesia via `lang/id`.
 
 ## Stack
-Laravel 12 (PHP 8.4) · Inertia v2 + Vue 3 (TS, `<script setup>`) · Tailwind + shadcn-vue · ApexCharts · MySQL · Redis (queue/cache) · Sanctum (API) · Pest + Vitest. Lokal di Laragon (`http://budgeting-app.test`); hosting belum ditentukan.
+
+Laravel 13 (PHP 8.4) · Inertia 3 + Vue 3 (TS, `<script setup>`) · Fortify (auth, 2FA, passkeys) · Wayfinder (route TS) · Tailwind 4 + shadcn-vue (reka-ui) · ApexCharts · MySQL · Redis (queue/cache) · Sanctum (API) · Pest 5 + Vitest · pnpm + Vite+. Activity log di DB terpisah `budgeting_app_log` (retensi 30 hari). Upload via disk `config('filesystems.uploads')` (local → MinIO). Lokal di Laragon (`http://budgeting-app.test`); hosting belum ditentukan.
 
 ## Aturan Wajib
 
@@ -27,36 +30,40 @@ Laravel 12 (PHP 8.4) · Inertia v2 + Vue 3 (TS, `<script setup>`) · Tailwind + 
 9. **Coding standards** — `strict_types`, DTO `spatie/laravel-data`, Service tidak `final`, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
 
 ## Sebelum Selesai / Commit
+
 ```bash
-php artisan test --parallel
+composer test        # pint --test + phpstan + pest
 ./vendor/bin/pint
 ./vendor/bin/phpstan
-npm run test && npm run type-check
+pnpm run check && pnpm run types:check
 ```
+
 Semua harus hijau. Laporkan hasil apa adanya — jika ada test gagal, sampaikan.
 
 ## Dokumen
-| Dokumen | Kapan dibaca |
-|---|---|
-| [01-product-requirements](docs/01-product-requirements.md) | memahami fitur & scope |
-| [02-architecture](docs/02-architecture.md) | membuat class/folder baru |
-| [03-multi-tenancy](docs/03-multi-tenancy.md) | model, query, role |
-| [04-database-schema](docs/04-database-schema.md) | migration, model |
-| [05-telegram-bot](docs/05-telegram-bot.md) | fitur bot |
-| [06-receipt-scanning](docs/06-receipt-scanning.md) | fitur struk |
-| [07-dashboard-reports](docs/07-dashboard-reports.md) | dashboard, laporan, export |
-| [08-coding-standards](docs/08-coding-standards.md) | setiap menulis kode |
-| [09-roadmap](docs/09-roadmap.md) | memilih pekerjaan berikutnya — **update checklist setelah selesai** |
-| [10-local-development](docs/10-local-development.md) | setup & menjalankan |
-| [11-business-rules](docs/11-business-rules.md) | setiap logika/perhitungan |
-| [12-testing-strategy](docs/12-testing-strategy.md) | setiap menulis test |
-| [13-rest-api](docs/13-rest-api.md) | endpoint API |
-| [14-ui-design-system](docs/14-ui-design-system.md) | setiap membuat UI |
-| [15-frontend-architecture](docs/15-frontend-architecture.md) | setiap membuat halaman/komponen Vue |
-| [16-backend-architecture](docs/16-backend-architecture.md) | setiap membuat class backend |
-| [17-project-structure](docs/17-project-structure.md) | menentukan lokasi file baru |
+
+| Dokumen                                                      | Kapan dibaca                                                        |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| [01-product-requirements](docs/01-product-requirements.md)   | memahami fitur & scope                                              |
+| [02-architecture](docs/02-architecture.md)                   | membuat class/folder baru                                           |
+| [03-multi-tenancy](docs/03-multi-tenancy.md)                 | model, query, role                                                  |
+| [04-database-schema](docs/04-database-schema.md)             | migration, model                                                    |
+| [05-telegram-bot](docs/05-telegram-bot.md)                   | fitur bot                                                           |
+| [06-receipt-scanning](docs/06-receipt-scanning.md)           | fitur struk                                                         |
+| [07-dashboard-reports](docs/07-dashboard-reports.md)         | dashboard, laporan, export                                          |
+| [08-coding-standards](docs/08-coding-standards.md)           | setiap menulis kode                                                 |
+| [09-roadmap](docs/09-roadmap.md)                             | memilih pekerjaan berikutnya — **update checklist setelah selesai** |
+| [10-local-development](docs/10-local-development.md)         | setup & menjalankan                                                 |
+| [11-business-rules](docs/11-business-rules.md)               | setiap logika/perhitungan                                           |
+| [12-testing-strategy](docs/12-testing-strategy.md)           | setiap menulis test                                                 |
+| [13-rest-api](docs/13-rest-api.md)                           | endpoint API                                                        |
+| [14-ui-design-system](docs/14-ui-design-system.md)           | setiap membuat UI                                                   |
+| [15-frontend-architecture](docs/15-frontend-architecture.md) | setiap membuat halaman/komponen Vue                                 |
+| [16-backend-architecture](docs/16-backend-architecture.md)   | setiap membuat class backend                                        |
+| [17-project-structure](docs/17-project-structure.md)         | menentukan lokasi file baru                                         |
 
 ## Git
+
 - Remote: `https://github.com/avivuv/budgeting-app.git`, branch utama `main`.
 - Branch fitur `feature/...`, Conventional Commits. Commit/push hanya bila diminta user.
 - Jangan commit `.env`, `vendor/`, `node_modules/`, file struk di `storage/`.

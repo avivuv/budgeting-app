@@ -34,17 +34,17 @@
 
 ## 2. Layer & Tanggung Jawab
 
-| Layer | Boleh | Tidak boleh |
-|---|---|---|
-| **Controller** | Terima request, panggil FormRequest, panggil Service, return `Inertia::render` / redirect | Query Eloquent, logika bisnis |
-| **Telegram Handler** | Parse update Telegram, ubah jadi DTO, panggil Service, kirim balasan | Query Eloquent, logika bisnis |
-| **FormRequest** | Validasi & otorisasi input web | — |
-| **DTO** (`app/DTOs`) | Membawa data antar layer secara type-safe (`spatie/laravel-data`, lihat [16](16-backend-architecture.md#8-dto)) | Logika |
-| **Service** | Logika bisnis, transaksi DB (`DB::transaction`), memanggil beberapa repository, dispatch event/job | Akses `request()`, return response HTTP |
-| **Repository** | Semua query ke database (CRUD, filter, agregasi laporan) | Logika bisnis, memanggil service lain |
-| **Model** | Relasi, casts, scopes, accessor | Logika bisnis berat |
-| **Job** | Proses async (scan struk, kirim notifikasi, laporan PDF) — memanggil Service | — |
-| **Event/Listener** | Efek samping (mis. `TransactionCreated` → cek budget) | — |
+| Layer                | Boleh                                                                                                           | Tidak boleh                             |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Controller**       | Terima request, panggil FormRequest, panggil Service, return `Inertia::render` / redirect                       | Query Eloquent, logika bisnis           |
+| **Telegram Handler** | Parse update Telegram, ubah jadi DTO, panggil Service, kirim balasan                                            | Query Eloquent, logika bisnis           |
+| **FormRequest**      | Validasi & otorisasi input web                                                                                  | —                                       |
+| **DTO** (`app/DTOs`) | Membawa data antar layer secara type-safe (`spatie/laravel-data`, lihat [16](16-backend-architecture.md#8-dto)) | Logika                                  |
+| **Service**          | Logika bisnis, transaksi DB (`DB::transaction`), memanggil beberapa repository, dispatch event/job              | Akses `request()`, return response HTTP |
+| **Repository**       | Semua query ke database (CRUD, filter, agregasi laporan)                                                        | Logika bisnis, memanggil service lain   |
+| **Model**            | Relasi, casts, scopes, accessor                                                                                 | Logika bisnis berat                     |
+| **Job**              | Proses async (scan struk, kirim notifikasi, laporan PDF) — memanggil Service                                    | —                                       |
+| **Event/Listener**   | Efek samping (mis. `TransactionCreated` → cek budget)                                                           | —                                       |
 
 ## 3. Service-Repository Pattern
 
@@ -187,6 +187,7 @@ resources/js/
 ├── core/                        # ui (shadcn-vue), common, charts, form, layouts, composables, lib, types
 └── modules/                     # per fitur: pages/, components/, composables/, index.ts
 ```
+
 Detail frontend: [15-frontend-architecture.md](15-frontend-architecture.md).
 
 ## 5. Alur Request
@@ -202,21 +203,21 @@ Detail frontend: [15-frontend-architecture.md](15-frontend-architecture.md).
 
 ## 6. Dependency Utama
 
-| Paket | Fungsi |
-|---|---|
-| Laravel 12 **Vue starter kit** (Inertia + Vue 3 + TS + shadcn-vue + Tailwind) | Auth scaffolding, lalu direstrukturisasi ke `core/` + `modules/` |
-| `spatie/laravel-data` + `spatie/laravel-typescript-transformer` | DTO & generate tipe TypeScript |
-| `inertiajs/inertia-laravel`, `@inertiajs/vue3` | Jembatan Laravel–Vue |
-| `tightenco/ziggy` | Route Laravel di Vue |
-| `spatie/laravel-permission` *(opsional)* | Bila role perlu lebih granular; default memakai enum role di pivot |
-| `irazasyed/telegram-bot-sdk` | Klien Telegram Bot API |
-| `anthropic-ai/sdk` (PHP) atau HTTP client | Claude API untuk struk |
-| `maatwebsite/excel` | Export Excel |
-| `barryvdh/laravel-dompdf` | Export PDF |
-| `spatie/laravel-activitylog` | Riwayat perubahan data (BR-B14) |
-| `spatie/laravel-backup` | Backup DB + file struk harian |
-| `laravel/telescope` (dev) · `laravel/pulse` / Sentry (nanti) | Debug & monitoring error, job, query |
-| `intervention/image` | Kompres/resize foto struk sebelum dikirim ke AI |
-| Frontend: `shadcn-vue`, `@tanstack/vue-table`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `pinia`, `vue-i18n`, `vite-plugin-pwa` | UI, grafik, util, ikon, state UI, i18n, PWA |
-| Frontend dev: `vitest`, `@vue/test-utils`, `eslint-plugin-boundaries`, `prettier` | Test & aturan import |
-| Dev: `pestphp/pest`, `larastan/larastan`, `laravel/pint`, `mockery/mockery` | Testing, static analysis, formatting, mocking |
+| Paket                                                                                                                                       | Fungsi                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Laravel 13 **Vue starter kit** (Inertia 3 + Vue 3 + TS + shadcn-vue + Tailwind 4)                                                           | Auth scaffolding, lalu direstrukturisasi ke `core/` + `modules/`       |
+| `spatie/laravel-data` + `spatie/laravel-typescript-transformer`                                                                             | DTO & generate tipe TypeScript                                         |
+| `inertiajs/inertia-laravel`, `@inertiajs/vue3`                                                                                              | Jembatan Laravel–Vue                                                   |
+| `laravel/wayfinder`                                                                                                                         | Route & controller Laravel sebagai fungsi TypeScript (pengganti Ziggy) |
+| `spatie/laravel-permission` _(opsional)_                                                                                                    | Bila role perlu lebih granular; default memakai enum role di pivot     |
+| `irazasyed/telegram-bot-sdk`                                                                                                                | Klien Telegram Bot API                                                 |
+| `anthropic-ai/sdk` (PHP) atau HTTP client                                                                                                   | Claude API untuk struk                                                 |
+| `maatwebsite/excel`                                                                                                                         | Export Excel                                                           |
+| `barryvdh/laravel-dompdf`                                                                                                                   | Export PDF                                                             |
+| `spatie/laravel-activitylog`                                                                                                                | Riwayat perubahan data (BR-B14)                                        |
+| `spatie/laravel-backup`                                                                                                                     | Backup DB + file struk harian                                          |
+| `laravel/telescope` (dev) · `laravel/pulse` / Sentry (nanti)                                                                                | Debug & monitoring error, job, query                                   |
+| `intervention/image`                                                                                                                        | Kompres/resize foto struk sebelum dikirim ke AI                        |
+| Frontend: `shadcn-vue`, `@tanstack/vue-table`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `pinia`, `vue-i18n`, `vite-plugin-pwa` | UI, grafik, util, ikon, state UI, i18n, PWA                            |
+| Frontend dev: `vitest`, `@vue/test-utils`, `eslint-plugin-boundaries`, `prettier`                                                           | Test & aturan import                                                   |
+| Dev: `pestphp/pest`, `larastan/larastan`, `laravel/pint`, `mockery/mockery`                                                                 | Testing, static analysis, formatting, mocking                          |

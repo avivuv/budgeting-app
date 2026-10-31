@@ -2,24 +2,27 @@
 
 Status: ⬜ belum · 🟨 berjalan · ✅ selesai
 
-Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-testing-strategy.md](12-testing-strategy.md#8-definition-of-done-per-fitur) (unit + API/integration test, BR tercakup, invariant lulus).
+Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-testing-strategy.md](12-testing-strategy.md#8-definition-of-done-per-fitur) (unit + API/integration test, BR tercakup, invariant lulus).
 
 **Strategi:**
+
 - **Web & REST API dulu, bot Telegram terakhir.** Semua logika ada di Service, jadi saat bot dibuat, ia tinggal memanggil Service yang sudah teruji.
 - **MVP = Fase 1 + 2.** Setelah MVP selesai, aplikasi dipakai keluarga sendiri selama 1–2 minggu. Masukan dari pemakaian itu dipakai untuk menyesuaikan fase berikutnya sebelum lanjut.
 
 ## Fase 0 — Dokumentasi & Repo
+
 - ✅ Dokumen product, arsitektur, tenancy, schema, bot, struk, laporan, standar, business rules, testing, API, UI, struktur project
 - ✅ CLAUDE.md
 - ✅ Push ke GitHub
 - ✅ Review desain & perbaikan (tenant resolver, idempotensi, kartu kredit, activity log, backup, export data)
 
-## Fase 1 — Fondasi & Multi-Tenant  `MVP`
-- ⬜ Install Laravel 12 + Vue starter kit (Inertia + TS + shadcn-vue), restrukturisasi ke `core/` + `modules/`
-- ⬜ Tooling: Pest, Larastan, Pint, ESLint (boundaries), Prettier, Vitest, Telescope (dev), `typescript-transformer`
+## Fase 1 — Fondasi & Multi-Tenant `MVP`
+
+- 🟨 ✅ Install Laravel 13 + Vue starter kit (Inertia 3 + TS + shadcn-vue + Fortify) · ⬜ restrukturisasi ke `core/` + `modules/`
+- 🟨 Tooling: ✅ Pest 5, Larastan, Pint, Vite+ (format+lint), Telescope (dev), `typescript-transformer`, Sanctum · ⬜ ESLint boundaries, Vitest
 - ⬜ Base repository, `RepositoryServiceProvider`, `DomainException` + rendering Web/API
 - ⬜ `TenantContext`, `BelongsToFamily`, `FamilyScope`, `SetCurrentFamily`, tenant resolver (BR-I07)
-- ⬜ Migration families, family_user, invitations, wallets, categories, tags, transactions, activity_log
+- 🟨 Migration ✅ activity_log (DB `budgeting_app_log`, retensi 30 hari) · ⬜ families, family_user, invitations, wallets, categories, tags, transactions
 - ⬜ Onboarding: buat keluarga + seeder dompet & kategori default
 - ⬜ Undangan anggota & role (Policy, `EnsureFamilyRole`), switch keluarga
 - ⬜ CRUD dompet (termasuk kartu kredit, BR-C06), kategori (+ keywords), transaksi (+ transfer, tag)
@@ -30,7 +33,8 @@ Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-tes
 - ⬜ GitHub Actions CI (MySQL + Redis)
 - ⬜ Backup harian (`spatie/laravel-backup`) DB + file
 
-## Fase 2 — Dashboard & Daftar Transaksi  `MVP`
+## Fase 2 — Dashboard & Daftar Transaksi `MVP`
+
 - ⬜ Layout (Sidebar, BottomNav, FAB), tema putih–biru, dark mode
 - ⬜ `DashboardService` + cache; stat cards, arus kas, donut kategori, tren harian, per anggota, saldo dompet, transaksi terbaru
 - ⬜ DataTable server-side (desktop) + list kartu infinite scroll (mobile), filter lengkap
@@ -39,6 +43,7 @@ Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-tes
 - ⬜ 🎯 **Uji pakai oleh keluarga sendiri 1–2 minggu → catat masukan**
 
 ## Fase 3 — Budget & Laporan
+
 - ⬜ Budget per kategori + salin bulan lalu
 - ⬜ `CheckBudgetThresholds` + notifikasi 80%/100% (channel database + email)
 - ⬜ `ReportService` + halaman laporan (arus kas, kategori, anggota, dompet, budget, tahunan, merchant, tag)
@@ -48,6 +53,7 @@ Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-tes
 - ⬜ Consistency test INV-01 … INV-13 lulus
 
 ## Fase 4 — Deteksi Struk (Web & API)
+
 - ⬜ Migration receipts, receipt_items, usage_logs
 - ⬜ `ReceiptParserInterface`, `FakeReceiptParser`, `GeminiReceiptParser` (saat API key tersedia), test kontrak parser
 - ⬜ `ReceiptService` (validasi tipe, kuota, resize, hash, duplikat, idempotensi konfirmasi), `ProcessReceiptJob`
@@ -56,6 +62,7 @@ Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-tes
 - ⬜ Draft kedaluwarsa & cleanup (BR-H10)
 
 ## Fase 5 — Otomasi, Data & Super Admin
+
 - ⬜ Transaksi berulang + pengingat tagihan
 - ⬜ Ringkasan mingguan/bulanan terjadwal (email/web)
 - ⬜ Export seluruh data keluarga & hapus keluarga/akun (BR-I08)
@@ -63,6 +70,7 @@ Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-tes
 - ⬜ Cleanup terjadwal (struk ditolak/kedaluwarsa, keluarga dihapus)
 
 ## Fase 6 — Telegram Bot
+
 - ⬜ Buat 2 bot (dev & production), konfigurasi `@BotFather`
 - ⬜ Webhook + polling, `VerifyTelegramSecret`, dedupe `update_id` → `ProcessTelegramUpdateJob` (BR-J08)
 - ⬜ Linking akun pribadi (deep link + QR) & grup (`/hubungkan`), `telegram_default_family_id` (BR-J09)
@@ -75,6 +83,7 @@ Setiap fase dianggap selesai hanya jika memenuhi *Definition of Done* di [12-tes
 - ⬜ `TelegramChannel` untuk notifikasi yang sudah ada (budget, pengingat, ringkasan)
 
 ## Nanti
+
 - Deploy (hosting diputuskan kemudian), Pulse/Sentry di production
 - Input suara (voice note → teks)
 - Paket berlangganan berbasis kuota

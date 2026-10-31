@@ -28,14 +28,14 @@ class TenantContext
 
 Siapa yang mengisi `TenantContext`:
 
-| Entry point | Sumber family |
-|---|---|
-| Web | Middleware `SetCurrentFamily` → `auth()->user()->currentFamily` (validasi masih anggota) |
+| Entry point           | Sumber family                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| Web                   | Middleware `SetCurrentFamily` → `auth()->user()->currentFamily` (validasi masih anggota)          |
 | Telegram private chat | `users.telegram_user_id` → user → `telegram_default_family_id` (bisa diganti `/keluarga`, BR-J09) |
-| Telegram group | `TelegramChatRepository::resolveByChatId()` → `family_id` (BR-I07) |
-| Terima undangan | `InvitationRepository::resolveByToken()` → `family_id` |
-| Queue job | Job menyimpan `familyId` di constructor, set context di awal `handle()` |
-| Scheduler/command | Loop per keluarga, set context per iterasi |
+| Telegram group        | `TelegramChatRepository::resolveByChatId()` → `family_id` (BR-I07)                                |
+| Terima undangan       | `InvitationRepository::resolveByToken()` → `family_id`                                            |
+| Queue job             | Job menyimpan `familyId` di constructor, set context di awal `handle()`                           |
+| Scheduler/command     | Loop per keluarga, set context per iterasi                                                        |
 
 ## 3. Global Scope & Trait
 
@@ -71,19 +71,21 @@ class FamilyScope implements Scope
 Model yang memakai trait: `Wallet`, `Category`, `Tag`, `Transaction`, `Budget`, `RecurringRule`, `SavingGoal`, `Receipt`, `TelegramChat`, `Invitation`, `Activity` (activity log, kolom `family_id`).
 
 **Aturan:**
+
 - Bila `TenantContext` kosong, scope melempar exception — **fail closed**, bukan menampilkan semua data.
 - `withoutGlobalScope(FamilyScope::class)` hanya boleh di dua tempat, dan wajib diberi komentar alasan + test:
-  1. Repository khusus Super Admin (`App\Repositories\Eloquent\Admin\*`).
-  2. **Tenant resolver** — method yang mencari data *sebelum* keluarga diketahui, untuk menentukan keluarga (BR-I07). Nama method diawali `resolve`:
+    1. Repository khusus Super Admin (`App\Repositories\Eloquent\Admin\*`).
+    2. **Tenant resolver** — method yang mencari data _sebelum_ keluarga diketahui, untuk menentukan keluarga (BR-I07). Nama method diawali `resolve`:
 
-| Method | Dipakai oleh | Kenapa scope harus dilewati |
-|---|---|---|
-| `TelegramChatRepository::resolveByChatId(int $chatId)` | bot (pesan grup) | keluarga baru diketahui dari baris ini |
-| `InvitationRepository::resolveByToken(string $token)` | halaman terima undangan | user belum anggota keluarga tersebut |
-| `TelegramLinkCodeRepository::resolveByCode(string $code)` | `/start`, `/hubungkan` | kode menentukan user/keluarga |
-| `ReceiptRepository::resolveForJob(int $id)` *(opsional)* | job yang hanya membawa id | — (lebih baik job membawa `familyId`) |
+| Method                                                    | Dipakai oleh              | Kenapa scope harus dilewati            |
+| --------------------------------------------------------- | ------------------------- | -------------------------------------- |
+| `TelegramChatRepository::resolveByChatId(int $chatId)`    | bot (pesan grup)          | keluarga baru diketahui dari baris ini |
+| `InvitationRepository::resolveByToken(string $token)`     | halaman terima undangan   | user belum anggota keluarga tersebut   |
+| `TelegramLinkCodeRepository::resolveByCode(string $code)` | `/start`, `/hubungkan`    | kode menentukan user/keluarga          |
+| `ReceiptRepository::resolveForJob(int $id)` _(opsional)_  | job yang hanya membawa id | — (lebih baik job membawa `familyId`)  |
 
-  Resolver hanya mengembalikan baris yang dicari (tanpa relasi tenant lain), lalu pemanggil langsung `TenantContext::set()`. Arch test memastikan `withoutGlobalScope` tidak muncul di luar method `resolve*` dan namespace Admin.
+Resolver hanya mengembalikan baris yang dicari (tanpa relasi tenant lain), lalu pemanggil langsung `TenantContext::set()`. Arch test memastikan `withoutGlobalScope` tidak muncul di luar method `resolve*` dan namespace Admin.
+
 - Validasi `exists` di FormRequest harus ikut membatasi `family_id` (mis. `Rule::exists('wallets','id')->where('family_id', $familyId)`).
 - Route model binding otomatis aman karena scope aktif; tetap dilindungi Policy.
 
@@ -91,17 +93,17 @@ Model yang memakai trait: `Wallet`, `Category`, `Tag`, `Transaction`, `Budget`, 
 
 Enum `FamilyRole`: `owner`, `admin`, `member`, `viewer`.
 
-| Aksi | owner | admin | member | viewer |
-|---|:-:|:-:|:-:|:-:|
-| Lihat dashboard & laporan | ✅ | ✅ | ✅ | ✅ |
-| Tambah transaksi (web/Telegram/struk) | ✅ | ✅ | ✅ | ❌ |
-| Edit/hapus transaksi milik sendiri | ✅ | ✅ | ✅ | ❌ |
-| Edit/hapus transaksi orang lain | ✅ | ✅ | ❌ | ❌ |
-| Kelola dompet, kategori, budget | ✅ | ✅ | ❌ | ❌ |
-| Undang / keluarkan anggota | ✅ | ✅ | ❌ | ❌ |
-| Hubungkan grup Telegram | ✅ | ✅ | ❌ | ❌ |
-| Ubah pengaturan & hapus keluarga | ✅ | ❌ | ❌ | ❌ |
-| Transfer kepemilikan | ✅ | ❌ | ❌ | ❌ |
+| Aksi                                  | owner | admin | member | viewer |
+| ------------------------------------- | :---: | :---: | :----: | :----: |
+| Lihat dashboard & laporan             |  ✅   |  ✅   |   ✅   |   ✅   |
+| Tambah transaksi (web/Telegram/struk) |  ✅   |  ✅   |   ✅   |   ❌   |
+| Edit/hapus transaksi milik sendiri    |  ✅   |  ✅   |   ✅   |   ❌   |
+| Edit/hapus transaksi orang lain       |  ✅   |  ✅   |   ❌   |   ❌   |
+| Kelola dompet, kategori, budget       |  ✅   |  ✅   |   ❌   |   ❌   |
+| Undang / keluarkan anggota            |  ✅   |  ✅   |   ❌   |   ❌   |
+| Hubungkan grup Telegram               |  ✅   |  ✅   |   ❌   |   ❌   |
+| Ubah pengaturan & hapus keluarga      |  ✅   |  ❌   |   ❌   |   ❌   |
+| Transfer kepemilikan                  |  ✅   |  ❌   |   ❌   |   ❌   |
 
 Implementasi: Policy per model + middleware `EnsureFamilyRole:admin`. Helper `$user->roleIn($family)`.
 

@@ -82,12 +82,14 @@ app/
 ```
 
 **Aturan penempatan:**
+
 - Butuh DB → Repository. Butuh beberapa repository / aturan bisnis → Service. Perhitungan murni tanpa DB → `Support` (mudah di-unit test, dipakai Service).
 - Satu Service fokus satu domain; jika > ~300 baris atau > 7 dependency, pecah (mis. `TransferService` dari `TransactionService`).
 
 ## 3. Kontrak Dasar
 
 ### 3.1 BaseRepositoryInterface
+
 ```php
 interface BaseRepositoryInterface
 {
@@ -102,6 +104,7 @@ interface BaseRepositoryInterface
 ```
 
 ### 3.2 BaseRepository
+
 ```php
 abstract class BaseRepository implements BaseRepositoryInterface
 {
@@ -132,6 +135,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
 ```
 
 ### 3.3 Binding
+
 ```php
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -153,7 +157,9 @@ class RepositoryServiceProvider extends ServiceProvider
 ```
 
 ### 3.4 Filter terstruktur
+
 Filter kompleks tidak ditulis sebagai parameter panjang, tetapi DTO + method privat di repository:
+
 ```php
 public function paginateFiltered(TransactionFilterData $f, int $perPage = 20): LengthAwarePaginator
 {
@@ -213,20 +219,20 @@ Konvensi method Service: kata kerja bisnis (`create`, `transfer`, `undoLast`, `c
 
 ## 5. Transaksi DB, Event, Cache
 
-| Topik | Aturan |
-|---|---|
-| DB transaction | Dibuka di Service saja. Repository tidak membuka transaksi. |
-| Event | Di-dispatch dari Service. Listener yang memanggil API eksternal → `ShouldQueue` + `afterCommit`. |
-| Cache | Hanya di decorator `Repositories/Cache/*` atau `DashboardService`; key selalu diawali `family:{id}:`. Invalidasi lewat listener `TransactionCreated/Updated/Deleted` (BR-C04). |
-| Job | Simpan `familyId` + id primitif (bukan model besar); set `TenantContext` di awal `handle()`; panggil Service. |
+| Topik          | Aturan                                                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DB transaction | Dibuka di Service saja. Repository tidak membuka transaksi.                                                                                                                    |
+| Event          | Di-dispatch dari Service. Listener yang memanggil API eksternal → `ShouldQueue` + `afterCommit`.                                                                               |
+| Cache          | Hanya di decorator `Repositories/Cache/*` atau `DashboardService`; key selalu diawali `family:{id}:`. Invalidasi lewat listener `TransactionCreated/Updated/Deleted` (BR-C04). |
+| Job            | Simpan `familyId` + id primitif (bukan model besar); set `TenantContext` di awal `handle()`; panggil Service.                                                                  |
 
 ## 6. Exception & Response
 
 - Semua exception bisnis turunan `App\Exceptions\DomainException` dengan `userMessage()` dan `status()` (default 422).
 - `bootstrap/app.php` → `withExceptions()` merender:
-  - **Web**: redirect back + flash error.
-  - **API**: `{"message": userMessage}` dengan status yang sesuai.
-  - **Telegram**: handler menangkap dan membalas `userMessage` ke chat.
+    - **Web**: redirect back + flash error.
+    - **API**: `{"message": userMessage}` dengan status yang sesuai.
+    - **Telegram**: handler menangkap dan membalas `userMessage` ke chat.
 - `ModelNotFoundException` dari tenant scope → 404 (BR-I06).
 
 ## 7. Controller (contoh lengkap)
@@ -265,11 +271,12 @@ final class TransactionController extends Controller
 }
 ```
 
-Read-heavy (list, laporan) boleh memakai *query service* terpisah (`TransactionQueryService`, `ReportService`) agar service tulis tetap ramping (pemisahan baca/tulis ringan ala CQRS).
+Read-heavy (list, laporan) boleh memakai _query service_ terpisah (`TransactionQueryService`, `ReportService`) agar service tulis tetap ramping (pemisahan baca/tulis ringan ala CQRS).
 
 ## 8. DTO
 
 Memakai `spatie/laravel-data` agar satu class melayani: validasi input → DTO → output Inertia → tipe TypeScript.
+
 ```php
 #[TypeScript]
 final class TransactionData extends Data
@@ -288,6 +295,7 @@ final class TransactionData extends Data
     ) {}
 }
 ```
+
 Pemetaan `snake_case` ↔ `camelCase` diatur global (`MapName(SnakeCaseMapper::class)`).
 
 ## 9. Penjaga Arsitektur (Pest arch tests)
@@ -325,6 +333,7 @@ Penjagaan scope tenant (BR-I07): `tests/Architecture/TenantScopeBypassTest.php` 
 Service sengaja **tidak** `final` agar bisa di-mock (Mockery) di test controller & handler.
 
 ## 10. Checklist Fitur Baru (Backend)
+
 1. Rule bisnis dicatat di [11-business-rules.md](11-business-rules.md).
 2. Migration + Model (+ `BelongsToFamily`) + Factory.
 3. `XRepositoryInterface` + `XRepository` + binding.

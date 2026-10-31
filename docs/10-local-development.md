@@ -1,30 +1,49 @@
 # 10 — Local Development (Laragon)
 
 ## 1. Prasyarat
-| Tool | Versi | Sumber |
-|---|---|---|
-| PHP | 8.4 | Laragon (`php-8.4.27`) — set sebagai versi aktif di menu Laragon |
-| Composer | 2.x | Laragon |
-| Node.js | 20+ | Laragon / nodejs.org |
-| MySQL | 8 | Laragon |
-| Redis | 7 | Laragon (aktifkan di Menu → Redis) |
-| ngrok | 3.x | Laragon (`bin/ngrok`), login dengan authtoken |
 
-Ekstensi PHP yang perlu aktif: `pdo_mysql`, `mbstring`, `gd` atau `imagick`, `fileinfo`, `zip`, `redis` (atau pakai `predis/predis`).
+| Tool     | Versi | Sumber                                                                             |
+| -------- | ----- | ---------------------------------------------------------------------------------- |
+| PHP      | 8.4   | Laragon `php-8.4.27` — **set sebagai versi aktif** di Menu → PHP → Version         |
+| Composer | 2.x   | Laragon / ComposerSetup                                                            |
+| Node.js  | 22+   | nodejs.org                                                                         |
+| pnpm     | 10+   | `npm i -g pnpm`                                                                    |
+| MySQL    | 8     | Laragon                                                                            |
+| Redis    | 5+    | Laragon (Menu → Redis → Start). Opsional di awal: queue & cache memakai `database` |
+| MinIO    | —     | Opsional, untuk penyimpanan file S3-compatible (lihat §6)                          |
+| ngrok    | 3.x   | Laragon (`bin/ngrok`) — baru dibutuhkan di fase bot Telegram                       |
 
-## 2. Setup Pertama
+Ekstensi PHP: `pdo_mysql`, `mbstring`, `gd`, `intl`, `fileinfo`, `zip`, `bcmath` (semua sudah aktif di PHP 8.4 Laragon). Redis memakai `predis/predis`, tidak perlu ekstensi.
+
+> Jika `php -v` di terminal masih 8.2, tambahkan PHP 8.4 ke PATH sesi: `export PATH=/c/laragon/bin/php/php-8.4.27-Win32-vs17-x64:$PATH` (Git Bash).
+
+## 2. Database
+
+| Database                 | Isi                                                     |
+| ------------------------ | ------------------------------------------------------- |
+| `budgeting_app`          | data aplikasi                                           |
+| `budgeting_app_log`      | activity log (koneksi `activity`), disimpan **30 hari** |
+| `budgeting_app_test`     | test                                                    |
+| `budgeting_app_log_test` | test activity log                                       |
+
+```bash
+mysql -uroot -e "CREATE DATABASE budgeting_app; CREATE DATABASE budgeting_app_log; CREATE DATABASE budgeting_app_test; CREATE DATABASE budgeting_app_log_test;"
+```
+
+## 3. Setup Pertama
+
 ```bash
 composer install
-npm install
+pnpm install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
-php artisan storage:link
 ```
 
-Database: buat `budgeting_app` via HeidiSQL / Laragon. URL lokal otomatis: `http://budgeting-app.test`.
+URL lokal (virtual host Laragon): `http://budgeting-app.test`.
 
-## 3. Environment (.env)
+## 4. Environment (.env)
+
 ```env
 APP_NAME="Budgeting App"
 APP_URL=http://budgeting-app.test
@@ -33,54 +52,74 @@ APP_LOCALE=id
 
 DB_CONNECTION=mysql
 DB_DATABASE=budgeting_app
-DB_USERNAME=root
-DB_PASSWORD=
 
-QUEUE_CONNECTION=redis
-CACHE_STORE=redis
+ACTIVITY_DB_DATABASE=budgeting_app_log
+ACTIVITYLOG_RETENTION_DAYS=30
+
+QUEUE_CONNECTION=database       # redis bila Redis sudah jalan
+CACHE_STORE=database            # redis bila Redis sudah jalan
 REDIS_CLIENT=predis
 
-TELEGRAM_BOT_TOKEN=             # token bot DEV
-TELEGRAM_BOT_USERNAME=
-TELEGRAM_WEBHOOK_SECRET=        # string acak
-TELEGRAM_MODE=polling           # polling | webhook
+UPLOADS_DISK=local              # minio bila MinIO sudah jalan
+MINIO_ENDPOINT=http://127.0.0.1:9000
+MINIO_ACCESS_KEY=
+MINIO_SECRET_KEY=
+MINIO_BUCKET=budgeting-app
 
 RECEIPT_PARSER=fake             # fake | gemini | claude
 GEMINI_API_KEY=
-ANTHROPIC_API_KEY=
-RECEIPT_MODEL=
-RECEIPT_FALLBACK_MODEL=
+
+# Fase bot Telegram
+TELEGRAM_BOT_TOKEN=             # token bot DEV
+TELEGRAM_BOT_USERNAME=
+TELEGRAM_WEBHOOK_SECRET=
+TELEGRAM_MODE=polling
 ```
 
-## 4. Menjalankan Harian
-Jalankan bersamaan (atau pakai `composer run dev` yang menggabungkan semuanya):
+## 5. Menjalankan Harian
+
 ```bash
-npm run dev                                    # Vite
-php artisan queue:work --queue=telegram,receipts,default
-php artisan schedule:work                      # scheduler
-php artisan telegram:poll                      # bot (mode polling, mulai Fase 6)
+composer run dev        # server + queue + logs + vite (php artisan dev)
+php artisan schedule:work   # scheduler (pembersihan log 30 hari, backup, recurring)
 ```
 
-## 5. Telegram dengan Webhook (opsional)
+## 6. Penyimpanan File (MinIO)
+
+Semua upload (struk, export) memakai disk `config('filesystems.uploads')`, selalu privat. Di awal memakai `local` (`storage/app/private`). Untuk memakai MinIO:
+
+1. Unduh `minio.exe` dari situs MinIO, simpan mis. di `C:\laragon\bin\minio\`.
+2. Jalankan: `minio.exe server C:\laragon\data\minio --console-address :9001`.
+3. Buka console `http://127.0.0.1:9001`, buat bucket `budgeting-app` (private) dan access key.
+4. Isi `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, lalu set `UPLOADS_DISK=minio`.
+
+Production cukup mengganti endpoint/kredensial ke storage S3-compatible lain (MinIO self-hosted, Cloudflare R2, AWS S3) — kode tidak berubah.
+
+## 7. Telegram (Fase 6)
+
 ```bash
-ngrok http --host-header=budgeting-app.test 80
+php artisan telegram:poll                                  # mode polling (bot dev)
+ngrok http --host-header=budgeting-app.test 80             # mode webhook
 php artisan telegram:set-webhook https://<id>.ngrok-free.app
 ```
-URL ngrok berubah setiap restart → jalankan ulang `telegram:set-webhook`. Untuk kembali ke polling: `php artisan telegram:delete-webhook`.
 
-Gunakan **bot khusus development** (token berbeda dari production) agar polling lokal tidak bentrok dengan webhook production.
+URL ngrok berubah setiap restart → jalankan ulang `telegram:set-webhook`. Gunakan **bot khusus development** (token berbeda dari production).
 
-## 5b. Backup & Monitoring
-- Backup: `php artisan backup:run` (DB + `storage/app/private`) dijadwalkan harian 02:00 via scheduler; hasil di `storage/app/backups` (simpan salinan di luar laptop, mis. Google Drive).
-- Debug: Laravel Telescope di `http://budgeting-app.test/telescope` (hanya `APP_ENV=local`) untuk request, query, job, exception, notifikasi.
+## 8. Backup & Monitoring
 
-## 6. Data Contoh
-`php artisan db:seed --class=DemoSeeder` → keluarga "Keluarga Demo", 3 anggota (owner/member/viewer, password `password`), 3 bulan transaksi acak, budget, dan tujuan tabungan.
+- Backup: `php artisan backup:run` (DB + file upload) dijadwalkan harian 02:00; simpan salinan di luar laptop.
+- Activity log: `activitylog:clean` berjalan harian 01:00, menghapus entri > 30 hari.
+- Debug: Laravel Telescope di `http://budgeting-app.test/telescope` (hanya `APP_ENV=local`).
 
-## 7. Kualitas Kode
+## 9. Data Contoh
+
+`php artisan db:seed --class=DemoSeeder` → keluarga "Keluarga Demo", 3 anggota (owner/member/viewer, password `password`), 3 bulan transaksi, budget, dan tujuan tabungan.
+
+## 10. Kualitas Kode
+
 ```bash
-php artisan test        # Pest
-./vendor/bin/pint       # format
-./vendor/bin/phpstan    # Larastan
-npm run type-check      # vue-tsc
+composer test               # Pint (cek) + Larastan + Pest
+./vendor/bin/pest --parallel
+./vendor/bin/pint           # format PHP
+pnpm run check              # format + lint frontend (Vite+)
+pnpm run types:check        # vue-tsc
 ```

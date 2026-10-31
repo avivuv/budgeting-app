@@ -63,6 +63,7 @@ app/
 ├── Support/{Money,Period,Budget,Receipt,Math}/   # kalkulator murni
 └── Telegram/                 # Bot router, Context, Handlers, Parsers, Keyboards, Messages
 ```
+
 Detail peran tiap folder: [16-backend-architecture.md](16-backend-architecture.md).
 
 **Domain** yang dipakai konsisten di semua folder ber-`{Domain}`: `Family`, `Wallet`, `Category`, `Transaction`, `Budget`, `Saving`, `Recurring`, `Receipt`, `Report`, `Telegram`, `Admin`.
@@ -90,6 +91,7 @@ resources/js/
         ├── __tests__/
         └── index.ts
 ```
+
 Detail: [15-frontend-architecture.md](15-frontend-architecture.md).
 
 ## 4. Pendukung
@@ -138,25 +140,25 @@ tests/
 
 Contoh fitur **Budget**:
 
-| Lapisan | File |
-|---|---|
-| Rule | `docs/11-business-rules.md` (BR-F**) |
-| Migration / Model / Factory | `database/migrations/*_create_budgets_table.php`, `app/Models/Budget.php`, `database/factories/BudgetFactory.php` |
-| Repository | `app/Repositories/Contracts/BudgetRepositoryInterface.php`, `app/Repositories/Eloquent/BudgetRepository.php` |
-| Kalkulator murni | `app/Support/Budget/BudgetCalculator.php` |
-| Service | `app/Services/Budget/BudgetService.php` |
-| DTO | `app/DTOs/Budget/BudgetData.php`, `BudgetProgressData.php` |
-| Event/Listener | `app/Listeners/CheckBudgetThresholds.php` |
-| Request / Policy | `app/Http/Requests/Web/Budget/*`, `app/Http/Requests/Api/V1/*`, `app/Policies/BudgetPolicy.php` |
-| Controller | `app/Http/Controllers/Web/Budget/BudgetController.php`, `app/Http/Controllers/Api/V1/BudgetController.php` |
-| Bot | `app/Telegram/Handlers/Commands/BudgetCommand.php` |
-| Route | `routes/web/budgets.php`, `routes/api/v1/budgets.php` |
-| Frontend | `resources/js/modules/budgets/{pages,components,composables,index.ts}` |
-| Test | `tests/Unit/Support/BudgetCalculatorTest.php`, `tests/Unit/Services/BudgetServiceTest.php`, `tests/Feature/Api/V1/BudgetTest.php`, `tests/Feature/Web/BudgetTest.php`, `tests/Feature/Consistency/*`, `resources/js/modules/budgets/__tests__/*` |
+| Lapisan                     | File                                                                                                                                                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Rule                        | `docs/11-business-rules.md` (BR-F**)                                                                                                                                                                                                             |
+| Migration / Model / Factory | `database/migrations/*_create_budgets_table.php`, `app/Models/Budget.php`, `database/factories/BudgetFactory.php`                                                                                                                                |
+| Repository                  | `app/Repositories/Contracts/BudgetRepositoryInterface.php`, `app/Repositories/Eloquent/BudgetRepository.php`                                                                                                                                     |
+| Kalkulator murni            | `app/Support/Budget/BudgetCalculator.php`                                                                                                                                                                                                        |
+| Service                     | `app/Services/Budget/BudgetService.php`                                                                                                                                                                                                          |
+| DTO                         | `app/DTOs/Budget/BudgetData.php`, `BudgetProgressData.php`                                                                                                                                                                                       |
+| Event/Listener              | `app/Listeners/CheckBudgetThresholds.php`                                                                                                                                                                                                        |
+| Request / Policy            | `app/Http/Requests/Web/Budget/*`, `app/Http/Requests/Api/V1/*`, `app/Policies/BudgetPolicy.php`                                                                                                                                                  |
+| Controller                  | `app/Http/Controllers/Web/Budget/BudgetController.php`, `app/Http/Controllers/Api/V1/BudgetController.php`                                                                                                                                       |
+| Bot                         | `app/Telegram/Handlers/Commands/BudgetCommand.php`                                                                                                                                                                                               |
+| Route                       | `routes/web/budgets.php`, `routes/api/v1/budgets.php`                                                                                                                                                                                            |
+| Frontend                    | `resources/js/modules/budgets/{pages,components,composables,index.ts}`                                                                                                                                                                           |
+| Test                        | `tests/Unit/Support/BudgetCalculatorTest.php`, `tests/Unit/Services/BudgetServiceTest.php`, `tests/Feature/Api/V1/BudgetTest.php`, `tests/Feature/Web/BudgetTest.php`, `tests/Feature/Consistency/*`, `resources/js/modules/budgets/__tests__/*` |
 
 ## 6. Alias & Namespace
 
-| Konteks | Alias |
-|---|---|
-| PHP | PSR-4 `App\` → `app/`, `Database\` → `database/`, `Tests\` → `tests/` |
+| Konteks   | Alias                                                                                                       |
+| --------- | ----------------------------------------------------------------------------------------------------------- |
+| PHP       | PSR-4 `App\` → `app/`, `Database\` → `database/`, `Tests\` → `tests/`                                       |
 | TS / Vite | `@/core` → `resources/js/core`, `@/modules` → `resources/js/modules`, `@/types` → `resources/js/core/types` |
