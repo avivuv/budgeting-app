@@ -2,6 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\FamilyRole;
+use App\Models\Family;
+use App\Models\User;
+use App\Services\Family\FamilyService;
+use App\Services\Tenancy\TenantContext;
 use App\Services\User\AppearanceService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -46,6 +51,58 @@ class HandleInertiaRequests extends Middleware
             'appearance' => app(AppearanceService::class)
                 ->resolve($request->user(), $request->cookie('appearance'))
                 ->value,
+            // Resolved lazily, after the "family" route middleware has set the tenant.
+            'families' => fn () => $this->families($request),
+            'family' => fn () => $this->currentFamily($request),
+        ];
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, role: string}>
+     */
+    private function families(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return [];
+        }
+
+        return app(FamilyService::class)->familiesOf($user)
+            ->map(fn (Family $family): array => [
+                'id' => $family->id,
+                'name' => $family->name,
+                'role' => $family->membership?->role->value ?? FamilyRole::Viewer->value,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array{id: int, name: string, role: string, role_label: string, period_start_day: int, can: array{write: bool, manage: bool}}|null
+     */
+    private function currentFamily(Request $request): ?array
+    {
+        $tenant = app(TenantContext::class);
+        $user = $request->user();
+
+        if (! $tenant->has() || ! $user instanceof User) {
+            return null;
+        }
+
+        $family = $tenant->get();
+        $role = app(FamilyService::class)->roleOf($family, $user) ?? FamilyRole::Viewer;
+
+        return [
+            'id' => $family->id,
+            'name' => $family->name,
+            'role' => $role->value,
+            'role_label' => $role->label(),
+            'period_start_day' => $family->period_start_day,
+            'can' => [
+                'write' => $role->canWrite(),
+                'manage' => $role->canManage(),
+            ],
         ];
     }
 }

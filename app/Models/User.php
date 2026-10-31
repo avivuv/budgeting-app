@@ -8,6 +8,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -26,6 +28,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property Appearance $appearance
+ * @property int|null $current_family_id
+ * @property bool $is_super_admin
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -43,6 +47,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
      */
     protected $attributes = [
         'appearance' => 'system',
+        'is_super_admin' => false,
     ];
 
     /**
@@ -57,6 +62,27 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'appearance' => Appearance::class,
+            'is_super_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * @return BelongsToMany<Family, $this, FamilyMember, 'membership'>
+     */
+    public function families(): BelongsToMany
+    {
+        return $this->belongsToMany(Family::class)
+            ->using(FamilyMember::class)
+            ->as('membership')
+            ->withPivot(['role', 'joined_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * @return BelongsTo<Family, $this>
+     */
+    public function currentFamily(): BelongsTo
+    {
+        return $this->belongsTo(Family::class, 'current_family_id');
     }
 }

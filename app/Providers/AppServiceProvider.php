@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // One tenant per request / queued job; reset automatically between them.
+        $this->app->scoped(TenantContext::class);
+
         // Telescope is a dev-only dependency (not auto-discovered).
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);

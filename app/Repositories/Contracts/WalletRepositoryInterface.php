@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Repositories\Contracts;
+
+use App\Models\Wallet;
+use Illuminate\Database\Eloquent\Collection;
+
+/**
+ * @extends BaseRepositoryInterface<Wallet>
+ */
+interface WalletRepositoryInterface extends BaseRepositoryInterface
+{
+    /**
+     * @return Collection<int, Wallet>
+     */
+    public function listForFamily(bool $includeArchived = false): Collection;
+
+    /**
+     * Balance per wallet id up to and including $until (BR-C01).
+     * Soft-deleted transactions are excluded (BR-B08).
+     *
+     * @param  list<int>  $walletIds
+     * @return array<int, int>
+     */
+    public function balances(array $walletIds, ?string $until = null): array;
+
+    public function hasTransactions(Wallet $wallet): bool;
+}
