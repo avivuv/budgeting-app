@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\TransactionSource;
 use App\Enums\TransactionType;
 use App\Models\Concerns\BelongsToFamily;
+use App\Models\Concerns\LogsFamilyActivity;
 use Carbon\CarbonImmutable;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -46,7 +47,7 @@ use Illuminate\Support\Carbon;
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
-    use BelongsToFamily, HasFactory, SoftDeletes;
+    use BelongsToFamily, HasFactory, LogsFamilyActivity, SoftDeletes;
 
     /**
      * @return array<string, string>
@@ -98,6 +99,6 @@ class Transaction extends Model
      */
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(Tag::class, 'transaction_tag');
     }
 }

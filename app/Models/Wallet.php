@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\WalletType;
 use App\Models\Concerns\BelongsToFamily;
+use App\Models\Concerns\LogsFamilyActivity;
 use Database\Factories\WalletFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,7 +30,7 @@ use Illuminate\Support\Carbon;
 class Wallet extends Model
 {
     /** @use HasFactory<WalletFactory> */
-    use BelongsToFamily, HasFactory;
+    use BelongsToFamily, HasFactory, LogsFamilyActivity;
 
     /**
      * @var array<string, mixed>

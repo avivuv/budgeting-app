@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\CategoryType;
 use App\Models\Concerns\BelongsToFamily;
+use App\Models\Concerns\LogsFamilyActivity;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,7 +34,7 @@ use Illuminate\Support\Carbon;
 class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
-    use BelongsToFamily, HasFactory;
+    use BelongsToFamily, HasFactory, LogsFamilyActivity;
 
     /**
      * @var array<string, mixed>
