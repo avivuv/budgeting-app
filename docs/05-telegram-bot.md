@@ -1,5 +1,7 @@
 # 05 — Telegram Bot
 
+> **Dikerjakan di fase terakhir** ([09-roadmap.md](09-roadmap.md)). Semua Service (transaksi, struk, laporan, budget) sudah jadi dan teruji lewat web & REST API lebih dulu; bot hanya menjadi *entry point* baru yang memanggil Service tersebut. Notifikasi sebelum bot ada dikirim lewat notifikasi web (database) & email; saat bot jadi, channel Telegram ditambahkan ke Notification yang sama.
+
 ## 1. Mode Operasi
 
 | Mode | Kapan | Perintah |
@@ -7,7 +9,19 @@
 | **Polling** | Development cepat tanpa ngrok | `php artisan telegram:poll` |
 | **Webhook** | Development dengan ngrok / production | `php artisan telegram:set-webhook {url?}` |
 
-Webhook: `POST /telegram/webhook`, diverifikasi header `X-Telegram-Bot-Api-Secret-Token` = `TELEGRAM_WEBHOOK_SECRET` (middleware `VerifyTelegramSecret`). Controller langsung membalas `200` dan memproses update; pekerjaan berat (struk, PDF) di-dispatch ke queue.
+Webhook: `POST /telegram/webhook`, diverifikasi header `X-Telegram-Bot-Api-Secret-Token` = `TELEGRAM_WEBHOOK_SECRET` (middleware `VerifyTelegramSecret`).
+
+**Alur penerimaan update (idempoten, BR-J08):**
+```
+WebhookController
+  1. Cache::add("tg:update:{update_id}", 1, 24h)  → false? sudah diproses → return 200
+  2. dispatch ProcessTelegramUpdateJob(update)     (queue: telegram)
+  3. return 200 segera                            (Telegram tidak mengirim ulang)
+ProcessTelegramUpdateJob → TelegramBot::handle(update)
+```
+Mode polling memakai jalur yang sama (`telegram:poll` → dedupe → job), sehingga perilaku dev = production.
+
+**Dua bot terpisah**: `@NamaBotDevBot` (lokal, polling) dan `@NamaBot` (production, webhook). Token berbeda di `.env` masing-masing, karena satu bot tidak bisa memakai polling dan webhook sekaligus.
 
 Setup bot di @BotFather:
 - `/newbot` → simpan token ke `TELEGRAM_BOT_TOKEN`.
@@ -36,8 +50,8 @@ Event `my_chat_member` (bot dikeluarkan) → `telegram_chats.is_active = false`.
 ### 2.3 Resolusi konteks (`TelegramContext`)
 ```
 update.from.id  → users.telegram_user_id → $user          (wajib)
-update.chat.id  → telegram_chats.chat_id → $family        (grup)
-                  atau $user->currentFamily               (pribadi)
+update.chat.id  → TelegramChatRepository::resolveByChatId → $family   (grup, BR-I07)
+                  atau $user->telegramDefaultFamily                   (pribadi, BR-J09)
 cek: user anggota family, family tidak suspended, role ≠ viewer untuk input
 → TenantContext::set($family)
 ```
@@ -84,12 +98,28 @@ Setting keluarga `telegram.auto_save = true` → langsung simpan bila parser yak
 
 Callback data format: `<action>:<draftId>[:<value>]` (≤ 64 byte), mis. `cat:9f3a:12`.
 
+**Idempotensi konfirmasi (BR-B13):** `confirm` mengambil draft dengan `Cache::pull()` (atomik). Tekan dua kali → pull kedua mendapat `null` → bot menjawab "Sudah tersimpan" tanpa membuat transaksi baru. Tombol di pesan lama dihapus (`editMessageReplyMarkup`) setelah tersimpan.
+
+### 3.4 Koreksi lewat reply (BR-J10)
+Pesan konfirmasi bot menyimpan `telegram_message_id` ↔ draft/transaksi. User cukup **reply** pesan tersebut:
+
+| Reply | Efek |
+|---|---|
+| `ubah 45rb` / `45rb` | ganti nominal |
+| `kategori makan` / `!makan` | ganti kategori |
+| `dompet bca` / `@bca` | ganti dompet |
+| `tanggal kemarin` | ganti tanggal |
+| `catatan bensin motor` | ganti catatan |
+| `hapus` | hapus transaksi (soft delete) |
+
+Perubahan pada transaksi yang sudah tersimpan memanggil `TransactionService::update()` (izin BR-B09, activity log BR-B14), lalu bot mengedit pesan konfirmasi dengan nilai baru.
+
 ## 4. Perilaku di Grup vs Pribadi
 
 | | Pribadi | Grup |
 |---|---|---|
 | Input teks | Semua pesan yang mengandung nominal | `/c bensin 50rb`, mention `@bot bensin 50rb`, atau reply ke pesan bot |
-| Foto struk | Kirim foto langsung | Foto dengan caption `/struk` atau mention bot |
+| Struk / bukti transaksi | Kirim foto, screenshot, atau file (PDF/gambar sebagai dokumen) langsung | Foto/file dengan caption `/struk` atau mention bot |
 | Pencatat | user pengirim | user pengirim |
 | `/saldo` | tampil lengkap | sesuai `families.settings.group_show_balance` |
 | Tombol konfirmasi | — | hanya bisa ditekan oleh pengirim asli (cek `from.id`) |
@@ -108,7 +138,7 @@ Callback data format: `<action>:<draftId>[:<value>]` (≤ 64 byte), mis. `cat:9f
 | `/terakhir` | 5 transaksi terakhir + tombol hapus |
 | `/undo` | Hapus transaksi terakhir milik pengirim (≤ 24 jam) |
 | `/laporan [bulan]` | Kirim PDF laporan bulanan |
-| `/keluarga` | Ganti keluarga aktif (pribadi, jika anggota >1 keluarga) |
+| `/keluarga` | Ganti keluarga default chat pribadi (jika anggota >1 keluarga, BR-J09) |
 | `/bantuan` | Contoh format input |
 
 ## 6. Notifikasi Keluar
@@ -122,7 +152,7 @@ Callback data format: `<action>:<draftId>[:<value>]` (≤ 64 byte), mis. `cat:9f
 | Ringkasan mingguan | Minggu 20:00 | grup |
 | Laporan bulanan | tanggal awal periode 08:00 | grup + owner (PDF) |
 
-Semua dikirim via `SendTelegramMessageJob` (queue `telegram`) dengan rate limit Telegram (≈30 pesan/detik global, 20/menit per grup) memakai `RateLimiter`.
+Notifikasi memakai Laravel Notification dengan channel `database` + `mail` (sudah ada sebelum bot) dan `TelegramChannel` (ditambahkan di fase bot). Pesan Telegram dikirim via `SendTelegramMessageJob` (queue `telegram`) dengan rate limit Telegram (≈30 pesan/detik global, 20/menit per grup) memakai `RateLimiter`.
 
 ## 7. Struktur Kode
 
@@ -134,7 +164,8 @@ app/Telegram/
 │   ├── StartHandler.php
 │   ├── LinkGroupHandler.php
 │   ├── TextTransactionHandler.php
-│   ├── PhotoReceiptHandler.php
+│   ├── ReceiptHandler.php       # photo & document (gambar/PDF)
+│   ├── ReplyCorrectionHandler.php
 │   ├── CallbackQueryHandler.php
 │   ├── ChatMemberHandler.php
 │   └── Commands/ (SaldoCommand, SummaryCommand, BudgetCommand, UndoCommand, ReportCommand, ...)
@@ -148,3 +179,5 @@ Handler hanya memanggil Service (`TransactionService`, `ReportService`, `BudgetS
 ## 8. Testing
 - Unit test `TransactionParser` dengan tabel kasus (≥ 50 variasi kalimat).
 - Feature test webhook memakai fixture JSON update Telegram (`tests/Fixtures/telegram/*.json`) dan `Http::fake()` untuk API Telegram.
+- Test idempotensi: update dengan `update_id` sama dikirim 2× → 1 transaksi (BR-J08); callback `confirm` 2× → 1 transaksi (BR-B13).
+- Test reply koreksi untuk setiap pola di §3.4 (BR-J10).

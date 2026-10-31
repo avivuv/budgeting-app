@@ -2,6 +2,8 @@
 
 Instruksi wajib untuk AI assistant (Claude Code) di repo ini. Dibaca otomatis setiap sesi.
 
+**Urutan pengerjaan:** web & REST API dulu, bot Telegram di fase terakhir. Ikuti [docs/09-roadmap.md](docs/09-roadmap.md).
+
 ## Project
 Aplikasi keuangan keluarga **multi-tenant**: input via **Telegram** (grup & chat pribadi, teks + foto struk), dashboard & laporan via **web**, plus **REST API**. Detail lengkap di [README.md](README.md) dan [docs/](docs/).
 
@@ -15,13 +17,14 @@ Laravel 12 (PHP 8.4) · Inertia v2 + Vue 3 (TS, `<script setup>`) · Tailwind + 
 ## Aturan Wajib
 
 1. **Service-Repository pattern** — `Controller (Web/Api) | Telegram Handler | Job | Command → Service → Repository (interface di Contracts + Eloquent) → Model`. Tidak ada query Eloquent/`DB` di luar repository. Logika bisnis hanya di Service, dipakai bersama oleh web, API, dan bot. Perhitungan murni di `app/Support`. Service & DTO dikelompokkan per domain. Dijaga oleh Pest arch test. → [docs/02-architecture.md](docs/02-architecture.md), [docs/16-backend-architecture.md](docs/16-backend-architecture.md)
-2. **Multi-tenant** — model data tenant memakai trait `BelongsToFamily` (global scope `family_id`, fail closed). `TenantContext` di-set di middleware/bot/job. Jangan `withoutGlobalScope` kecuali repository Super Admin. Data keluarga lain → 404. → [docs/03-multi-tenancy.md](docs/03-multi-tenancy.md)
+2. **Multi-tenant** — model data tenant memakai trait `BelongsToFamily` (global scope `family_id`, fail closed). `TenantContext` di-set di middleware/bot/job. `withoutGlobalScope` hanya boleh di repository Super Admin dan method tenant resolver `resolve*` (BR-I07). Data keluarga lain → 404. → [docs/03-multi-tenancy.md](docs/03-multi-tenancy.md)
 3. **Business rules** — semua perhitungan & validasi mengikuti [docs/11-business-rules.md](docs/11-business-rules.md) (ID `BR-xxx`). Rule baru/berubah → update dokumen dulu.
-4. **Uang = integer rupiah** (`BIGINT`), tidak pernah float. Parsing lewat `AmountParser`, tampilan lewat `MoneyFormatter`/`useMoney`.
-5. **Testing wajib** — setiap fitur: unit test (logika/perhitungan), API/feature test (response, validasi, otorisasi, tenant), dan consistency invariant `INV-xx` bila menyentuh angka. Nama test menyebut ID rule, mis. `[BR-B08]`. → [docs/12-testing-strategy.md](docs/12-testing-strategy.md)
-6. **UI** — tema putih–biru, pakai token warna (tidak hardcode hex), mobile-first. → [docs/14-ui-design-system.md](docs/14-ui-design-system.md)
-7. **Frontend modular** — `resources/js/core/` (shared) + `resources/js/modules/<fitur>/` (pages, components, composables, `index.ts`). Antar modul hanya via `index.ts`. Tidak ada perhitungan bisnis di Vue; tipe dari `generated.d.ts`. → [docs/15-frontend-architecture.md](docs/15-frontend-architecture.md)
-8. **Coding standards** — `strict_types`, DTO readonly, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
+4. **Idempoten & teraudit** — setiap konfirmasi/POST pembuat data tidak boleh menghasilkan data ganda (BR-B13, BR-J08); perubahan data penting tercatat di activity log (BR-B14).
+5. **Uang = integer rupiah** (`BIGINT`), tidak pernah float. Parsing lewat `AmountParser`, tampilan lewat `MoneyFormatter`/`useMoney`.
+6. **Testing wajib** — setiap fitur: unit test (logika/perhitungan), API/feature test (response, validasi, otorisasi, tenant), dan consistency invariant `INV-xx` bila menyentuh angka. Nama test menyebut ID rule, mis. `[BR-B08]`. → [docs/12-testing-strategy.md](docs/12-testing-strategy.md)
+7. **UI** — tema putih–biru, pakai token warna (tidak hardcode hex), mobile-first. → [docs/14-ui-design-system.md](docs/14-ui-design-system.md)
+8. **Frontend modular** — `resources/js/core/` (shared) + `resources/js/modules/<fitur>/` (pages, components, composables, `index.ts`). Antar modul hanya via `index.ts`. Tidak ada perhitungan bisnis di Vue; tipe dari `generated.d.ts`. → [docs/15-frontend-architecture.md](docs/15-frontend-architecture.md)
+9. **Coding standards** — `strict_types`, DTO `spatie/laravel-data`, Service tidak `final`, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
 
 ## Sebelum Selesai / Commit
 ```bash

@@ -41,11 +41,15 @@ Mencatat keuangan keluarga sering gagal karena **input merepotkan** (harus buka 
 - Edit, hapus (soft delete), undo terakhir.
 - **Transaksi berulang** (gaji, tagihan, cicilan).
 
+- **Input cepat di web**: satu kolom teks `bensin 50rb @gopay` (parser sama dengan bot).
+- **Riwayat perubahan** per transaksi: siapa mengubah apa & kapan (BR-B14).
+- **Kartu kredit**: belanja = pengeluaran, bayar tagihan = transfer (BR-C06).
+
 ### 4.4 Budget & Tabungan
 - Budget bulanan per kategori; peringatan di 80% dan 100%.
 - Tujuan tabungan dengan target & progress.
 
-### 4.5 Telegram Bot — lihat [05-telegram-bot.md](05-telegram-bot.md)
+### 4.5 Telegram Bot — lihat [05-telegram-bot.md](05-telegram-bot.md) *(dikerjakan di fase terakhir)*
 - Chat pribadi & grup keluarga.
 - Input teks bebas, foto struk, tombol konfirmasi.
 - Perintah ringkasan, saldo, budget, undo, laporan PDF.
@@ -55,7 +59,12 @@ Mencatat keuangan keluarga sering gagal karena **input merepotkan** (harus buka 
 
 ### 4.7 Dashboard & Laporan — lihat [07-dashboard-reports.md](07-dashboard-reports.md)
 
-### 4.8 Super Admin
+### 4.8 Data & Privasi
+- Export seluruh data keluarga (ZIP CSV/JSON + file struk) oleh Owner.
+- Hapus keluarga / akun (BR-I08), mengikuti prinsip UU PDP No. 27/2022.
+- Backup otomatis harian.
+
+### 4.9 Super Admin
 - Daftar keluarga, jumlah user/transaksi, pemakaian scan struk.
 - Suspend / aktifkan keluarga, atur kuota.
 
@@ -82,6 +91,8 @@ Mencatat keuangan keluarga sering gagal karena **input merepotkan** (harus buka 
 | Mobile | Semua halaman nyaman di lebar 360px; PWA installable |
 | Bahasa | UI & bot Bahasa Indonesia; format angka `Rp 1.250.000`, tanggal `31 Okt 2026` |
 | Keamanan | Webhook Telegram diverifikasi secret token; file struk privat; rate limit |
+| Keandalan | Semua konfirmasi idempoten (tidak ada transaksi ganda); backup harian |
+| Observability | Telescope di lokal; error & job gagal terpantau |
 | Audit | Setiap transaksi menyimpan `created_by` dan `source` |
 
 ## 7. Di Luar Lingkup (untuk saat ini)

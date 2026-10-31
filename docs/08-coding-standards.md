@@ -44,31 +44,17 @@ public array $bindings = [
 ```
 
 ## 5. Service
+- Class **tidak** `final` (agar bisa di-mock di test controller/handler); dependency ditandai `private readonly`.
 - Constructor injection interface repository.
 - Operasi yang menulis > 1 tabel wajib `DB::transaction()`.
 - Terima DTO / primitive, bukan `Request`.
 - Lempar exception domain (`BudgetNotFoundException`, `QuotaExceededException`) — ditangani di controller/handler menjadi pesan user.
 
 ## 6. DTO
-```php
-final readonly class TransactionData
-{
-    public function __construct(
-        public TransactionType $type,
-        public int $amount,
-        public CarbonImmutable $date,
-        public int $walletId,
-        public ?int $categoryId = null,
-        public ?int $toWalletId = null,
-        public ?string $note = null,
-        public TransactionSource $source = TransactionSource::Web,
-        public array $tagIds = [],
-    ) {}
-
-    public static function fromRequest(StoreTransactionRequest $request): self { /* ... */ }
-    public function toArray(): array { /* ... */ }
-}
-```
+- Semua DTO memakai **`spatie/laravel-data`** (extends `Data`), suffix `Data`, diberi `#[TypeScript]` bila dipakai frontend. Contoh lengkap: [16-backend-architecture.md §8](16-backend-architecture.md#8-dto).
+- Dibuat dengan `XData::from($request->validated())`, `XData::from($model)`, atau `XData::collect($paginator)`.
+- Konversi ke kolom tabel lewat method `toModelArray()` (snake_case, tanpa field turunan).
+- DTO tidak berisi logika bisnis; perhitungan ada di Service/`Support`.
 
 ## 7. Uang & Tanggal
 - Uang selalu `int` rupiah. Dilarang `float` untuk nominal.

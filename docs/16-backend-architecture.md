@@ -62,7 +62,7 @@ app/
 │   └── Cache/                       # decorator cache (opsional per repository)
 │       └── CachedWalletRepository.php
 ├── Services/                        # dikelompokkan per domain
-│   ├── Transaction/TransactionService.php, TransferService.php
+│   ├── Transaction/TransactionService.php, TransferService.php, TransactionQueryService.php (baca/list)
 │   ├── Wallet/WalletService.php, WalletBalanceService.php
 │   ├── Category/CategoryService.php, CategoryGuesser.php
 │   ├── Budget/BudgetService.php
@@ -173,7 +173,7 @@ public function paginateFiltered(TransactionFilterData $f, int $perPage = 20): L
 ## 4. Service
 
 ```php
-final class TransactionService
+class TransactionService
 {
     public function __construct(
         private readonly TransactionRepositoryInterface $transactions,
@@ -299,7 +299,9 @@ arch('controllers & handlers only talk to services')
 
 arch('services depend on repository contracts, not implementations')
     ->expect('App\Services')
-    ->not->toUse(['App\Repositories\Eloquent', 'Illuminate\Support\Facades\DB::table']);
+    ->not->toUse('App\Repositories\Eloquent');
+// DB::transaction() boleh di Service; query builder mentah (DB::table/select) dicegah
+// lewat Larastan custom rule + code review, karena arch() tidak bisa membedakan method facade.
 
 arch('repositories are the only eloquent query layer')
     ->expect('App\Repositories\Eloquent')
@@ -312,12 +314,15 @@ arch('repository contracts are interfaces')
 arch('support is pure')
     ->expect('App\Support')->not->toUse(['App\Models', 'App\Repositories', 'Illuminate\Support\Facades']);
 
-arch('services are final')->expect('App\Services')->classes()->toBeFinal();
-arch('dtos are data objects')->expect('App\DTOs')->toHaveSuffix('Data');
+arch('dtos are data objects')
+    ->expect('App\DTOs')->toExtend('Spatie\LaravelData\Data')->toHaveSuffix('Data');
 arch()->expect('App')->toUseStrictTypes();
 arch()->preset()->laravel();
 ```
-Catatan: `DB::transaction()` diizinkan di Service (dikecualikan dari rule di atas via `ignoring`).
+
+Penjagaan scope tenant (BR-I07): `tests/Architecture/TenantScopeBypassTest.php` memindai `app/` dan memastikan `withoutGlobalScope(FamilyScope` hanya muncul di dalam method bernama `resolve*` atau di namespace `App\Repositories\Eloquent\Admin`.
+
+Service sengaja **tidak** `final` agar bisa di-mock (Mockery) di test controller & handler.
 
 ## 10. Checklist Fitur Baru (Backend)
 1. Rule bisnis dicatat di [11-business-rules.md](11-business-rules.md).

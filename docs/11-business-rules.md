@@ -33,6 +33,8 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-B10 | `/undo` hanya menghapus transaksi terakhir **milik pengirim**, dibuat ≤ 24 jam lalu, di keluarga aktif. |
 | BR-B11 | Transfer **tidak** dihitung sebagai pemasukan maupun pengeluaran di laporan/dashboard; hanya memengaruhi saldo dompet. |
 | BR-B12 | Input yang sama lewat web, API, dan Telegram menghasilkan record yang identik (kecuali `source`). |
+| BR-B13 | **Idempotensi**: setiap aksi konfirmasi (draft teks, struk, "sudah dibayar" recurring) hanya bisa dieksekusi sekali. Klik ganda / request ulang tidak boleh membuat transaksi ganda. Draft diambil secara atomik (`Cache::pull` / lock), API `POST` mendukung header `Idempotency-Key`. |
+| BR-B14 | Setiap create/update/delete transaksi, budget, wallet, dan kategori dicatat di **activity log** (siapa, kapan, nilai sebelum → sesudah). Log tidak bisa diedit dan ikut terisolasi per keluarga. |
 
 ## C. Saldo Dompet
 
@@ -43,6 +45,7 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-C03 | Saldo boleh negatif; sistem memberi peringatan (bukan menolak) jika transaksi membuat dompet non-kredit negatif. |
 | BR-C04 | Cache saldo wajib di-invalidate setiap create/update/delete transaksi yang menyentuh wallet tersebut (termasuk `to_wallet_id` dan wallet lama saat edit). |
 | BR-C05 | Wallet dengan transaksi tidak bisa dihapus permanen, hanya diarsipkan. |
+| BR-C06 | **Kartu kredit**: belanja dengan kartu kredit dicatat sebagai `expense` pada tanggal belanja (masuk laporan & budget saat itu). Membayar tagihan kartu dicatat sebagai `transfer` dari dompet bank → kartu kredit, **bukan** pengeluaran, agar tidak terhitung dua kali. Saldo kartu kredit = −(sisa tagihan). |
 
 ## D. Periode
 
@@ -98,6 +101,7 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-H08 | **Hasil baca struk tidak pernah langsung menjadi transaksi.** Hasil AI hanya disimpan sebagai draft di tabel `receipts` (status `parsed`) lalu dikirim balik ke user untuk ditinjau. Transaksi baru dibuat setelah user menekan **Simpan**. Setting `auto_save` Telegram tidak berlaku untuk struk. |
 | BR-H09 | Sebelum konfirmasi, user bisa mengoreksi hasil baca: total, tanggal, merchant, kategori, dompet, dan item. Nilai yang disimpan adalah hasil koreksi user, sedangkan hasil asli AI tetap tersimpan di `raw_response` untuk audit. |
 | BR-H10 | Draft struk yang tidak dikonfirmasi dalam 24 jam berstatus `expired`, tidak membuat transaksi apa pun, dan filenya dihapus setelah 7 hari. |
+| BR-H11 | Dokumen yang diterima: struk, bukti transfer, screenshot e-wallet, invoice e-commerce; format JPG/PNG/WEBP/HEIC/PDF (maks. 3 halaman), maks. 10 MB. Format lain ditolak sebelum kuota terpakai. |
 
 ## I. Keluarga, Anggota & Role
 
@@ -109,6 +113,8 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-I04 | Anggota yang keluar tetap tercatat sebagai `created_by` pada transaksi lamanya. |
 | BR-I05 | Keluarga yang di-suspend: web & bot menolak semua aksi tulis dan baca (kecuali Super Admin). |
 | BR-I06 | Data keluarga lain tidak pernah bisa diakses; akses ID milik keluarga lain menghasilkan 404 (bukan 403) agar tidak membocorkan keberadaan data. |
+| BR-I07 | Lookup **sebelum** keluarga diketahui (grup Telegram → keluarga, token undangan → keluarga) hanya boleh lewat method *tenant resolver* khusus di repository; hasilnya langsung dipakai untuk men-set `TenantContext`. |
+| BR-I08 | Owner bisa **export seluruh data keluarga** (ZIP berisi CSV/JSON + file struk) dan **menghapus keluarga** beserta datanya (soft delete 30 hari → hapus permanen), sesuai prinsip UU PDP No. 27/2022. User bisa menghapus akunnya; transaksinya tetap ada dengan nama "Mantan anggota". |
 
 ## J. Telegram
 
@@ -121,3 +127,6 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-J05 | Tombol konfirmasi hanya bisa ditekan oleh pengirim asli; draft kedaluwarsa setelah 10 menit. |
 | BR-J06 | Di grup, bot hanya memproses `/perintah`, mention, atau reply ke bot (tidak membaca obrolan biasa). |
 | BR-J07 | `/saldo` di grup mengikuti setting `group_show_balance`. |
+| BR-J08 | Setiap update Telegram diproses **paling banyak sekali** berdasarkan `update_id` (disimpan 24 jam). Update yang dikirim ulang Telegram diabaikan. |
+| BR-J09 | Chat pribadi mencatat ke `users.telegram_default_family_id`, **terpisah** dari keluarga aktif di web; diganti lewat `/keluarga`. Default awal = keluarga pertama user. |
+| BR-J10 | Reply ke pesan konfirmasi bot dengan teks koreksi (`ubah 45rb`, `kategori makan`, `dompet bca`, `tanggal kemarin`, `hapus`) mengubah transaksi/draft terkait, dengan aturan izin yang sama seperti edit (BR-B09). |

@@ -12,7 +12,7 @@ Aplikasi pencatatan keuangan keluarga multi-tenant. Input transaksi cukup lewat 
 | Queue / Cache | Redis |
 | Arsitektur | Controller → Service → Repository → Model |
 | Tenancy | Single database, kolom `family_id` + global scope |
-| Telegram | Bot di grup keluarga & chat pribadi (webhook / polling) |
+| Telegram | Bot di grup keluarga & chat pribadi (webhook / polling) — dikerjakan di fase terakhir |
 | Struk | AI Vision (rencana: Google Gemini free tier; driver bisa diganti) → JSON terstruktur |
 | Frontend arsitektur | Modular per fitur (`resources/js/modules/*`) |
 | API | REST `/api/v1` (Sanctum) |

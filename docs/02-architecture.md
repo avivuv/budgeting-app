@@ -39,7 +39,7 @@
 | **Controller** | Terima request, panggil FormRequest, panggil Service, return `Inertia::render` / redirect | Query Eloquent, logika bisnis |
 | **Telegram Handler** | Parse update Telegram, ubah jadi DTO, panggil Service, kirim balasan | Query Eloquent, logika bisnis |
 | **FormRequest** | Validasi & otorisasi input web | — |
-| **DTO** (`app/DTOs`) | Membawa data antar layer secara type-safe (readonly class) | Logika |
+| **DTO** (`app/DTOs`) | Membawa data antar layer secara type-safe (`spatie/laravel-data`, lihat [16](16-backend-architecture.md#8-dto)) | Logika |
 | **Service** | Logika bisnis, transaksi DB (`DB::transaction`), memanggil beberapa repository, dispatch event/job | Akses `request()`, return response HTTP |
 | **Repository** | Semua query ke database (CRUD, filter, agregasi laporan) | Logika bisnis, memanggil service lain |
 | **Model** | Relasi, casts, scopes, accessor | Logika bisnis berat |
@@ -96,10 +96,10 @@ class TransactionService
         private WalletRepositoryInterface $wallets,
     ) {}
 
-    public function create(TransactionData $data): Transaction
+    public function create(TransactionData $data, User $actor): Transaction
     {
-        return DB::transaction(function () use ($data) {
-            $transaction = $this->transactions->create($data->toArray());
+        return DB::transaction(function () use ($data, $actor) {
+            $transaction = $this->transactions->create([...$data->toModelArray(), 'created_by' => $actor->id]);
             event(new TransactionCreated($transaction));   // → BudgetAlertListener
             return $transaction;
         });
@@ -116,7 +116,7 @@ class TransactionController extends Controller
 
     public function store(StoreTransactionRequest $request): RedirectResponse
     {
-        $this->service->create(TransactionData::fromRequest($request));
+        $this->service->create(TransactionData::from($request->validated()), $request->user());
         return back()->with('success', 'Transaksi tersimpan');
     }
 }
@@ -213,7 +213,10 @@ Detail frontend: [15-frontend-architecture.md](15-frontend-architecture.md).
 | `anthropic-ai/sdk` (PHP) atau HTTP client | Claude API untuk struk |
 | `maatwebsite/excel` | Export Excel |
 | `barryvdh/laravel-dompdf` | Export PDF |
+| `spatie/laravel-activitylog` | Riwayat perubahan data (BR-B14) |
+| `spatie/laravel-backup` | Backup DB + file struk harian |
+| `laravel/telescope` (dev) · `laravel/pulse` / Sentry (nanti) | Debug & monitoring error, job, query |
 | `intervention/image` | Kompres/resize foto struk sebelum dikirim ke AI |
 | Frontend: `shadcn-vue`, `@tanstack/vue-table`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `pinia`, `vue-i18n`, `vite-plugin-pwa` | UI, grafik, util, ikon, state UI, i18n, PWA |
 | Frontend dev: `vitest`, `@vue/test-utils`, `eslint-plugin-boundaries`, `prettier` | Test & aturan import |
-| Dev: `pestphp/pest`, `larastan/larastan`, `laravel/pint` | Testing, static analysis, formatting |
+| Dev: `pestphp/pest`, `larastan/larastan`, `laravel/pint`, `mockery/mockery` | Testing, static analysis, formatting, mocking |

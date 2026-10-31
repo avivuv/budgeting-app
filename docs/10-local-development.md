@@ -40,7 +40,7 @@ QUEUE_CONNECTION=redis
 CACHE_STORE=redis
 REDIS_CLIENT=predis
 
-TELEGRAM_BOT_TOKEN=
+TELEGRAM_BOT_TOKEN=             # token bot DEV
 TELEGRAM_BOT_USERNAME=
 TELEGRAM_WEBHOOK_SECRET=        # string acak
 TELEGRAM_MODE=polling           # polling | webhook
@@ -58,7 +58,7 @@ Jalankan bersamaan (atau pakai `composer run dev` yang menggabungkan semuanya):
 npm run dev                                    # Vite
 php artisan queue:work --queue=telegram,receipts,default
 php artisan schedule:work                      # scheduler
-php artisan telegram:poll                      # bot (mode polling)
+php artisan telegram:poll                      # bot (mode polling, mulai Fase 6)
 ```
 
 ## 5. Telegram dengan Webhook (opsional)
@@ -67,6 +67,12 @@ ngrok http --host-header=budgeting-app.test 80
 php artisan telegram:set-webhook https://<id>.ngrok-free.app
 ```
 URL ngrok berubah setiap restart → jalankan ulang `telegram:set-webhook`. Untuk kembali ke polling: `php artisan telegram:delete-webhook`.
+
+Gunakan **bot khusus development** (token berbeda dari production) agar polling lokal tidak bentrok dengan webhook production.
+
+## 5b. Backup & Monitoring
+- Backup: `php artisan backup:run` (DB + `storage/app/private`) dijadwalkan harian 02:00 via scheduler; hasil di `storage/app/backups` (simpan salinan di luar laptop, mis. Google Drive).
+- Debug: Laravel Telescope di `http://budgeting-app.test/telescope` (hanya `APP_ENV=local`) untuk request, query, job, exception, notifikasi.
 
 ## 6. Data Contoh
 `php artisan db:seed --class=DemoSeeder` → keluarga "Keluarga Demo", 3 anggota (owner/member/viewer, password `password`), 3 bulan transaksi acak, budget, dan tujuan tabungan.

@@ -77,6 +77,9 @@ Test kunci untuk menjamin **semua angka sinkron**.
 | INV-08 | Setelah edit/hapus transaksi, semua angka di INV-02–INV-07 langsung ter-update (cache invalidation, BR-C04). |
 | INV-09 | Struk "pecah per item": Σ transaksi yang dibuat = `receipt.total`. |
 | INV-10 | Transfer tidak mengubah total pemasukan/pengeluaran, dan tidak mengubah total saldo keluarga. |
+| INV-11 | Konfirmasi yang sama dikirim berulang (klik ganda, retry API dengan `Idempotency-Key` sama, update Telegram dikirim ulang) → jumlah transaksi tetap bertambah satu (BR-B13, BR-J08). |
+| INV-12 | Pembayaran tagihan kartu kredit (transfer) tidak menambah pengeluaran; belanja kartu kredit terhitung satu kali (BR-C06). |
+| INV-13 | Setiap perubahan transaksi menghasilkan tepat satu entri activity log dengan nilai lama & baru yang benar (BR-B14). |
 
 ## 3. Golden Dataset
 
@@ -128,23 +131,16 @@ Hasil yang diharapkan:
 ## 5. Architecture Test (Pest `arch()`)
 
 ```php
-arch('controllers do not use eloquent directly')
-    ->expect('App\Http\Controllers')
-    ->not->toUse(['Illuminate\Database\Eloquent\Builder', 'Illuminate\Support\Facades\DB']);
+Daftar lengkap arch test ada di [16-backend-architecture.md §9](16-backend-architecture.md#9-penjaga-arsitektur-pest-arch-tests). Ringkasnya:
+- Controller, Telegram handler, Job, Command tidak memakai Repository / `DB`.
+- Service bergantung pada **interface** repository, bukan implementasi Eloquent.
+- Repository Eloquent extends `BaseRepository`, kontrak berupa interface.
+- `App\Support` murni (tanpa Model/Repository/Facade).
+- DTO extends `Spatie\LaravelData\Data`.
+- `withoutGlobalScope(FamilyScope)` hanya di method `resolve*` & namespace Admin (BR-I07).
+- `strict_types` di semua file, preset Laravel.
 
-arch('telegram handlers depend on services only')
-    ->expect('App\Telegram\Handlers')
-    ->not->toUse('App\Repositories');
-
-arch('repositories implement contracts')
-    ->expect('App\Repositories\Eloquent')
-    ->toImplement('App\Repositories\Contracts\BaseRepositoryInterface');
-
-arch('no floats for money')->expect('App\DTOs')->not->toUse('floatval');
-
-arch()->preset()->laravel();
-arch()->expect('App')->toUseStrictTypes();
-```
+Larangan float untuk uang (BR-A01) dijaga lewat Larastan (properti/kolom nominal bertipe `int`) dan test DTO, bukan arch test.
 
 ## 6. Struktur Folder
 
@@ -161,7 +157,7 @@ tests/
 │   ├── Telegram/        # webhook, commands, callback
 │   ├── Integration/     # repository, listener, job, scheduler
 │   ├── Tenancy/         # isolasi
-│   └── Consistency/     # INV-01 … INV-10
+│   └── Consistency/     # INV-01 … INV-13
 ├── Fixtures/
 │   ├── telegram/*.json
 │   ├── receipts/*.jpg + *.json (respons AI)
@@ -177,7 +173,7 @@ resources/js/**/__tests__/   # Vitest
 |---|---|
 | Coverage | ≥ 90% `app/Services`, `app/Support`, `app/Telegram/Parsers`; ≥ 80% total |
 | Business rules | 100% BR punya test |
-| Invariants | INV-01 … INV-10 lulus |
+| Invariants | INV-01 … INV-13 lulus |
 | Sebelum commit | `php artisan test --parallel`, Pint, Larastan, `npm run test`, `vue-tsc` |
 | CI | GitHub Actions menjalankan semua gate di atas pada setiap push & PR (`.github/workflows/tests.yml`, service MySQL + Redis) |
 

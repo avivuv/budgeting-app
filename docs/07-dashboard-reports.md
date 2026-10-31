@@ -44,6 +44,10 @@ Data dashboard berasal dari `DashboardService`, di-cache per `(family, periode, 
 - Filter disimpan di query string (bisa dibagikan/bookmark).
 - Aksi massal: ubah kategori, hapus.
 - Thumbnail struk bila ada.
+- Detail transaksi menampilkan **riwayat perubahan** (activity log): "Ibu mengubah nominal Rp 50.000 → Rp 45.000 · 31 Okt 10:12" (BR-B14).
+
+## 4b. Notifikasi Web
+Ikon lonceng di header (Laravel database notification): peringatan budget, struk selesai dibaca, undangan, export siap. Email untuk notifikasi penting. Channel Telegram ditambahkan di fase bot.
 
 ## 5. Laporan
 

@@ -41,7 +41,8 @@ users ──< family_user >── families ──< wallets
 | Kolom | Tipe | Keterangan |
 |---|---|---|
 | id, name, email (unique), password, email_verified_at, remember_token | | standar Laravel |
-| current_family_id | FK null | keluarga aktif |
+| current_family_id | FK null | keluarga aktif di web |
+| telegram_default_family_id | FK null | keluarga tujuan input chat pribadi Telegram (BR-J09) |
 | telegram_user_id | bigint null unique | id user Telegram |
 | telegram_username | string null | |
 | is_super_admin | bool | default false |
@@ -128,7 +129,11 @@ Progress = saldo wallet terkait, atau kontribusi manual.
 | family_id, user_id | FK | |
 | file_path | string | disk `local` (privat) |
 | file_hash | char(64) | sha256 → deteksi file sama |
-| status | string | `pending`/`processing`/`parsed`/`confirmed`/`failed`/`rejected` |
+| mime_type | string | image/jpeg, image/png, application/pdf, ... |
+| document_type | string null | `receipt`/`transfer_proof`/`ewallet`/`invoice` |
+| suggested_wallet_id | FK null | tebakan dompet (mis. screenshot GoPay) |
+| expires_at | timestamp | draft kedaluwarsa (BR-H10) |
+| status | string | `pending`/`processing`/`parsed`/`confirmed`/`failed`/`rejected`/`expired` |
 | merchant | string null | |
 | receipt_date | date null | |
 | total | bigint null | |
@@ -142,6 +147,13 @@ Progress = saldo wallet terkait, atau kontribusi manual.
 ### receipt_items
 `id, receipt_id, name, qty decimal(8,2), unit_price bigint, total bigint, category_id null`
 
+### activity_log (spatie/laravel-activitylog, BR-B14)
+`id, family_id, log_name, description (created|updated|deleted), subject_type, subject_id, causer_id (FK users), properties json ({"old": {...}, "attributes": {...}}), event, batch_uuid, created_at`
+Index: `(family_id, subject_type, subject_id)`, `(family_id, created_at)`. Tabel bawaan paket ditambah kolom `family_id` + trait `BelongsToFamily` pada model `Activity` turunan.
+
+### data_exports
+`id, family_id, requested_by, status (pending|ready|expired), file_path null, expires_at` — export seluruh data (BR-I08).
+
 ### usage_logs
 `id, family_id, feature (receipt_scan|...), period (date), count` — unique(family_id, feature, period). Dasar kuota.
 
@@ -153,4 +165,5 @@ Progress = saldo wallet terkait, atau kontribusi manual.
 2. wallets → categories → tags
 3. receipts → recurring_rules → transactions → transaction_tag → receipt_items
 4. budgets → saving_goals
-5. telegram_chats → telegram_link_codes → usage_logs
+5. activity_log → data_exports → usage_logs
+6. telegram_chats → telegram_link_codes *(fase bot)*

@@ -31,8 +31,9 @@ Siapa yang mengisi `TenantContext`:
 | Entry point | Sumber family |
 |---|---|
 | Web | Middleware `SetCurrentFamily` → `auth()->user()->currentFamily` (validasi masih anggota) |
-| Telegram private chat | `users.telegram_user_id` → user → `current_family_id` (bisa diganti `/keluarga`) |
-| Telegram group | `telegram_chats.chat_id` → `family_id` |
+| Telegram private chat | `users.telegram_user_id` → user → `telegram_default_family_id` (bisa diganti `/keluarga`, BR-J09) |
+| Telegram group | `TelegramChatRepository::resolveByChatId()` → `family_id` (BR-I07) |
+| Terima undangan | `InvitationRepository::resolveByToken()` → `family_id` |
 | Queue job | Job menyimpan `familyId` di constructor, set context di awal `handle()` |
 | Scheduler/command | Loop per keluarga, set context per iterasi |
 
@@ -67,11 +68,22 @@ class FamilyScope implements Scope
 }
 ```
 
-Model yang memakai trait: `Wallet`, `Category`, `Tag`, `Transaction`, `Budget`, `RecurringRule`, `SavingGoal`, `Receipt`, `TelegramChat`, `Invitation`.
+Model yang memakai trait: `Wallet`, `Category`, `Tag`, `Transaction`, `Budget`, `RecurringRule`, `SavingGoal`, `Receipt`, `TelegramChat`, `Invitation`, `Activity` (activity log, kolom `family_id`).
 
 **Aturan:**
 - Bila `TenantContext` kosong, scope melempar exception — **fail closed**, bukan menampilkan semua data.
-- `withoutGlobalScope(FamilyScope::class)` hanya boleh di repository khusus Super Admin dan diberi komentar alasan.
+- `withoutGlobalScope(FamilyScope::class)` hanya boleh di dua tempat, dan wajib diberi komentar alasan + test:
+  1. Repository khusus Super Admin (`App\Repositories\Eloquent\Admin\*`).
+  2. **Tenant resolver** — method yang mencari data *sebelum* keluarga diketahui, untuk menentukan keluarga (BR-I07). Nama method diawali `resolve`:
+
+| Method | Dipakai oleh | Kenapa scope harus dilewati |
+|---|---|---|
+| `TelegramChatRepository::resolveByChatId(int $chatId)` | bot (pesan grup) | keluarga baru diketahui dari baris ini |
+| `InvitationRepository::resolveByToken(string $token)` | halaman terima undangan | user belum anggota keluarga tersebut |
+| `TelegramLinkCodeRepository::resolveByCode(string $code)` | `/start`, `/hubungkan` | kode menentukan user/keluarga |
+| `ReceiptRepository::resolveForJob(int $id)` *(opsional)* | job yang hanya membawa id | — (lebih baik job membawa `familyId`) |
+
+  Resolver hanya mengembalikan baris yang dicari (tanpa relasi tenant lain), lalu pemanggil langsung `TenantContext::set()`. Arch test memastikan `withoutGlobalScope` tidak muncul di luar method `resolve*` dan namespace Admin.
 - Validasi `exists` di FormRequest harus ikut membatasi `family_id` (mis. `Rule::exists('wallets','id')->where('family_id', $familyId)`).
 - Route model binding otomatis aman karena scope aktif; tetap dilindungi Policy.
 
@@ -101,8 +113,9 @@ Super Admin adalah flag global `users.is_super_admin`, tidak terkait keluarga.
 2. **Undang** → `InvitationService::invite(email, role)` → email berisi link `/invitations/{token}` (berlaku 7 hari). User baru mendaftar lalu otomatis bergabung; user lama cukup menerima.
 3. **Switch keluarga** → `PUT /families/{family}/switch` update `current_family_id`.
 4. **Keluar / dikeluarkan** → hapus pivot; transaksi tetap ada dengan `created_by` lama.
-5. **Hapus keluarga** (owner) → soft delete; data dihapus permanen oleh job terjadwal setelah 30 hari.
-6. **Suspend** (super admin) → `families.suspended_at`; middleware & bot menolak akses.
+5. **Export data** (owner) → `ExportFamilyDataJob` membuat ZIP (CSV/JSON + file struk), link unduh berlaku 24 jam (BR-I08).
+6. **Hapus keluarga** (owner) → soft delete; data dihapus permanen oleh job terjadwal setelah 30 hari.
+7. **Suspend** (super admin) → `families.suspended_at`; middleware & bot menolak akses.
 
 ## 6. Kategori Default
 
@@ -116,3 +129,5 @@ Masing-masing membawa `keywords` awal (mis. Transportasi: `bensin, pertalite, pe
 - Test untuk setiap repository: data keluarga A tidak muncul saat context = keluarga B.
 - Test endpoint: akses ID milik keluarga lain → 404.
 - Test bot: chat grup keluarga A tidak bisa menulis ke keluarga B.
+- Test resolver: setiap method `resolve*` hanya mengembalikan baris yang dicari dan `TenantContext` ter-set ke keluarga yang benar; token/kode/chat id tidak dikenal → null.
+- Activity log & cache key terisolasi per keluarga.
