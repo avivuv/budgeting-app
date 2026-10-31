@@ -10,6 +10,7 @@ use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Transaction\TransactionService;
+use App\Services\Wallet\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,7 @@ class TransactionController extends Controller
 
     public function __construct(
         private readonly TransactionService $transactions,
+        private readonly WalletService $wallets,
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -42,6 +44,7 @@ class TransactionController extends Controller
         $transaction = $this->transactions->create($request->toData(), $user);
 
         return (new TransactionResource($transaction->load(self::RELATIONS)))
+            ->additional(['meta' => ['warnings' => $this->wallets->negativeBalanceWarnings([$transaction->wallet_id, $transaction->to_wallet_id])]])
             ->response()
             ->setStatusCode(201);
     }

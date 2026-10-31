@@ -72,9 +72,9 @@ class TransactionController extends Controller
 
         /** @var User $user */
         $user = $request->user();
-        $this->transactions->create($request->toData(), $user);
+        $transaction = $this->transactions->create($request->toData(), $user);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Transaksi tersimpan.']);
+        $this->flashResult('Transaksi tersimpan.', $transaction);
 
         return $request->boolean('add_another')
             ? redirect()->route('transactions.create')
@@ -98,9 +98,9 @@ class TransactionController extends Controller
     {
         Gate::authorize('update', $transaction);
 
-        $this->transactions->update($transaction, $request->toData());
+        $transaction = $this->transactions->update($transaction, $request->toData());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Transaksi diperbarui.']);
+        $this->flashResult('Transaksi diperbarui.', $transaction);
 
         return redirect()->route('transactions.index');
     }
@@ -114,6 +114,18 @@ class TransactionController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Transaksi dihapus.']);
 
         return redirect()->route('transactions.index');
+    }
+
+    /**
+     * Success toast, or a warning when a wallet went below zero (BR-C03).
+     */
+    private function flashResult(string $message, Transaction $transaction): void
+    {
+        $warnings = $this->wallets->negativeBalanceWarnings([$transaction->wallet_id, $transaction->to_wallet_id]);
+
+        Inertia::flash('toast', $warnings === []
+            ? ['type' => 'success', 'message' => $message]
+            : ['type' => 'warning', 'message' => $message.' '.implode(' ', $warnings)]);
     }
 
     /**

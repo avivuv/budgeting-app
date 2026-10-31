@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Wallet;
 
 use App\DTOs\Wallet\WalletData;
+use App\Enums\WalletType;
 use App\Exceptions\Wallet\WalletRuleException;
 use App\Models\Wallet;
 use App\Repositories\Contracts\WalletRepositoryInterface;
+use App\Support\Money\MoneyFormatter;
 use Illuminate\Database\Eloquent\Collection;
 
 class WalletService
@@ -46,6 +48,32 @@ class WalletService
     public function totalBalance(): int
     {
         return array_sum($this->balances($this->wallets->listForFamily()));
+    }
+
+    /**
+     * BR-C03: a transaction may push a non-credit wallet below zero — it is
+     * saved anyway, but the user is warned. Credit cards are negative by nature.
+     *
+     * @param  list<int|null>  $walletIds
+     * @return list<string>
+     */
+    public function negativeBalanceWarnings(array $walletIds): array
+    {
+        $ids = array_values(array_unique(array_filter($walletIds, fn (?int $id): bool => $id !== null)));
+        $wallets = $this->wallets->listForFamily(includeArchived: true)
+            ->filter(fn (Wallet $wallet): bool => in_array($wallet->id, $ids, true) && $wallet->type !== WalletType::CreditCard);
+        $balances = $this->balances($wallets);
+
+        $warnings = [];
+        foreach ($wallets as $wallet) {
+            $balance = $balances[$wallet->id] ?? 0;
+
+            if ($balance < 0) {
+                $warnings[] = "Saldo {$wallet->name} menjadi minus (".MoneyFormatter::format($balance).').';
+            }
+        }
+
+        return $warnings;
     }
 
     public function find(int $id): Wallet
