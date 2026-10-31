@@ -6,6 +6,12 @@ import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
+// Vitest runs Vite in serve mode; laravel-vite-plugin refuses that when CI=true
+// (it guards against running the HMR dev server in CI). Tests are not a dev server.
+if (process.env.VITEST) {
+    process.env.LARAVEL_BYPASS_ENV_CHECK = '1';
+}
+
 export default defineConfig({
     plugins: lazyPlugins(() => [
         laravel({
