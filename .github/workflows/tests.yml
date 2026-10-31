@@ -11,7 +11,21 @@ permissions:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: budgeting_app_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
 
     steps:
       - name: Checkout code
@@ -22,7 +36,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
+          extensions: pdo_mysql, mbstring, intl, gd, zip, bcmath, fileinfo
           tools: composer:v2
           coverage: none
 
@@ -31,8 +46,34 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Setup Application
-        run: composer setup
+      - name: Enable pnpm (version from package.json)
+        run: corepack enable
 
-      - name: Run CI Checks
-        run: composer ci:check
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          pnpm install --frozen-lockfile
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          mysql -h 127.0.0.1 -uroot -e "CREATE DATABASE IF NOT EXISTS budgeting_app_log_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+      - name: Build frontend (generates Wayfinder routes)
+        run: pnpm run build
+
+      - name: PHP code style (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Static analysis (Larastan)
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Tests (Pest on MySQL)
+        run: ./vendor/bin/pest
+
+      - name: Frontend format & lint
+        run: pnpm run check
+
+      - name: Frontend type check
+        run: pnpm run types:check
