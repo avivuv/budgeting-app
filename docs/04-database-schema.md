@@ -41,15 +41,16 @@ users ──< family_user >── families ──< wallets
 
 ### users
 
-| Kolom                                                                 | Tipe               | Keterangan                                           |
-| --------------------------------------------------------------------- | ------------------ | ---------------------------------------------------- |
-| id, name, email (unique), password, email_verified_at, remember_token |                    | standar Laravel                                      |
-| current_family_id                                                     | FK null            | keluarga aktif di web                                |
-| telegram_default_family_id                                            | FK null            | keluarga tujuan input chat pribadi Telegram (BR-J09) |
-| telegram_user_id                                                      | bigint null unique | id user Telegram                                     |
-| telegram_username                                                     | string null        |                                                      |
-| is_super_admin                                                        | bool               | default false                                        |
-| locale                                                                | string             | default `id`                                         |
+| Kolom                                                                 | Tipe               | Keterangan                                                                   |
+| --------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
+| id, name, email (unique), password, email_verified_at, remember_token |                    | standar Laravel                                                              |
+| current_family_id                                                     | FK null            | keluarga aktif di web                                                        |
+| telegram_default_family_id                                            | FK null            | keluarga tujuan input chat pribadi Telegram (BR-J09)                         |
+| telegram_user_id                                                      | bigint null unique | id user Telegram                                                             |
+| telegram_username                                                     | string null        |                                                                              |
+| is_super_admin                                                        | bool               | default false                                                                |
+| appearance                                                            | string(10)         | `system`/`light`/`dark`, default `system` (tema, tersinkron antar perangkat) |
+| locale                                                                | string             | default `id`                                                                 |
 
 ### family_user
 
