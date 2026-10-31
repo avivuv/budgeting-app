@@ -7,6 +7,17 @@ Selain web (Inertia) dan Telegram, aplikasi menyediakan **REST API `/api/v1`** u
 - Token dibuat di *Pengaturan → API Token*.
 - Keluarga aktif: header `X-Family-Id` (opsional, default `current_family_id`); divalidasi keanggotaan → `TenantContext`.
 - Rate limit: 60 request/menit per token.
+- Token punya **abilities** (`transactions:read`, `transactions:write`, `reports:read`, `receipts:write`) dan **masa berlaku** (default 90 hari, `SANCTUM_EXPIRATION`); bisa dicabut kapan saja dari halaman pengaturan.
+
+### Kenapa Sanctum, bukan JWT
+| | Sanctum (dipakai) | JWT |
+|---|---|---|
+| Web (Inertia) | Session cookie + CSRF, tanpa token di browser | Token di browser → rawan XSS, perlu refresh token |
+| Cabut akses (logout, anggota dikeluarkan) | Instan (hapus token di DB) | Sulit sebelum token kedaluwarsa (perlu blacklist) |
+| Kompleksitas | Bawaan Laravel | Paket tambahan + rotasi refresh token |
+| Cocok untuk | Monolith + API untuk app sendiri | Banyak service terpisah yang memverifikasi token tanpa DB |
+
+Ringkas: **Web = session**, **REST API = Sanctum token**, **Telegram = identitas `telegram_user_id` + webhook secret** (tanpa token). JWT dipertimbangkan hanya jika nanti arsitektur dipecah menjadi beberapa service.
 
 ## 2. Format Response
 
