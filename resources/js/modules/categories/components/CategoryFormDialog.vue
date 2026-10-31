@@ -33,14 +33,14 @@ const type = ref<App.Enums.CategoryType>(props.defaultType);
 // Parents must have the same type (BR-E01).
 watch(type, () => {
     if (!parentOptions.value.some((o) => o.value === parentId.value)) {
-        parentId.value = '';
+        parentId.value = null;
     }
 });
 
 watch(open, (isOpen) => {
     if (isOpen) {
         type.value = props.category?.type ?? props.defaultType;
-        parentId.value = props.category?.parentId ?? '';
+        parentId.value = props.category?.parentId ?? null;
     }
 });
 
@@ -51,9 +51,8 @@ const action = computed(() =>
 );
 
 // A category can only sit under a top-level category of the same type (BR-E01).
-const parentOptions = computed(() => [
-    { value: '', label: '— Kategori utama —' },
-    ...props.parents[type.value]
+const parentOptions = computed(() =>
+    props.parents[type.value]
         .filter(
             (parent) => !parent.isArchived && parent.id !== props.category?.id,
         )
@@ -62,9 +61,9 @@ const parentOptions = computed(() => [
             label: parent.name,
             keywords: parent.keywords,
         })),
-]);
+);
 
-const parentId = ref<number | string | null>('');
+const parentId = ref<number | string | null>(null);
 
 const hasChildren = computed(() => (props.category?.children.length ?? 0) > 0);
 </script>
@@ -128,7 +127,8 @@ const hasChildren = computed(() => (props.category?.children.length ?? 0) > 0);
                         v-model="parentId"
                         name="parent_id"
                         :options="parentOptions"
-                        placeholder="Cari kategori induk…"
+                        placeholder="Tanpa induk (kategori utama)"
+                        clearable
                     />
                     <InputError :message="errors.parent_id" />
                 </div>

@@ -51,6 +51,13 @@ return [
             'report' => false,
         ],
 
+        // Daily backups (spatie/laravel-backup). Copy them off this machine regularly.
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/backups'),
+            'throw' => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

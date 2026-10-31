@@ -8,7 +8,7 @@ Selain web (Inertia) dan Telegram, aplikasi menyediakan **REST API `/api/v1`** u
 - Token dibuat di _Pengaturan → API Token_.
 - Keluarga aktif: header `X-Family-Id` (opsional, default `current_family_id`); divalidasi keanggotaan → `TenantContext`.
 - Rate limit: 60 request/menit per token.
-- Token punya **abilities** (`transactions:read`, `transactions:write`, `reports:read`, `receipts:write`) dan **masa berlaku** (default 90 hari, `SANCTUM_EXPIRATION`); bisa dicabut kapan saja dari halaman pengaturan.
+- Token punya **abilities** `read` (semua GET) dan `write` (membuat/mengubah/menghapus), dipilih saat membuat token, serta **masa berlaku** (default 90 hari, `SANCTUM_EXPIRATION`); bisa dicabut kapan saja dari halaman pengaturan.
 
 ### Kenapa Sanctum, bukan JWT
 

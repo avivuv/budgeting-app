@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, ChevronsUpDown } from '@lucide/vue';
+import { Check, ChevronsUpDown, X } from '@lucide/vue';
 import {
     ComboboxAnchor,
     ComboboxContent,
@@ -38,6 +38,8 @@ const props = withDefaults(
         emptyText?: string;
         disabled?: boolean;
         required?: boolean;
+        /** Show a clear (×) button; the empty state shows the placeholder. */
+        clearable?: boolean;
         class?: string;
     }>(),
     {
@@ -77,6 +79,15 @@ function display(value: unknown): string {
     return byValue.value.get(value as number | string)?.label ?? '';
 }
 
+// Select the current text on focus so typing starts a new search immediately.
+function selectText(event: FocusEvent) {
+    (event.target as HTMLInputElement | null)?.select();
+}
+
+function clear() {
+    model.value = null;
+}
+
 function searchText(option: SearchableOption): string {
     return [option.label, option.group, ...(option.keywords ?? [])]
         .filter(Boolean)
@@ -102,7 +113,18 @@ function searchText(option: SearchableOption): string {
                 :placeholder="placeholder"
                 autocomplete="off"
                 class="h-full min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
+                @focus="selectText"
+                @click="selectText"
             />
+            <button
+                v-if="clearable && model !== null && model !== ''"
+                type="button"
+                class="flex h-full items-center px-1 text-muted-foreground hover:text-foreground"
+                aria-label="Kosongkan pilihan"
+                @click="clear"
+            >
+                <X class="size-4" />
+            </button>
             <ComboboxTrigger
                 class="flex h-full items-center px-2 text-muted-foreground"
                 aria-label="Buka pilihan"

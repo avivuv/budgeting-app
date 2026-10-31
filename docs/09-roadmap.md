@@ -16,23 +16,23 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 - ✅ Push ke GitHub
 - ✅ Review desain & perbaikan (tenant resolver, idempotensi, kartu kredit, activity log, backup, export data)
 
-## Fase 1 — Fondasi & Multi-Tenant `MVP`
+## Fase 1 — Fondasi & Multi-Tenant `MVP` ✅ selesai 31 Okt 2026
 
-- ✅ Install Laravel 13 + Vue starter kit (Inertia 3 + TS + shadcn-vue + Fortify); fitur di `modules/<fitur>/`, folder shared starter kit = core
-- 🟨 Tooling: ✅ Pest 5, Larastan, Pint, Vite+ (format+lint), Telescope (dev), `typescript-transformer`, Sanctum · ⬜ ESLint boundaries, Vitest
-- ✅ Base repository, `RepositoryServiceProvider`, `DomainException` + rendering Web/API
-- 🟨 ✅ `TenantContext`, `BelongsToFamily`, `FamilyScope` (fail closed), `SetCurrentFamily` · ⬜ tenant resolver (dibutuhkan saat undangan & bot, BR-I07)
-- 🟨 Migration ✅ activity_log (DB `budgeting_app_log`, retensi 30 hari), families, family_user, wallets, categories, tags, transactions, users.appearance · ⬜ invitations
+- ✅ Laravel 13 + Vue starter kit (Inertia 3 + TS + shadcn-vue + Fortify: 2FA, passkeys); fitur di `modules/<fitur>/`, folder shared starter kit = core
+- ✅ Tooling: Pest 5, Larastan, Pint, Vite+ (format + lint), Vitest (`vp test`), Telescope (dev), `typescript-transformer`, Wayfinder, Sanctum, Mailpit (lokal)
+- ✅ Base repository, `RepositoryServiceProvider`, `DomainException`/`BusinessRuleException` + rendering Web/API
+- ✅ `TenantContext`, `BelongsToFamily`, `FamilyScope` (fail closed), `SetCurrentFamily` (+ `X-Family-Id`), tenant resolver undangan (BR-I07)
+- ✅ Migration: families, family_user, invitations, wallets, categories, tags, transactions, users.appearance, activity_log (DB `budgeting_app_log`, retensi 30 hari)
 - ✅ Onboarding: buat keluarga + dompet & kategori default
-- 🟨 ✅ Role & Policy (BR-B09), switch keluarga · ⬜ undangan anggota
-- ✅ CRUD dompet (termasuk kartu kredit, BR-C06), kategori (+ keywords, arsip, gabung), transaksi (+ transfer, tag)
-- 🟨 ✅ Activity log transaksi/wallet/kategori (BR-B14) · ⬜ riwayat di detail transaksi
+- ✅ Role & Policy (BR-B09), switch keluarga, undangan via email, kelola peran & anggota (BR-I01..I04)
+- ✅ CRUD dompet (termasuk kartu kredit, BR-C06; peringatan saldo minus BR-C03), kategori (+ keywords, arsip, gabung), transaksi (+ transfer, tag)
+- ✅ Activity log (BR-B14) + riwayat perubahan di halaman edit transaksi
 - ✅ `AmountParser`, `MoneyFormatter`, `Percentage`, `PeriodResolver`
-- ✅ Tema putih–biru + toggle terang/gelap/sistem tersimpan di akun
-- ⬜ REST API v1 (Sanctum) wallets, categories, transactions + `Idempotency-Key` (BR-B13)
-- 🟨 Testing: ✅ helper keluarga, golden dataset, isolasi tenant, matriks role, 218 test · ⬜ arch test, `BusinessRuleCoverageTest`
-- ✅ GitHub Actions CI (PHP 8.4, MySQL, pnpm, semua gate) — terverifikasi setelah push akhir fase
-- ⬜ Backup harian (`spatie/laravel-backup`) DB + file
+- ✅ Tema putih–biru + toggle terang/gelap/sistem tersimpan di akun; pilihan master data bisa dicari (`SearchableSelect`)
+- ✅ REST API v1 (Sanctum, abilities `read`/`write`) wallets, categories, transactions + `Idempotency-Key` (BR-B13), halaman Token API
+- ✅ Testing: golden dataset, isolasi tenant, matriks role, API, arch test, `BusinessRuleCoverageTest` (BR fase berikutnya tercatat sebagai _pending_), Vitest batas modul — 284 test Pest + 6 Vitest
+- ✅ GitHub Actions CI (PHP 8.4, MySQL, pnpm, semua gate)
+- ✅ Backup harian (`spatie/laravel-backup`) kedua database + file upload, terjadwal 02:00
 
 ## Fase 2 — Dashboard & Daftar Transaksi `MVP`
 

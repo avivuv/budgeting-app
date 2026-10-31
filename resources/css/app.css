@@ -190,6 +190,21 @@
 }
 
 @layer base {
+    /* Native controls (date picker, <select> lists) follow the active theme. */
+    :root {
+        color-scheme: light;
+    }
+
+    .dark {
+        color-scheme: dark;
+    }
+
+    select option,
+    select optgroup {
+        background-color: var(--popover);
+        color: var(--popover-foreground);
+    }
+
     * {
         @apply border-border outline-ring/50;
     }
