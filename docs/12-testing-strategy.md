@@ -40,7 +40,7 @@ Tanpa database. Cepat, banyak kasus (pakai `dataset()` Pest).
 | `ReceiptSplitter` | BR-H02: alokasi diskon/pajak, Σ hasil = total persis |
 | `RecurringScheduleCalculator` | BR-G01 (31 → Feb), mingguan, tahunan |
 | Service | logika & cabang error dengan repository di-mock (Mockery) |
-| DTO | `fromRequest` / `fromTelegram` → nilai benar |
+| DTO | `XData::from(...)` dari request, model, dan hasil parser Telegram → nilai & tipe benar |
 
 ### 2.2 Integration Test (`tests/Feature/Integration`)
 Dengan database nyata; menguji **Service + Repository + Model** bersama.
