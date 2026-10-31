@@ -58,7 +58,9 @@ class Transaction extends Model
             'type' => TransactionType::class,
             'source' => TransactionSource::class,
             'amount' => 'integer',
-            'date' => 'immutable_date',
+            // Explicit format: a date-only value must never be serialized as a UTC datetime
+            // (e.g. in the activity log), which would shift it a day back in Asia/Jakarta.
+            'date' => 'immutable_date:Y-m-d',
         ];
     }
 

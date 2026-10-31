@@ -28,6 +28,18 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         return $user;
     }
 
+    public function namesByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var array<int, string> $names */
+        $names = $this->query()->whereIn('id', $ids)->pluck('name', 'id')->all();
+
+        return $names;
+    }
+
     public function apiTokens(User $user): Collection
     {
         /** @var Collection<int, PersonalAccessToken> $tokens */

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from '@lucide/vue';
+import {
+    ArrowDownLeft,
+    ArrowLeftRight,
+    ArrowUpRight,
+    History,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import TransactionController from '@/actions/App/Http/Controllers/Web/Transaction/TransactionController';
 import Heading from '@/components/Heading.vue';
@@ -21,6 +26,13 @@ const props = defineProps<{
     wallets: { id: number; name: string; type: App.Enums.WalletType }[];
     categories: Record<'expense' | 'income', Category[]>;
     today: string;
+    history: {
+        event: string;
+        title: string;
+        who: string;
+        when: string;
+        changes: { field: string; old: string; new: string }[];
+    }[];
 }>();
 
 const isEdit = computed(() => props.transaction !== null);
@@ -303,6 +315,42 @@ const action = computed(() =>
                         </Button>
                     </div>
                 </Form>
+            </CardContent>
+        </Card>
+
+        <Card v-if="isEdit && history.length">
+            <CardContent class="flex flex-col gap-4">
+                <h2 class="flex items-center gap-2 text-sm font-semibold">
+                    <History class="size-4" /> Riwayat perubahan
+                </h2>
+                <ol class="flex flex-col gap-3 border-l pl-4">
+                    <li v-for="(entry, i) in history" :key="i" class="text-sm">
+                        <p>
+                            <span class="font-medium">{{ entry.who }}</span>
+                            {{ entry.title }}
+                            <span class="text-xs text-muted-foreground">
+                                · {{ entry.when }}
+                            </span>
+                        </p>
+                        <ul
+                            v-if="entry.changes.length"
+                            class="mt-1 text-xs text-muted-foreground"
+                        >
+                            <li
+                                v-for="change in entry.changes"
+                                :key="change.field"
+                            >
+                                {{ change.field }}: {{ change.old }} →
+                                <span class="font-medium text-foreground">
+                                    {{ change.new }}
+                                </span>
+                            </li>
+                        </ul>
+                    </li>
+                </ol>
+                <p class="text-xs text-muted-foreground">
+                    Riwayat disimpan 30 hari.
+                </p>
             </CardContent>
         </Card>
     </div>

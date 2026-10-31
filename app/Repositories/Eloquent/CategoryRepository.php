@@ -56,6 +56,18 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         return $category->children()->exists();
     }
 
+    public function namesByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var array<int, string> $names */
+        $names = $this->query()->whereIn('id', $ids)->pluck('name', 'id')->all();
+
+        return $names;
+    }
+
     public function reassignTransactions(Category $from, Category $to): int
     {
         return Transaction::withTrashed()

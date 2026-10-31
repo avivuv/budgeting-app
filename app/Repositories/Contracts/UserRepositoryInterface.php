@@ -18,6 +18,14 @@ interface UserRepositoryInterface extends BaseRepositoryInterface
     public function updateAppearance(User $user, Appearance $appearance): User;
 
     /**
+     * id => name for the given ids (archived/soft-deleted included), for display.
+     *
+     * @param  list<int>  $ids
+     * @return array<int, string>
+     */
+    public function namesByIds(array $ids): array;
+
+    /**
      * @return Collection<int, PersonalAccessToken>
      */
     public function apiTokens(User $user): Collection;

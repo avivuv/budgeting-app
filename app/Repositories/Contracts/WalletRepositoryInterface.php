@@ -27,4 +27,12 @@ interface WalletRepositoryInterface extends BaseRepositoryInterface
     public function balances(array $walletIds, ?string $until = null): array;
 
     public function hasTransactions(Wallet $wallet): bool;
+
+    /**
+     * id => name for the given ids (archived/soft-deleted included), for display.
+     *
+     * @param  list<int>  $ids
+     * @return array<int, string>
+     */
+    public function namesByIds(array $ids): array;
 }

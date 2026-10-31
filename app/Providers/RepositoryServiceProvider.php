@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\ActivityRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\FamilyRepositoryInterface;
 use App\Repositories\Contracts\InvitationRepositoryInterface;
@@ -11,6 +12,7 @@ use App\Repositories\Contracts\TagRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\WalletRepositoryInterface;
+use App\Repositories\Eloquent\ActivityRepository;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\FamilyRepository;
 use App\Repositories\Eloquent\InvitationRepository;
@@ -35,5 +37,6 @@ class RepositoryServiceProvider extends ServiceProvider
         TransactionRepositoryInterface::class => TransactionRepository::class,
         TagRepositoryInterface::class => TagRepository::class,
         InvitationRepositoryInterface::class => InvitationRepository::class,
+        ActivityRepositoryInterface::class => ActivityRepository::class,
     ];
 }

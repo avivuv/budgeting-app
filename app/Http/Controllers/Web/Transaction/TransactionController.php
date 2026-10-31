@@ -14,6 +14,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\Activity\ActivityService;
 use App\Services\Category\CategoryService;
 use App\Services\Tenancy\TenantContext;
 use App\Services\Transaction\TransactionService;
@@ -32,6 +33,7 @@ class TransactionController extends Controller
         private readonly WalletService $wallets,
         private readonly CategoryService $categories,
         private readonly TenantContext $tenant,
+        private readonly ActivityService $activity,
     ) {}
 
     public function index(Request $request): Response
@@ -59,6 +61,7 @@ class TransactionController extends Controller
 
         return Inertia::render('transactions/Form', [
             'transaction' => null,
+            'history' => [],
             ...$this->formOptions(),
         ]);
     }
@@ -86,6 +89,7 @@ class TransactionController extends Controller
 
         return Inertia::render('transactions/Form', [
             'transaction' => TransactionItemData::fromTransaction($transaction, true),
+            'history' => $this->activity->transactionHistory($transaction),
             ...$this->formOptions(),
         ]);
     }
