@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Enums;
+
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+#[TypeScript]
+enum Appearance: string
+{
+    case System = 'system';
+    case Light = 'light';
+    case Dark = 'dark';
+}

@@ -1,5 +1,7 @@
+import { router, usePage } from '@inertiajs/vue3';
 import type { ComputedRef, Ref } from 'vue';
 import { computed, onMounted, ref } from 'vue';
+import { update as updateAppearanceSetting } from '@/actions/App/Http/Controllers/Settings/AppearanceController';
 import type { Appearance, ResolvedAppearance } from '@/types';
 
 export type { Appearance, ResolvedAppearance };
@@ -9,6 +11,8 @@ export type UseAppearanceReturn = {
     resolvedAppearance: ComputedRef<ResolvedAppearance>;
     updateAppearance: (value: Appearance) => void;
 };
+
+const DEFAULT_APPEARANCE: Appearance = 'system';
 
 export function updateTheme(value: Appearance): void {
     if (typeof window === 'undefined') {
@@ -48,12 +52,26 @@ const mediaQuery = () => {
     return window.matchMedia('(prefers-color-scheme: dark)');
 };
 
-const getStoredAppearance = () => {
+const getStoredAppearance = (): Appearance | null => {
     if (typeof window === 'undefined') {
         return null;
     }
 
-    return localStorage.getItem('appearance') as Appearance | null;
+    try {
+        return localStorage.getItem('appearance') as Appearance | null;
+    } catch {
+        return null;
+    }
+};
+
+const storeAppearance = (value: Appearance) => {
+    try {
+        localStorage.setItem('appearance', value);
+    } catch {
+        // Storage may be unavailable (private mode); the cookie still persists it.
+    }
+
+    setCookie('appearance', value);
 };
 
 const prefersDark = (): boolean => {
@@ -65,35 +83,33 @@ const prefersDark = (): boolean => {
 };
 
 const handleSystemThemeChange = () => {
-    const currentAppearance = getStoredAppearance();
-
-    updateTheme(currentAppearance || 'light');
+    updateTheme(getStoredAppearance() || DEFAULT_APPEARANCE);
 };
 
+/**
+ * The root Blade view writes the server-resolved preference (user account,
+ * otherwise cookie, otherwise "system") to localStorage before this runs.
+ */
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
     }
 
-    // Initialize theme from saved preference or default to system...
-    const savedAppearance = getStoredAppearance();
-    updateTheme(savedAppearance || 'light');
+    updateTheme(getStoredAppearance() || DEFAULT_APPEARANCE);
 
-    // Set up system theme change listener...
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
-const appearance = ref<Appearance>('light');
+const appearance = ref<Appearance>(DEFAULT_APPEARANCE);
 
 export function useAppearance(): UseAppearanceReturn {
-    onMounted(() => {
-        const savedAppearance = localStorage.getItem(
-            'appearance',
-        ) as Appearance | null;
+    const page = usePage();
 
-        if (savedAppearance) {
-            appearance.value = savedAppearance;
-        }
+    onMounted(() => {
+        appearance.value =
+            page.props.appearance ||
+            getStoredAppearance() ||
+            DEFAULT_APPEARANCE;
     });
 
     const resolvedAppearance = computed<ResolvedAppearance>(() => {
@@ -106,14 +122,21 @@ export function useAppearance(): UseAppearanceReturn {
 
     function updateAppearance(value: Appearance) {
         appearance.value = value;
-
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', value);
-
-        // Store in cookie for SSR...
-        setCookie('appearance', value);
-
+        storeAppearance(value);
         updateTheme(value);
+
+        // Signed-in users keep the preference on their account (all devices).
+        if (page.props.auth?.user) {
+            router.patch(
+                updateAppearanceSetting.url(),
+                { appearance: value },
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    only: ['appearance'],
+                },
+            );
+        }
     }
 
     return {

@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'light') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
+        {{-- Apply the server-resolved theme (account > cookie > system) before first paint --}}
         <script>
             (function() {
-                const appearance = '{{ $appearance ?? "light" }}';
+                const appearance = '{{ $appearance ?? "system" }}';
+
+                try {
+                    localStorage.setItem('appearance', appearance);
+                } catch (e) {}
 
                 if (appearance === 'system') {
                     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
