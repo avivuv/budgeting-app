@@ -10,6 +10,7 @@
 | pnpm     | 10+   | `npm i -g pnpm`                                                                    |
 | MySQL    | 8     | Laragon                                                                            |
 | Redis    | 5+    | Laragon (Menu → Redis → Start). Opsional di awal: queue & cache memakai `database` |
+| Mailpit  | 1.33  | `C:\laragon\bin\mailpit\` — penangkap email lokal (lihat §6b)                      |
 | MinIO    | —     | Opsional, untuk penyimpanan file S3-compatible (lihat §6)                          |
 | ngrok    | 3.x   | Laragon (`bin/ngrok`) — baru dibutuhkan di fase bot Telegram                       |
 
@@ -66,6 +67,11 @@ MINIO_ACCESS_KEY=
 MINIO_SECRET_KEY=
 MINIO_BUCKET=budgeting-app
 
+MAIL_MAILER=smtp                # Mailpit
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_FROM_ADDRESS="noreply@budgeting.test"
+
 RECEIPT_PARSER=fake             # fake | gemini | claude
 GEMINI_API_KEY=
 
@@ -93,6 +99,17 @@ Semua upload (struk, export) memakai disk `config('filesystems.uploads')`, selal
 4. Isi `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, lalu set `UPLOADS_DISK=minio`.
 
 Production cukup mengganti endpoint/kredensial ke storage S3-compatible lain (MinIO self-hosted, Cloudflare R2, AWS S3) — kode tidak berubah.
+
+## 6b. Email Lokal (Mailpit)
+
+Semua email aplikasi (verifikasi akun, reset password, undangan, notifikasi) dikirim ke **Mailpit** dan **tidak pernah sampai ke inbox sungguhan**.
+
+- Jalankan: dobel-klik `C:\laragon\bin\mailpit\start-mailpit.bat` (SMTP `127.0.0.1:1025`).
+- Lihat email: **http://localhost:8025** — klik email untuk membuka link verifikasi, dsb.
+- Email tersimpan di `C:\laragon\data\mailpit\mailpit.db` (maks. 1000 email terakhir).
+- Agar otomatis jalan saat Windows start: taruh shortcut `start-mailpit.bat` di folder Startup (`Win+R` → `shell:startup`).
+- Jika Mailpit tidak berjalan, pengiriman email gagal (error koneksi ke port 1025). Untuk sementara bisa set `MAIL_MAILER=log` (email ditulis ke `storage/logs/laravel.log`).
+- Production: ganti `MAIL_*` ke provider SMTP sungguhan (Brevo/Resend/Mailgun/SES) setelah domain terverifikasi.
 
 ## 7. Telegram (Fase 6)
 
