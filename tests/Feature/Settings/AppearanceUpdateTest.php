@@ -39,6 +39,7 @@ it('requires authentication to save the preference', function () {
 
 it('shares the saved preference with the frontend, ignoring the device cookie', function () {
     $user = User::factory()->create(['appearance' => Appearance::Dark]);
+    createFamily($user);
 
     $this->actingAs($user)
         ->withUnencryptedCookie('appearance', 'light')
@@ -54,6 +55,7 @@ it('uses the cookie preference for guests', function () {
 
 it('renders the dark class server-side for dark preference', function () {
     $user = User::factory()->create(['appearance' => Appearance::Dark]);
+    createFamily($user);
 
     $this->actingAs($user)
         ->get('/dashboard')

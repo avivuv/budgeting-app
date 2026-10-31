@@ -15,6 +15,14 @@ abstract class TestCase extends BaseTestCase
      */
     protected array $connectionsToTransact = ['mysql', 'activity'];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // HTTP tests must not depend on a built frontend (public/build manifest).
+        $this->withoutVite();
+    }
+
     protected function skipUnlessFortifyHas(string $feature, ?string $message = null): void
     {
         if (! Features::enabled($feature)) {

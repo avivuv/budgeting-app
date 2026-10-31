@@ -16,7 +16,7 @@ use App\Repositories\Contracts\WalletRepositoryInterface;
 use App\Services\Tenancy\TenantContext;
 use App\Support\Money\AmountParser;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**

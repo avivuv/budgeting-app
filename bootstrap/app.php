@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -30,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'family' => SetCurrentFamily::class,
         ]);
+
+        // The tenant must be known before route model binding queries family-scoped models.
+        $middleware->prependToPriorityList(SubstituteBindings::class, SetCurrentFamily::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

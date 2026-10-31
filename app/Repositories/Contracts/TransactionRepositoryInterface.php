@@ -6,7 +6,7 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * @extends BaseRepositoryInterface<Transaction>

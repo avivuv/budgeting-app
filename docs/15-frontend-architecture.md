@@ -10,6 +10,8 @@
 
 ## 2. Struktur Folder
 
+> **Penyesuaian implementasi (Laravel 13 Vue starter kit):** folder shared bawaan starter kit — `components/` (termasuk `components/ui` dari shadcn-vue), `composables/`, `layouts/`, `lib/`, `types/` — **berperan sebagai `core/`** dan tidak dipindah, agar CLI shadcn-vue dan import bawaan tetap bekerja. Halaman bawaan starter kit (auth, settings, Welcome, Dashboard) tetap di `pages/`. **Semua fitur baru** di `modules/<fitur>/pages|components|composables`. Resolver di `app.ts` mencari `modules/<fitur>/pages/<Halaman>.vue` dulu, lalu `pages/`; Blade (`app.blade.php`) dan `App\Support\Inertia\ModulePageFinder` (untuk test) memakai aturan yang sama. Tipe dari PHP ada di `types/generated.d.ts` (`php artisan typescript:transform`). Route di Vue memakai **Wayfinder** (`@/actions/...`, `@/routes/...`).
+
 ```
 resources/js/
 ├── app.ts                       # bootstrap Inertia, plugin, page resolver

@@ -1,5 +1,6 @@
 import type { Directive } from 'vue';
 import type { Auth } from '@/types/auth';
+import type { CurrentFamily, FamilyOption } from '@/types/family';
 import type { Appearance } from '@/types/ui';
 
 // Extend ImportMeta interface for Vite...
@@ -22,6 +23,8 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             appearance: Appearance;
+            family: CurrentFamily | null;
+            families: FamilyOption[];
             [key: string]: unknown;
         };
     }

@@ -7,7 +7,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * @extends BaseRepository<Transaction>
