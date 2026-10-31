@@ -46,16 +46,29 @@ interface ReceiptParserInterface
 }
 ```
 
-- `ClaudeReceiptParser` — implementasi utama (Claude API, vision).
-- `FakeReceiptParser` — untuk test & development tanpa API key (`RECEIPT_PARSER=fake`).
-- Binding di `RepositoryServiceProvider`/`AppServiceProvider` berdasarkan `config('receipt.driver')`.
+- `GeminiReceiptParser` — rencana implementasi utama (Google Gemini, model Flash free tier via Google AI Studio).
+- `ClaudeReceiptParser` — alternatif bila butuh akurasi lebih tinggi.
+- `FakeReceiptParser` — untuk test & development tanpa API key (`RECEIPT_PARSER=fake`). **Default sampai API key tersedia.**
+- Binding di `AppServiceProvider` berdasarkan `config('receipt.driver')`. Ganti provider = ganti env, tanpa mengubah service/handler.
+- Semua parser memakai prompt & skema output yang sama (`resources/prompts/receipt.md`, §4.1) dan wajib lulus test kontrak yang sama (`tests/Feature/Integration/ReceiptParserContractTest.php`) dengan respons API di-fake.
 
 `ReceiptParseContext` membawa daftar nama kategori pengeluaran keluarga agar AI memilih dari daftar tersebut.
 
-## 4. Claude API
+## 4. Provider AI
 
-- Model default: Claude **Haiku** (cepat & hemat); fallback ke **Sonnet** bila `confidence < 0.6` atau total tidak cocok dengan jumlah item. Model ID diatur di config (`RECEIPT_MODEL`, `RECEIPT_FALLBACK_MODEL`), bukan di-hardcode.
-- Kirim gambar sebagai base64 + instruksi; minta output **JSON** sesuai skema (gunakan tool/structured output agar valid).
+API key menyusul; sampai saat itu `RECEIPT_PARSER=fake`.
+
+### 4.0 Gemini (rencana utama)
+- Model **Gemini Flash** (free tier Google AI Studio). Model ID di config (`RECEIPT_MODEL`), tidak di-hardcode.
+- Kirim gambar inline (base64) + prompt; pakai `responseMimeType: application/json` + `responseSchema` agar output valid sesuai §4.1.
+- **Free tier dibatasi rate limit (request/menit & per hari)**: queue `receipts` di-throttle (`RateLimited` middleware job) sesuai `RECEIPT_RATE_PER_MINUTE`; saat kena `429`, job di-release dengan backoff, user mendapat pesan "Struk sedang antre".
+- **Privasi**: pada free tier, Google dapat memakai data input untuk peningkatan produk. Tampilkan pemberitahuan di halaman pengaturan; pertimbangkan tier berbayar sebelum dipakai keluarga lain (multi-tenant).
+
+### 4.0b Claude (alternatif)
+- Model ringan sebagai default, model lebih besar sebagai fallback bila `confidence < 0.6`.
+
+### Umum
+- Fallback model (`RECEIPT_FALLBACK_MODEL`) opsional, untuk semua provider.
 - Timeout 30 detik.
 
 ### 4.1 Skema output
@@ -108,9 +121,11 @@ interface ReceiptParserInterface
 
 ## 8. Konfigurasi
 ```env
-RECEIPT_PARSER=claude          # claude | fake
+RECEIPT_PARSER=fake            # fake | gemini | claude
+GEMINI_API_KEY=
 ANTHROPIC_API_KEY=
 RECEIPT_MODEL=
 RECEIPT_FALLBACK_MODEL=
+RECEIPT_RATE_PER_MINUTE=10
 RECEIPT_MAX_IMAGE_PX=1600
 ```

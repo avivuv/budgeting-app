@@ -70,10 +70,14 @@ Semua laporan: filter periode bebas, tombol **Export PDF** dan **Export Excel**.
 - Output berupa DTO (`CashflowReportData`, `CategoryReportData`, ...) yang dipakai **bersama** oleh halaman web, export, dan perintah bot (`/bulan`, `/laporan`).
 
 ## 7. Komponen Vue Utama
+Mengikuti struktur modul di [15-frontend-architecture.md](15-frontend-architecture.md):
 ```
-Components/
-├── charts/ CashflowChart.vue, CategoryDonut.vue, TrendArea.vue, MemberBar.vue, YearHeatmap.vue
-├── dashboard/ StatCard.vue, BudgetProgress.vue, RecentTransactions.vue, WalletList.vue, InsightCard.vue
-├── transactions/ TransactionForm.vue, TransactionList.vue, FilterBar.vue, ReceiptScanner.vue
-└── layout/ AppLayout.vue, BottomNav.vue, Sidebar.vue, FamilySwitcher.vue, Fab.vue
+core/components/charts/   BaseChart, BarChart, DonutChart, AreaChart, Heatmap
+core/layouts/partials/    Sidebar, BottomNav, Fab, FamilySwitcher
+modules/dashboard/        StatCard, BalanceHeader, CashflowChart, CategoryDonut, TrendArea, MemberBar, InsightCard
+modules/budgets/          BudgetProgress (diekspor via index.ts)
+modules/transactions/     TransactionList, TransactionItem, TransactionForm, TransactionFilterBar
+modules/receipts/         ReceiptScanner, ReceiptPreview
+modules/reports/          ReportFilter, ExportMenu, YearHeatmap
 ```
+Widget dashboard yang berat dikirim sebagai **deferred props** sehingga kartu ringkasan tampil lebih dulu.

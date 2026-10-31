@@ -76,11 +76,13 @@ final readonly class TransactionData
 - Tanggal transaksi = tanggal lokal zona waktu keluarga; gunakan `CarbonImmutable`.
 
 ## 8. Frontend (Vue)
-- `<script setup lang="ts">` + TypeScript.
-- Composition API, composables di `resources/js/Composables`.
-- Props dari Inertia diberi type di `resources/js/types`.
-- Komponen UI dasar dari shadcn-vue (`Components/ui`), jangan duplikasi.
-- Tailwind; hindari CSS custom kecuali perlu.
+Detail di [15-frontend-architecture.md](15-frontend-architecture.md). Ringkas:
+- `<script setup lang="ts">`, Composition API.
+- Struktur modular `core/` + `modules/<fitur>/`; antar modul hanya lewat `index.ts`.
+- Tipe dari `core/types/generated.d.ts` (hasil generate PHP), jangan tulis ulang manual.
+- Tidak ada perhitungan bisnis di frontend — hanya format & tampilan.
+- Komponen UI dasar dari shadcn-vue (`core/components/ui`), jangan duplikasi.
+- Tailwind + token warna; hindari CSS custom kecuali perlu.
 
 ## 9. Testing (Pest)
 Detail lengkap di [12-testing-strategy.md](12-testing-strategy.md). Ringkas:

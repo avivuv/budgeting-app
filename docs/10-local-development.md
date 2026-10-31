@@ -45,7 +45,8 @@ TELEGRAM_BOT_USERNAME=
 TELEGRAM_WEBHOOK_SECRET=        # string acak
 TELEGRAM_MODE=polling           # polling | webhook
 
-RECEIPT_PARSER=fake             # fake | claude
+RECEIPT_PARSER=fake             # fake | gemini | claude
+GEMINI_API_KEY=
 ANTHROPIC_API_KEY=
 RECEIPT_MODEL=
 RECEIPT_FALLBACK_MODEL=

@@ -13,7 +13,8 @@ Aplikasi pencatatan keuangan keluarga multi-tenant. Input transaksi cukup lewat 
 | Arsitektur | Controller → Service → Repository → Model |
 | Tenancy | Single database, kolom `family_id` + global scope |
 | Telegram | Bot di grup keluarga & chat pribadi (webhook / polling) |
-| Struk | AI Vision (Claude API) → JSON terstruktur |
+| Struk | AI Vision (rencana: Google Gemini free tier; driver bisa diganti) → JSON terstruktur |
+| Frontend arsitektur | Modular per fitur (`resources/js/modules/*`) |
 | API | REST `/api/v1` (Sanctum) |
 | Testing | Pest (unit, API, integration, consistency) + Vitest |
 | UI | Tema putih–biru, mobile-first |
@@ -37,6 +38,8 @@ Aplikasi pencatatan keuangan keluarga multi-tenant. Input transaksi cukup lewat 
 | 12 | [Testing Strategy](docs/12-testing-strategy.md) | Unit, API, integration, consistency test, golden dataset |
 | 13 | [REST API](docs/13-rest-api.md) | Endpoint `/api/v1`, auth, format response |
 | 14 | [UI Design System](docs/14-ui-design-system.md) | Tema putih–biru, tipografi, komponen |
+| 15 | [Frontend Architecture](docs/15-frontend-architecture.md) | Struktur modul Vue, state, type safety, aturan import |
+| 16 | [Backend Architecture](docs/16-backend-architecture.md) | Service-Repository detail, folder per domain, DTO, exception, arch test |
 
 ## Quick Start
 

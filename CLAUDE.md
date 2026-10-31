@@ -10,17 +10,18 @@ Aplikasi keuangan keluarga **multi-tenant**: input via **Telegram** (grup & chat
 - Teks yang tampil ke user aplikasi (UI, pesan bot, validasi) dalam Bahasa Indonesia via `lang/id`.
 
 ## Stack
-Laravel 12 (PHP 8.4) · Inertia + Vue 3 (TS, `<script setup>`) · Tailwind + shadcn-vue · ApexCharts · MySQL · Redis (queue/cache) · Sanctum (API) · Pest + Vitest. Lokal di Laragon (`http://budgeting-app.test`); hosting belum ditentukan.
+Laravel 12 (PHP 8.4) · Inertia v2 + Vue 3 (TS, `<script setup>`) · Tailwind + shadcn-vue · ApexCharts · MySQL · Redis (queue/cache) · Sanctum (API) · Pest + Vitest. Lokal di Laragon (`http://budgeting-app.test`); hosting belum ditentukan.
 
 ## Aturan Wajib
 
-1. **Service-Repository pattern** — `Controller (Web/Api) | Telegram Handler | Job | Command → Service → Repository (interface di Contracts + Eloquent) → Model`. Tidak ada query Eloquent/`DB` di luar repository. Logika bisnis hanya di Service, dipakai bersama oleh web, API, dan bot. → [docs/02-architecture.md](docs/02-architecture.md)
+1. **Service-Repository pattern** — `Controller (Web/Api) | Telegram Handler | Job | Command → Service → Repository (interface di Contracts + Eloquent) → Model`. Tidak ada query Eloquent/`DB` di luar repository. Logika bisnis hanya di Service, dipakai bersama oleh web, API, dan bot. Perhitungan murni di `app/Support`. Service & DTO dikelompokkan per domain. Dijaga oleh Pest arch test. → [docs/02-architecture.md](docs/02-architecture.md), [docs/16-backend-architecture.md](docs/16-backend-architecture.md)
 2. **Multi-tenant** — model data tenant memakai trait `BelongsToFamily` (global scope `family_id`, fail closed). `TenantContext` di-set di middleware/bot/job. Jangan `withoutGlobalScope` kecuali repository Super Admin. Data keluarga lain → 404. → [docs/03-multi-tenancy.md](docs/03-multi-tenancy.md)
 3. **Business rules** — semua perhitungan & validasi mengikuti [docs/11-business-rules.md](docs/11-business-rules.md) (ID `BR-xxx`). Rule baru/berubah → update dokumen dulu.
 4. **Uang = integer rupiah** (`BIGINT`), tidak pernah float. Parsing lewat `AmountParser`, tampilan lewat `MoneyFormatter`/`useMoney`.
 5. **Testing wajib** — setiap fitur: unit test (logika/perhitungan), API/feature test (response, validasi, otorisasi, tenant), dan consistency invariant `INV-xx` bila menyentuh angka. Nama test menyebut ID rule, mis. `[BR-B08]`. → [docs/12-testing-strategy.md](docs/12-testing-strategy.md)
 6. **UI** — tema putih–biru, pakai token warna (tidak hardcode hex), mobile-first. → [docs/14-ui-design-system.md](docs/14-ui-design-system.md)
-7. **Coding standards** — `strict_types`, DTO readonly, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
+7. **Frontend modular** — `resources/js/core/` (shared) + `resources/js/modules/<fitur>/` (pages, components, composables, `index.ts`). Antar modul hanya via `index.ts`. Tidak ada perhitungan bisnis di Vue; tipe dari `generated.d.ts`. → [docs/15-frontend-architecture.md](docs/15-frontend-architecture.md)
+8. **Coding standards** — `strict_types`, DTO readonly, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
 
 ## Sebelum Selesai / Commit
 ```bash
@@ -48,6 +49,8 @@ Semua harus hijau. Laporkan hasil apa adanya — jika ada test gagal, sampaikan.
 | [12-testing-strategy](docs/12-testing-strategy.md) | setiap menulis test |
 | [13-rest-api](docs/13-rest-api.md) | endpoint API |
 | [14-ui-design-system](docs/14-ui-design-system.md) | setiap membuat UI |
+| [15-frontend-architecture](docs/15-frontend-architecture.md) | setiap membuat halaman/komponen Vue |
+| [16-backend-architecture](docs/16-backend-architecture.md) | setiap membuat class backend |
 
 ## Git
 - Remote: `https://github.com/avivuv/budgeting-app.git`, branch utama `main`.

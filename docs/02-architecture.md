@@ -1,5 +1,7 @@
 # 02 — Arsitektur
 
+> Detail implementasi backend (kontrak, base class, folder per domain, arch test): [16-backend-architecture.md](16-backend-architecture.md). Frontend: [15-frontend-architecture.md](15-frontend-architecture.md).
+
 ## 1. Gambaran Umum
 
 ```
@@ -182,11 +184,10 @@ app/
     └── Keyboards/               # builder inline keyboard
 
 resources/js/
-├── Pages/                       # Dashboard, Transactions/*, Wallets/*, Categories/*, Budgets/*, Reports/*, Settings/*
-├── Components/                  # ui/ (shadcn-vue), charts/, transactions/, layout/
-├── Composables/                 # useMoney, useFilters, useFamily
-└── Layouts/AppLayout.vue
+├── core/                        # ui (shadcn-vue), common, charts, form, layouts, composables, lib, types
+└── modules/                     # per fitur: pages/, components/, composables/, index.ts
 ```
+Detail frontend: [15-frontend-architecture.md](15-frontend-architecture.md).
 
 ## 5. Alur Request
 
@@ -203,7 +204,8 @@ resources/js/
 
 | Paket | Fungsi |
 |---|---|
-| `laravel/breeze` (stack Vue + Inertia) | Auth scaffolding |
+| Laravel 12 **Vue starter kit** (Inertia + Vue 3 + TS + shadcn-vue + Tailwind) | Auth scaffolding, lalu direstrukturisasi ke `core/` + `modules/` |
+| `spatie/laravel-data` + `spatie/laravel-typescript-transformer` | DTO & generate tipe TypeScript |
 | `inertiajs/inertia-laravel`, `@inertiajs/vue3` | Jembatan Laravel–Vue |
 | `tightenco/ziggy` | Route Laravel di Vue |
 | `spatie/laravel-permission` *(opsional)* | Bila role perlu lebih granular; default memakai enum role di pivot |
@@ -212,5 +214,6 @@ resources/js/
 | `maatwebsite/excel` | Export Excel |
 | `barryvdh/laravel-dompdf` | Export PDF |
 | `intervention/image` | Kompres/resize foto struk sebelum dikirim ke AI |
-| Frontend: `shadcn-vue`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `vite-plugin-pwa` | UI, grafik, util, ikon, PWA |
+| Frontend: `shadcn-vue`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `pinia`, `vue-i18n`, `vite-plugin-pwa` | UI, grafik, util, ikon, state UI, i18n, PWA |
+| Frontend dev: `vitest`, `@vue/test-utils`, `eslint-plugin-boundaries`, `prettier` | Test & aturan import |
 | Dev: `pestphp/pest`, `larastan/larastan`, `laravel/pint` | Testing, static analysis, formatting |
