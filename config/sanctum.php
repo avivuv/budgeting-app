@@ -47,7 +47,8 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Personal access tokens expire after 90 days by default (docs/13-rest-api.md).
+    'expiration' => (int) env('SANCTUM_EXPIRATION', 60 * 24 * 90),
 
     /*
     |--------------------------------------------------------------------------

@@ -78,6 +78,14 @@ class FamilyService
         return $family;
     }
 
+    /**
+     * The family if the user is a member of it, otherwise null (BR-I06).
+     */
+    public function memberFamily(User $user, int $familyId): ?Family
+    {
+        return $this->families->findForMember($familyId, $user);
+    }
+
     public function roleOf(Family $family, User $user): ?FamilyRole
     {
         return $this->families->roleOf($family, $user);

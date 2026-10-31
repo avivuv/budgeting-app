@@ -5,8 +5,11 @@ namespace App\Providers;
 use App\Services\Tenancy\TenantContext;
 use App\Support\Inertia\ModulePageFinder;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -40,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // REST API: 60 requests per minute per token/user (docs/13-rest-api.md).
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)
+            ->by((string) ($request->user()?->currentAccessToken()?->getKey() ?? $request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 
     /**

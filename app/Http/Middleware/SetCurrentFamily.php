@@ -30,10 +30,20 @@ class SetCurrentFamily
         /** @var User $user */
         $user = $request->user();
 
-        $family = $this->families->resolveActive($user);
+        // API clients may pick a family per request without changing the web's active family.
+        $requested = $request->header('X-Family-Id');
+
+        if ($requested !== null) {
+            $family = ctype_digit($requested) ? $this->families->memberFamily($user, (int) $requested) : null;
+
+            // Not a member: indistinguishable from "does not exist" (BR-I06).
+            abort_if($family === null, 404, 'Keluarga tidak ditemukan.');
+        } else {
+            $family = $this->families->resolveActive($user);
+        }
 
         if ($family === null) {
-            return $request->expectsJson()
+            return $request->is('api/*') || $request->expectsJson()
                 ? response()->json(['message' => 'Buat atau gabung ke keluarga terlebih dahulu.'], 409)
                 : redirect()->route('onboarding.create');
         }
