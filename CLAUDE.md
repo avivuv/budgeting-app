@@ -65,5 +65,5 @@ Semua harus hijau. Laporkan hasil apa adanya — jika ada test gagal, sampaikan.
 ## Git
 
 - Remote: `https://github.com/avivuv/budgeting-app.git`, branch utama `main`.
-- Branch fitur `feature/...`, Conventional Commits. Commit/push hanya bila diminta user.
+- Branch fitur `feature/...`, Conventional Commits. Commit lokal boleh per langkah; **push ke GitHub hanya setelah satu fase roadmap selesai** dan semua gate hijau.
 - Jangan commit `.env`, `vendor/`, `node_modules/`, file struk di `storage/`.
