@@ -17,6 +17,21 @@ interface FamilyRepositoryInterface extends BaseRepositoryInterface
     public function addMember(Family $family, User $user, FamilyRole $role): void;
 
     /**
+     * Members with their membership pivot (role, joined_at), owner first.
+     *
+     * @return Collection<int, User>
+     */
+    public function members(Family $family): Collection;
+
+    public function findMember(Family $family, int $userId): ?User;
+
+    public function updateRole(Family $family, User $user, FamilyRole $role): void;
+
+    public function removeMember(Family $family, User $user): void;
+
+    public function isMember(Family $family, string $email): bool;
+
+    /**
      * Families the user belongs to, with the membership pivot (role) loaded.
      *
      * @return Collection<int, Family>

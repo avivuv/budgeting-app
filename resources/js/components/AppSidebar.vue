@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowLeftRight, LayoutGrid, Tags, Wallet } from '@lucide/vue';
+import { ArrowLeftRight, LayoutGrid, Tags, Users, Wallet } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import FamilySwitcher from '@/components/FamilySwitcher.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as categoriesIndex } from '@/routes/categories';
+import { index as membersIndex } from '@/routes/members';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { index as walletsIndex } from '@/routes/wallets';
 import type { NavItem } from '@/types';
@@ -40,6 +41,11 @@ const mainNavItems: NavItem[] = [
         title: 'Kategori',
         href: categoriesIndex(),
         icon: Tags,
+    },
+    {
+        title: 'Anggota',
+        href: membersIndex(),
+        icon: Users,
     },
 ];
 </script>

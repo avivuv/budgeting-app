@@ -31,6 +31,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Appearance $appearance
  * @property int|null $current_family_id
  * @property bool $is_super_admin
+ * @property-read FamilyMember|null $membership pivot when loaded through Family::members()
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

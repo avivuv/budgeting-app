@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Services\Family\FamilyService;
 use App\Services\Tenancy\TenantContext;
 use App\Support\Inertia\ModulePageFinder;
 use Carbon\CarbonImmutable;
@@ -9,6 +11,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -43,6 +46,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Owner/admin of the active family: wallets, categories, members (docs/03 §4).
+        Gate::define('manage-family', function (User $user): bool {
+            $tenant = app(TenantContext::class);
+
+            return $tenant->has()
+                && (app(FamilyService::class)->roleOf($tenant->get(), $user)?->canManage() ?? false);
+        });
 
         // REST API: 60 requests per minute per token/user (docs/13-rest-api.md).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)

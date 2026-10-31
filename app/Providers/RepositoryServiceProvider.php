@@ -6,12 +6,14 @@ namespace App\Providers;
 
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\FamilyRepositoryInterface;
+use App\Repositories\Contracts\InvitationRepositoryInterface;
 use App\Repositories\Contracts\TagRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\WalletRepositoryInterface;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\FamilyRepository;
+use App\Repositories\Eloquent\InvitationRepository;
 use App\Repositories\Eloquent\TagRepository;
 use App\Repositories\Eloquent\TransactionRepository;
 use App\Repositories\Eloquent\UserRepository;
@@ -32,5 +34,6 @@ class RepositoryServiceProvider extends ServiceProvider
         CategoryRepositoryInterface::class => CategoryRepository::class,
         TransactionRepositoryInterface::class => TransactionRepository::class,
         TagRepositoryInterface::class => TagRepository::class,
+        InvitationRepositoryInterface::class => InvitationRepository::class,
     ];
 }

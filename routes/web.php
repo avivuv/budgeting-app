@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Web\Category\CategoryController;
+use App\Http\Controllers\Web\Family\InvitationController;
+use App\Http\Controllers\Web\Family\MemberController;
 use App\Http\Controllers\Web\Family\OnboardingController;
 use App\Http\Controllers\Web\Family\SwitchFamilyController;
 use App\Http\Controllers\Web\Transaction\TransactionController;
@@ -14,6 +16,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('onboarding', [OnboardingController::class, 'create'])->name('onboarding.create');
     Route::post('onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
     Route::put('families/{family}/switch', SwitchFamilyController::class)->whereNumber('family')->name('families.switch');
+
+    // The invitee is not a member yet: resolved by token, no family context (BR-I07).
+    Route::get('invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
+    Route::post('invitations/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
 
     // Everything below runs inside the active family (tenant).
     Route::middleware('family')->group(function () {
@@ -33,6 +39,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('categories/{category}/archive', [CategoryController::class, 'archive'])->name('categories.archive');
         Route::post('categories/{category}/merge', [CategoryController::class, 'merge'])->name('categories.merge');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('members', [MemberController::class, 'index'])->name('members.index');
+        Route::post('members/invitations', [MemberController::class, 'invite'])->name('members.invite');
+        Route::delete('members/invitations/{invitation}', [MemberController::class, 'revokeInvitation'])->name('members.invitations.destroy');
+        Route::patch('members/{member}', [MemberController::class, 'updateRole'])->whereNumber('member')->name('members.update');
+        Route::delete('members/{member}', [MemberController::class, 'remove'])->whereNumber('member')->name('members.destroy');
+        Route::post('family/leave', [MemberController::class, 'leave'])->name('family.leave');
     });
 });
 

@@ -28,6 +28,38 @@ class FamilyRepository extends BaseRepository implements FamilyRepositoryInterfa
         ]);
     }
 
+    public function members(Family $family): Collection
+    {
+        return $family->members()
+            ->orderByRaw("FIELD(family_user.role, 'owner', 'admin', 'member', 'viewer')")
+            ->orderBy('users.name')
+            ->get();
+    }
+
+    public function findMember(Family $family, int $userId): ?User
+    {
+        return $family->members()->whereKey($userId)->first();
+    }
+
+    public function updateRole(Family $family, User $user, FamilyRole $role): void
+    {
+        $family->members()->updateExistingPivot($user->id, ['role' => $role->value]);
+    }
+
+    public function removeMember(Family $family, User $user): void
+    {
+        $family->members()->detach($user->id);
+
+        if ($user->current_family_id === $family->id) {
+            $this->setCurrentFamily($user, null);
+        }
+    }
+
+    public function isMember(Family $family, string $email): bool
+    {
+        return $family->members()->where('users.email', mb_strtolower($email))->exists();
+    }
+
     public function forUser(User $user): Collection
     {
         return $user->families()->orderBy('families.name')->get();
