@@ -40,6 +40,7 @@ Aplikasi pencatatan keuangan keluarga multi-tenant. Input transaksi cukup lewat 
 | 14 | [UI Design System](docs/14-ui-design-system.md) | Tema putih–biru, tipografi, komponen |
 | 15 | [Frontend Architecture](docs/15-frontend-architecture.md) | Struktur modul Vue, state, type safety, aturan import |
 | 16 | [Backend Architecture](docs/16-backend-architecture.md) | Service-Repository detail, folder per domain, DTO, exception, arch test |
+| 17 | [Project Structure](docs/17-project-structure.md) | Struktur folder lengkap backend & frontend, peta file per fitur |
 
 ## Quick Start
 

@@ -51,6 +51,7 @@ Semua harus hijau. Laporkan hasil apa adanya — jika ada test gagal, sampaikan.
 | [14-ui-design-system](docs/14-ui-design-system.md) | setiap membuat UI |
 | [15-frontend-architecture](docs/15-frontend-architecture.md) | setiap membuat halaman/komponen Vue |
 | [16-backend-architecture](docs/16-backend-architecture.md) | setiap membuat class backend |
+| [17-project-structure](docs/17-project-structure.md) | menentukan lokasi file baru |
 
 ## Git
 - Remote: `https://github.com/avivuv/budgeting-app.git`, branch utama `main`.
