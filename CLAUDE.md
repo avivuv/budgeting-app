@@ -26,7 +26,7 @@ Laravel 13 (PHP 8.4) · Inertia 3 + Vue 3 (TS, `<script setup>`) · Fortify (aut
 5. **Uang = integer rupiah** (`BIGINT`), tidak pernah float. Parsing lewat `AmountParser`, tampilan lewat `MoneyFormatter`/`useMoney`.
 6. **Testing wajib** — setiap fitur: unit test (logika/perhitungan), API/feature test (response, validasi, otorisasi, tenant), dan consistency invariant `INV-xx` bila menyentuh angka. Nama test menyebut ID rule, mis. `[BR-B08]`. → [docs/12-testing-strategy.md](docs/12-testing-strategy.md)
 7. **UI** — tema putih–biru, pakai token warna (tidak hardcode hex), mobile-first. → [docs/14-ui-design-system.md](docs/14-ui-design-system.md)
-8. **Frontend modular** — `resources/js/core/` (shared) + `resources/js/modules/<fitur>/` (pages, components, composables, `index.ts`). Antar modul hanya via `index.ts`. Tidak ada perhitungan bisnis di Vue; tipe dari `generated.d.ts`. → [docs/15-frontend-architecture.md](docs/15-frontend-architecture.md)
+8. **Frontend modular** — folder shared starter kit (`resources/js/components`, `composables`, `layouts`, `lib`, `types`) = core; fitur baru di `resources/js/modules/<fitur>/` (pages, components, composables, `index.ts`). Antar modul hanya via `index.ts`. Tidak ada perhitungan bisnis di Vue; tipe dari `generated.d.ts`. Pilihan dari master data selalu memakai `SearchableSelect` (bisa dicari); `NativeSelect` hanya untuk enum kecil. → [docs/15-frontend-architecture.md](docs/15-frontend-architecture.md)
 9. **Coding standards** — `strict_types`, DTO `spatie/laravel-data`, Service tidak `final`, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
 
 ## Sebelum Selesai / Commit
@@ -35,7 +35,7 @@ Laravel 13 (PHP 8.4) · Inertia 3 + Vue 3 (TS, `<script setup>`) · Fortify (aut
 composer test        # pint --test + phpstan + pest
 ./vendor/bin/pint
 ./vendor/bin/phpstan
-pnpm run check && pnpm run types:check
+pnpm run check && pnpm run types:check && pnpm run test
 ```
 
 Semua harus hijau. Laporkan hasil apa adanya — jika ada test gagal, sampaikan.

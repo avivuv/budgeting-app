@@ -6,16 +6,18 @@ import {
     ArrowUpRight,
     History,
 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import TransactionController from '@/actions/App/Http/Controllers/Web/Transaction/TransactionController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import NativeSelect from '@/components/NativeSelect.vue';
+import SearchableSelect from '@/components/SearchableSelect.vue';
+import type { SearchableOption } from '@/components/SearchableSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { categoryOptions } from '@/modules/categories';
 import { index } from '@/routes/transactions';
 
 type Category = App.DTOs.Category.CategoryItemData;
@@ -75,9 +77,65 @@ const types: {
     },
 ];
 
-const categoryGroups = computed(() =>
-    type.value === 'transfer' ? [] : props.categories[type.value],
+const walletId = ref<number | string | null>(
+    props.transaction?.walletId ?? props.wallets[0]?.id ?? null,
 );
+const toWalletId = ref<number | string | null>(
+    props.transaction?.toWalletId ?? null,
+);
+const categoryId = ref<number | string | null>(
+    props.transaction?.categoryId ?? null,
+);
+
+// Keep the current value selectable even if it was archived meanwhile,
+// so editing never silently switches wallet or category.
+function withCurrent(
+    options: SearchableOption[],
+    id: number | null | undefined,
+    name: string | null | undefined,
+): SearchableOption[] {
+    if (id == null || options.some((option) => option.value === id)) {
+        return options;
+    }
+
+    return [...options, { value: id, label: `${name ?? '-'} (diarsipkan)` }];
+}
+
+const walletOptions = computed(() =>
+    props.wallets.map((wallet) => ({ value: wallet.id, label: wallet.name })),
+);
+const fromWalletOptions = computed(() =>
+    withCurrent(
+        walletOptions.value,
+        props.transaction?.walletId,
+        props.transaction?.walletName,
+    ),
+);
+const toWalletOptions = computed(() =>
+    withCurrent(
+        walletOptions.value,
+        props.transaction?.toWalletId,
+        props.transaction?.toWalletName,
+    ),
+);
+const categoryChoices = computed(() =>
+    type.value === 'transfer'
+        ? []
+        : withCurrent(
+              categoryOptions(props.categories[type.value]),
+              props.transaction?.type === type.value
+                  ? props.transaction.categoryId
+                  : null,
+              props.transaction?.categoryName,
+          ),
+);
+
+// A category of the other type is not valid anymore (BR-B02).
+watch(type, () => {
+    if (!categoryChoices.value.some((o) => o.value === categoryId.value)) {
+        categoryId.value = null;
+    }
+});
 
 const action = computed(() =>
     props.transaction
@@ -171,51 +229,28 @@ const action = computed(() =>
                                         : 'Dompet'
                                 }}
                             </Label>
-                            <NativeSelect
+                            <SearchableSelect
                                 id="wallet_id"
+                                v-model="walletId"
                                 name="wallet_id"
+                                :options="fromWalletOptions"
+                                placeholder="Cari dompet…"
                                 required
-                            >
-                                <option
-                                    v-for="wallet in wallets"
-                                    :key="wallet.id"
-                                    :value="wallet.id"
-                                    :selected="
-                                        wallet.id === transaction?.walletId
-                                    "
-                                >
-                                    {{ wallet.name }}
-                                </option>
-                            </NativeSelect>
+                            />
                             <InputError :message="errors.wallet_id" />
                         </div>
                     </div>
 
                     <div v-if="type === 'transfer'" class="grid gap-2">
                         <Label for="to_wallet_id">Ke dompet</Label>
-                        <NativeSelect
+                        <SearchableSelect
                             id="to_wallet_id"
+                            v-model="toWalletId"
                             name="to_wallet_id"
+                            :options="toWalletOptions"
+                            placeholder="Cari dompet tujuan…"
                             required
-                        >
-                            <option
-                                value=""
-                                disabled
-                                :selected="!transaction?.toWalletId"
-                            >
-                                Pilih dompet tujuan
-                            </option>
-                            <option
-                                v-for="wallet in wallets"
-                                :key="wallet.id"
-                                :value="wallet.id"
-                                :selected="
-                                    wallet.id === transaction?.toWalletId
-                                "
-                            >
-                                {{ wallet.name }}
-                            </option>
-                        </NativeSelect>
+                        />
                         <p class="text-xs text-muted-foreground">
                             Transfer hanya memindahkan saldo, tidak dihitung
                             sebagai pemasukan atau pengeluaran. Bayar tagihan
@@ -226,42 +261,14 @@ const action = computed(() =>
 
                     <div v-else class="grid gap-2">
                         <Label for="category_id">Kategori</Label>
-                        <NativeSelect
+                        <SearchableSelect
                             id="category_id"
+                            v-model="categoryId"
                             name="category_id"
+                            :options="categoryChoices"
+                            placeholder="Cari kategori atau kata kunci (mis. bensin)…"
                             required
-                        >
-                            <option
-                                value=""
-                                disabled
-                                :selected="!transaction?.categoryId"
-                            >
-                                Pilih kategori
-                            </option>
-                            <template
-                                v-for="parent in categoryGroups"
-                                :key="parent.id"
-                            >
-                                <option
-                                    :value="parent.id"
-                                    :selected="
-                                        parent.id === transaction?.categoryId
-                                    "
-                                >
-                                    {{ parent.name }}
-                                </option>
-                                <option
-                                    v-for="child in parent.children"
-                                    :key="child.id"
-                                    :value="child.id"
-                                    :selected="
-                                        child.id === transaction?.categoryId
-                                    "
-                                >
-                                    &nbsp;&nbsp;↳ {{ child.name }}
-                                </option>
-                            </template>
-                        </NativeSelect>
+                        />
                         <InputError :message="errors.category_id" />
                     </div>
 

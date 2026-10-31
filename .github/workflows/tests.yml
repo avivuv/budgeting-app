@@ -77,3 +77,6 @@ jobs:
 
       - name: Frontend type check
         run: pnpm run types:check
+
+      - name: Frontend tests (Vitest)
+        run: pnpm run test

@@ -187,6 +187,18 @@ Transaksi (utama), struk, dompet, kategori, anggota & undangan, transaksi berula
 
 Tombol Export di toolbar memakai **filter yang sedang aktif** dan memanggil endpoint backend (Excel/PDF); tidak export dari data di browser.
 
+## 6c. Pilihan (Select / Combobox)
+
+| Sumber pilihan                                                                       | Komponen                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Master data** (dompet, kategori, anggota, tag, merchant, …)                        | **`SearchableSelect`** (`components/SearchableSelect.vue`, reka-ui Combobox) — wajib bisa dicari; mendukung grup, indentasi sub-item, dan `keywords` tambahan (mis. kata kunci kategori: ketik "bensin" → Transportasi) |
+| Enum kecil & tetap (≤ ~7 opsi: jenis dompet, jenis kategori, peran, tanggal periode) | `NativeSelect`                                                                                                                                                                                                          |
+
+- Tidak memakai Select2/jQuery (bentrok dengan Vue).
+- `SearchableSelect` menulis nilai ke hidden input `name` sehingga bekerja dengan `<Form>` Inertia.
+- Saat edit, nilai lama yang sudah diarsipkan tetap ditampilkan sebagai "(diarsipkan)" agar tidak berganti diam-diam.
+- Opsi kategori dibuat lewat `categoryOptions()` dari `@/modules/categories`.
+
 ## 7. Form & Validasi
 
 ```ts

@@ -4,6 +4,7 @@ import { computed, ref, watch } from 'vue';
 import CategoryController from '@/actions/App/Http/Controllers/Web/Category/CategoryController';
 import InputError from '@/components/InputError.vue';
 import NativeSelect from '@/components/NativeSelect.vue';
+import SearchableSelect from '@/components/SearchableSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -29,9 +30,17 @@ const open = defineModel<boolean>('open', { required: true });
 
 const type = ref<App.Enums.CategoryType>(props.defaultType);
 
+// Parents must have the same type (BR-E01).
+watch(type, () => {
+    if (!parentOptions.value.some((o) => o.value === parentId.value)) {
+        parentId.value = '';
+    }
+});
+
 watch(open, (isOpen) => {
     if (isOpen) {
         type.value = props.category?.type ?? props.defaultType;
+        parentId.value = props.category?.parentId ?? '';
     }
 });
 
@@ -42,11 +51,20 @@ const action = computed(() =>
 );
 
 // A category can only sit under a top-level category of the same type (BR-E01).
-const parentOptions = computed(() =>
-    props.parents[type.value].filter(
-        (parent) => !parent.isArchived && parent.id !== props.category?.id,
-    ),
-);
+const parentOptions = computed(() => [
+    { value: '', label: '— Kategori utama —' },
+    ...props.parents[type.value]
+        .filter(
+            (parent) => !parent.isArchived && parent.id !== props.category?.id,
+        )
+        .map((parent) => ({
+            value: parent.id,
+            label: parent.name,
+            keywords: parent.keywords,
+        })),
+]);
+
+const parentId = ref<number | string | null>('');
 
 const hasChildren = computed(() => (props.category?.children.length ?? 0) > 0);
 </script>
@@ -105,17 +123,13 @@ const hasChildren = computed(() => (props.category?.children.length ?? 0) > 0);
 
                 <div v-if="!hasChildren" class="grid gap-2">
                     <Label for="category-parent">Induk (opsional)</Label>
-                    <NativeSelect id="category-parent" name="parent_id">
-                        <option value="">— Kategori utama —</option>
-                        <option
-                            v-for="parent in parentOptions"
-                            :key="parent.id"
-                            :value="parent.id"
-                            :selected="parent.id === category?.parentId"
-                        >
-                            {{ parent.name }}
-                        </option>
-                    </NativeSelect>
+                    <SearchableSelect
+                        id="category-parent"
+                        v-model="parentId"
+                        name="parent_id"
+                        :options="parentOptions"
+                        placeholder="Cari kategori induk…"
+                    />
                     <InputError :message="errors.parent_id" />
                 </div>
 

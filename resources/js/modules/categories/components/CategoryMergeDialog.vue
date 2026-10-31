@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import CategoryController from '@/actions/App/Http/Controllers/Web/Category/CategoryController';
 import InputError from '@/components/InputError.vue';
-import NativeSelect from '@/components/NativeSelect.vue';
+import { categoryOptions } from '../index';
+import SearchableSelect from '@/components/SearchableSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -25,18 +26,14 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { required: true });
 
-// Flatten parents and children of the same type, excluding the source (BR-E03).
+// Same-type categories except the source itself (BR-E03).
 const targets = computed(() =>
-    props.candidates
-        .flatMap((parent) => [
-            { id: parent.id, label: parent.name },
-            ...parent.children.map((child) => ({
-                id: child.id,
-                label: `${parent.name} › ${child.name}`,
-            })),
-        ])
-        .filter((target) => target.id !== props.category?.id),
+    categoryOptions(props.candidates, { excludeId: props.category?.id }),
 );
+
+const targetId = ref<number | string | null>(null);
+
+watch(open, () => (targetId.value = null));
 </script>
 
 <template>
@@ -58,15 +55,14 @@ const targets = computed(() =>
             >
                 <div class="grid gap-2">
                     <Label for="merge-target">Kategori tujuan</Label>
-                    <NativeSelect id="merge-target" name="target_id" required>
-                        <option
-                            v-for="target in targets"
-                            :key="target.id"
-                            :value="target.id"
-                        >
-                            {{ target.label }}
-                        </option>
-                    </NativeSelect>
+                    <SearchableSelect
+                        id="merge-target"
+                        v-model="targetId"
+                        name="target_id"
+                        :options="targets"
+                        placeholder="Cari kategori tujuan…"
+                        required
+                    />
                     <InputError :message="errors.target_id ?? errors.general" />
                 </div>
 
