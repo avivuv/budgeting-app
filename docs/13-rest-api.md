@@ -49,7 +49,8 @@ Nominal selalu integer rupiah; tanggal `YYYY-MM-DD`; datetime ISO 8601 dengan of
 | GET | `/api/v1/budgets?period=2026-10` | budget + realisasi + status |
 | PUT | `/api/v1/budgets` | set budget (bulk) |
 | POST | `/api/v1/receipts` | upload struk (multipart) → `202` + id |
-| GET | `/api/v1/receipts/{id}` | status & hasil parse |
+| GET | `/api/v1/receipts/{id}` | status & hasil parse (draft, belum jadi transaksi) |
+| PATCH | `/api/v1/receipts/{id}` | koreksi draft (total, tanggal, merchant, kategori, wallet, item) |
 | POST | `/api/v1/receipts/{id}/confirm` | `{"mode":"total"|"split"}` → transaksi |
 | GET | `/api/v1/summary?period=2026-10` | ringkasan dashboard (saldo, pemasukan, pengeluaran, selisih, Δ%) |
 | GET | `/api/v1/reports/cashflow?from&to` | arus kas per bulan |

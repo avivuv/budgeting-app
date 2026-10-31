@@ -214,6 +214,6 @@ Detail frontend: [15-frontend-architecture.md](15-frontend-architecture.md).
 | `maatwebsite/excel` | Export Excel |
 | `barryvdh/laravel-dompdf` | Export PDF |
 | `intervention/image` | Kompres/resize foto struk sebelum dikirim ke AI |
-| Frontend: `shadcn-vue`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `pinia`, `vue-i18n`, `vite-plugin-pwa` | UI, grafik, util, ikon, state UI, i18n, PWA |
+| Frontend: `shadcn-vue`, `@tanstack/vue-table`, `vue3-apexcharts`, `@vueuse/core`, `lucide-vue-next`, `pinia`, `vue-i18n`, `vite-plugin-pwa` | UI, grafik, util, ikon, state UI, i18n, PWA |
 | Frontend dev: `vitest`, `@vue/test-utils`, `eslint-plugin-boundaries`, `prettier` | Test & aturan import |
 | Dev: `pestphp/pest`, `larastan/larastan`, `laravel/pint` | Testing, static analysis, formatting |

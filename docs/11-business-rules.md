@@ -95,6 +95,9 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-H05 | Kuota dihitung saat upload diterima. Kuota dikembalikan hanya jika gagal karena error sistem/AI (bukan "bukan struk"). |
 | BR-H06 | Tanggal struk tidak terbaca, di masa depan, atau > 1 tahun lalu → memakai hari ini dan ditandai. |
 | BR-H07 | Satu struk hanya bisa dikonfirmasi sekali (`confirmed`); tombol konfirmasi kedua diabaikan. |
+| BR-H08 | **Hasil baca struk tidak pernah langsung menjadi transaksi.** Hasil AI hanya disimpan sebagai draft di tabel `receipts` (status `parsed`) lalu dikirim balik ke user untuk ditinjau. Transaksi baru dibuat setelah user menekan **Simpan**. Setting `auto_save` Telegram tidak berlaku untuk struk. |
+| BR-H09 | Sebelum konfirmasi, user bisa mengoreksi hasil baca: total, tanggal, merchant, kategori, dompet, dan item. Nilai yang disimpan adalah hasil koreksi user, sedangkan hasil asli AI tetap tersimpan di `raw_response` untuk audit. |
+| BR-H10 | Draft struk yang tidak dikonfirmasi dalam 24 jam berstatus `expired`, tidak membuat transaksi apa pun, dan filenya dihapus setelah 7 hari. |
 
 ## I. Keluarga, Anggota & Role
 

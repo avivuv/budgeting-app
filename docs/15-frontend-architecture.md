@@ -142,6 +142,37 @@ export interface SharedProps {
 - Route: **Ziggy** `route('transactions.index')` dengan tipe ter-generate.
 - `vue-tsc --noEmit` wajib bersih.
 
+## 6b. List Data / Tabel
+
+**Tidak memakai jQuery DataTables.** Library itu memanipulasi DOM langsung sehingga bentrok dengan Vue, memproses data di browser (lambat untuk ribuan transaksi), dan sulit diberi tema. Penggantinya:
+
+| Bagian | Pilihan |
+|---|---|
+| Engine tabel | **TanStack Table v8** (`@tanstack/vue-table`) — headless, dipakai oleh komponen *Data Table* shadcn-vue, tampilan 100% Tailwind |
+| Data | **Server-side**: pagination, sort, filter, search dikerjakan di backend (Repository `paginateFiltered`), frontend hanya mengirim query string |
+| Komponen | `core/components/data-table/` — `DataTable.vue`, `DataTablePagination.vue`, `DataTableToolbar.vue` (search, filter chips, reset), `DataTableColumnHeader.vue` (sort), `DataTableViewOptions.vue` (show/hide kolom), `DataTableRowActions.vue` |
+| State | `useDataTable()` → sinkron ke query string (`?page=2&sort=-date&type=expense&q=bensin`) via `router.get(..., { preserveState: true, preserveScroll: true, replace: true })`, search di-debounce 300ms |
+
+### Kontrak backend ↔ frontend
+- Query: `page`, `per_page` (10/20/50/100, default 20), `sort` (`date`, `-date`, `amount`, `-amount`; whitelist per resource), `q`, dan filter spesifik.
+- Response: `LengthAwarePaginator` dari Repository → `Data::collect()` → `{ data, meta: { current_page, last_page, per_page, total }, links }` — **format sama untuk Inertia dan REST API**.
+- Total/subtotal (mis. "Total pengeluaran sesuai filter: Rp 2.287.500") dihitung backend dan dikirim sebagai prop terpisah `aggregates`, bukan dijumlah di browser (INV-06).
+- Kolom sort & filter di-whitelist di `FormRequest` (cegah SQL injection & query berat).
+
+### Tampilan per layar
+| Layar | Bentuk |
+|---|---|
+| Desktop ≥ 1024px | Tabel penuh: kolom bisa disort, sembunyikan kolom, aksi baris, **pilih banyak baris** untuk aksi massal (ubah kategori, hapus) |
+| HP / tablet | **List kartu** dikelompokkan per tanggal (subtotal harian) + **infinite scroll** (`WhenVisible` Inertia v2); filter di bottom sheet |
+
+Satu sumber data, dua renderer: `DataTable` (desktop) dan `DataList` (mobile) memakai `useDataTable()` yang sama.
+
+### Dipakai di
+Transaksi (utama), struk, dompet, kategori, anggota & undangan, transaksi berulang, laporan (tabel detail), admin (daftar keluarga). Daftar pendek (< 50 baris, mis. dompet) tetap memakai komponen yang sama tanpa pagination.
+
+### Export
+Tombol Export di toolbar memakai **filter yang sedang aktif** dan memanggil endpoint backend (Excel/PDF); tidak export dari data di browser.
+
 ## 7. Form & Validasi
 
 ```ts

@@ -3,7 +3,16 @@
 ## 1. Tujuan
 Pengguna cukup memotret struk (Telegram atau upload web); sistem mengisi toko, tanggal, total, item, dan kategori. Pengguna hanya mengonfirmasi.
 
-## 2. Alur
+## 2. Prinsip: Wajib Konfirmasi User
+
+> Hasil baca struk **tidak pernah langsung disimpan sebagai transaksi** (BR-H08). Hasil AI dikirim balik ke user, lalu user meninjau dan mengoreksi. Transaksi baru dibuat setelah user menekan **Simpan**.
+
+- Selama menunggu konfirmasi, data hanya ada sebagai **draft** di tabel `receipts` (status `parsed`) + `receipt_items`. Tabel `transactions` belum tersentuh, sehingga dashboard, laporan, saldo, dan budget **tidak** berubah.
+- Draft dipakai juga untuk cek duplikat, kuota, dan audit (`raw_response`).
+- Draft yang tidak dikonfirmasi 24 jam → `expired` (BR-H10).
+- Status: `pending → processing → parsed (menunggu user) → confirmed | rejected | expired`; `failed` bila gagal dibaca.
+
+## 3. Alur
 
 ```
 Telegram foto / Web upload
@@ -25,19 +34,27 @@ ProcessReceiptJob
    - ReceiptParserInterface::parse(image) → ReceiptData
    - map kategori: nama kategori AI → categories keluarga (keywords/fuzzy)
    - cek duplikat: merchant + tanggal + total sama dalam keluarga
-   - status = parsed, simpan receipt_items
-   - kirim/edit pesan preview
+   - status = parsed, simpan receipt_items        ← DRAFT, belum ada transaksi
+   - kirim hasil baca ke user untuk ditinjau
    │
    ▼
-User: [✅ Simpan] [📋 Pecah per item] [✏️ Ubah] [❌ Batal]
-   - Simpan       → 1 transaksi total, source=receipt, receipt_id
-   - Pecah item   → transaksi per kategori (item dikelompokkan per kategori)
-   - status = confirmed / rejected
+User meninjau hasil baca:
+   🧾 Indomaret · 31 Okt 2026
+   Total: Rp 87.500 · Belanja Harian · 👛 Tunai
+   Item: Susu UHT 1L ×2 Rp 37.000, Roti Tawar Rp 15.500, ...
+   ⚠️ (peringatan bila ada: total tidak cocok / kemungkinan duplikat / tanggal diganti)
+   [✅ Simpan] [✏️ Ubah total] [🏷 Kategori] [👛 Dompet] [📅 Tanggal] [📋 Pecah per item] [❌ Batal]
+   │
+   ├─ Ubah …      → update draft, kirim ulang preview (masih belum jadi transaksi)
+   ├─ Simpan      → ReceiptService::confirm() → 1 transaksi total, source=receipt, receipt_id
+   ├─ Pecah item  → preview ulang per kategori → Simpan → transaksi per kategori (BR-H02)
+   └─ Batal       → status = rejected, tidak ada transaksi
 ```
+Di web, hasil baca tampil sebagai **form yang sudah terisi** (bisa diedit); transaksi dibuat hanya saat tombol Simpan ditekan. REST API: `POST /receipts` → `GET /receipts/{id}` (draft) → `PATCH /receipts/{id}` (koreksi) → `POST /receipts/{id}/confirm`.
 
 Retry job: 3x dengan backoff 10s/30s/60s; gagal permanen → `status = failed`, bot membalas *"Struk tidak terbaca, ketik manual: `belanja 87500`"*.
 
-## 3. Abstraksi Parser
+## 4. Abstraksi Parser
 
 ```php
 interface ReceiptParserInterface
@@ -50,28 +67,28 @@ interface ReceiptParserInterface
 - `ClaudeReceiptParser` — alternatif bila butuh akurasi lebih tinggi.
 - `FakeReceiptParser` — untuk test & development tanpa API key (`RECEIPT_PARSER=fake`). **Default sampai API key tersedia.**
 - Binding di `AppServiceProvider` berdasarkan `config('receipt.driver')`. Ganti provider = ganti env, tanpa mengubah service/handler.
-- Semua parser memakai prompt & skema output yang sama (`resources/prompts/receipt.md`, §4.1) dan wajib lulus test kontrak yang sama (`tests/Feature/Integration/ReceiptParserContractTest.php`) dengan respons API di-fake.
+- Semua parser memakai prompt & skema output yang sama (`resources/prompts/receipt.md`, §5.4) dan wajib lulus test kontrak yang sama (`tests/Feature/Integration/ReceiptParserContractTest.php`) dengan respons API di-fake.
 
 `ReceiptParseContext` membawa daftar nama kategori pengeluaran keluarga agar AI memilih dari daftar tersebut.
 
-## 4. Provider AI
+## 5. Provider AI
 
 API key menyusul; sampai saat itu `RECEIPT_PARSER=fake`.
 
-### 4.0 Gemini (rencana utama)
+### 5.1 Gemini (rencana utama)
 - Model **Gemini Flash** (free tier Google AI Studio). Model ID di config (`RECEIPT_MODEL`), tidak di-hardcode.
-- Kirim gambar inline (base64) + prompt; pakai `responseMimeType: application/json` + `responseSchema` agar output valid sesuai §4.1.
+- Kirim gambar inline (base64) + prompt; pakai `responseMimeType: application/json` + `responseSchema` agar output valid sesuai §5.4.
 - **Free tier dibatasi rate limit (request/menit & per hari)**: queue `receipts` di-throttle (`RateLimited` middleware job) sesuai `RECEIPT_RATE_PER_MINUTE`; saat kena `429`, job di-release dengan backoff, user mendapat pesan "Struk sedang antre".
 - **Privasi**: pada free tier, Google dapat memakai data input untuk peningkatan produk. Tampilkan pemberitahuan di halaman pengaturan; pertimbangkan tier berbayar sebelum dipakai keluarga lain (multi-tenant).
 
-### 4.0b Claude (alternatif)
+### 5.2 Claude (alternatif)
 - Model ringan sebagai default, model lebih besar sebagai fallback bila `confidence < 0.6`.
 
-### Umum
+### 5.3 Umum
 - Fallback model (`RECEIPT_FALLBACK_MODEL`) opsional, untuk semua provider.
 - Timeout 30 detik.
 
-### 4.1 Skema output
+### 5.4 Skema output
 ```json
 {
   "is_receipt": true,
@@ -91,7 +108,7 @@ API key menyusul; sampai saat itu `RECEIPT_PARSER=fake`.
 }
 ```
 
-### 4.2 Poin instruksi prompt
+### 5.5 Poin instruksi prompt
 - Struk Indonesia: titik = pemisah ribuan, `Rp`, format tanggal `dd/mm/yy`, singkatan item.
 - Nominal dalam rupiah utuh (integer).
 - `total` = jumlah yang dibayar (setelah diskon/pajak), **bukan** uang tunai/kembalian.
@@ -99,27 +116,27 @@ API key menyusul; sampai saat itu `RECEIPT_PARSER=fake`.
 - Jika bukan struk / tidak terbaca → `is_receipt: false`.
 - Tanggal tidak terbaca → `null` (sistem pakai hari ini).
 
-### 4.3 Validasi hasil
+### 5.6 Validasi hasil
 - `is_receipt = false` → balas "Ini sepertinya bukan struk".
 - Σ item ± diskon/pajak ≠ total (selisih > 2%) → turunkan confidence, tampilkan peringatan di preview.
 - Tanggal di masa depan / > 1 tahun lalu → pakai hari ini, beri tanda.
 
-## 5. Kuota & Biaya
+## 6. Kuota & Biaya
 - `families.receipt_quota_monthly` (default 50), dihitung di `usage_logs` per periode.
 - Sisa kuota ditampilkan di web & saat `/struk`.
 - Super Admin bisa ubah kuota per keluarga.
 - Log `model` dan token usage di `raw_response` untuk memantau biaya.
 
-## 6. Penyimpanan & Privasi
+## 7. Penyimpanan & Privasi
 - File di disk `local` (`storage/app/private/receipts/{family_id}/{yyyy}/{mm}/`), **tidak** di `public`.
 - Akses via route terproteksi `GET /receipts/{receipt}/image` (Policy + scope tenant).
 - Struk yang `rejected` dihapus filenya setelah 7 hari (scheduler).
 
-## 7. Web Upload
+## 8. Web Upload
 - Halaman *Transaksi → Scan Struk*: drag & drop / kamera HP (`<input capture="environment">`).
-- Polling status (atau Inertia reload tiap 2 detik) sampai `parsed`, lalu form transaksi terisi otomatis.
+- Polling status (`usePoll` Inertia) sampai `parsed`, lalu hasil baca tampil sebagai **form review yang sudah terisi** (total, tanggal, merchant, kategori, dompet, item; semua bisa diedit). **Belum ada transaksi tersimpan** sampai user menekan Simpan (BR-H08, BR-H09).
 
-## 8. Konfigurasi
+## 9. Konfigurasi
 ```env
 RECEIPT_PARSER=fake            # fake | gemini | claude
 GEMINI_API_KEY=
