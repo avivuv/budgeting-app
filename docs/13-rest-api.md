@@ -68,28 +68,29 @@ Nominal selalu integer rupiah; tanggal `YYYY-MM-DD`; datetime ISO 8601 dengan of
 
 ## 3. Endpoint
 
-| Method          | Path                                      | Fungsi                                                                                                                   |
-| --------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| GET             | `/api/v1/me`                              | profil + daftar keluarga & role                                                                                          |
-| GET             | `/api/v1/wallets`                         | dompet + saldo                                                                                                           |
-| POST/PUT/DELETE | `/api/v1/wallets/{id}`                    | kelola dompet (admin)                                                                                                    |
-| GET             | `/api/v1/categories?type=expense`         | kategori (tree)                                                                                                          |
-| GET             | `/api/v1/transactions`                    | list + filter (`from,to,type,category_id[],wallet_id[],user_id[],tag[],q,min,max,source`)                                |
-| POST            | `/api/v1/transactions`                    | buat transaksi                                                                                                           |
-| POST            | `/api/v1/transactions/parse`              | parse teks bebas (`{"text":"bensin 50rb"}`, multi-baris) → preview per baris + `missing`, tanpa simpan (ability `write`) |
-| GET/PUT/DELETE  | `/api/v1/transactions/{id}`               | detail / ubah / hapus                                                                                                    |
-| GET             | `/api/v1/budgets?period=2026-10`          | budget + realisasi + status                                                                                              |
-| PUT             | `/api/v1/budgets`                         | set budget (bulk)                                                                                                        |
-| POST            | `/api/v1/receipts`                        | upload struk (multipart) → `202` + id                                                                                    |
-| GET             | `/api/v1/receipts/{id}`                   | status & hasil parse (draft, belum jadi transaksi)                                                                       |
-| PATCH           | `/api/v1/receipts/{id}`                   | koreksi draft (total, tanggal, merchant, kategori, wallet, item)                                                         |
-| POST            | `/api/v1/receipts/{id}/confirm`           | `{"mode":"total"                                                                                                         | "split"}` → transaksi |
-| GET             | `/api/v1/summary?period=2026-10`          | ringkasan dashboard (saldo, pemasukan, pengeluaran, selisih, Δ%)                                                         |
-| GET             | `/api/v1/reports/cashflow?from&to`        | arus kas per bulan                                                                                                       |
-| GET             | `/api/v1/reports/categories?from&to&type` | per kategori                                                                                                             |
-| GET             | `/api/v1/reports/members?from&to`         | per anggota                                                                                                              |
-| GET             | `/api/v1/reports/wallets?from&to`         | mutasi per dompet                                                                                                        |
-| GET             | `/api/v1/reports/budget?period`           | budget vs realisasi                                                                                                      |
+| Method          | Path                                      | Fungsi                                                                                                                           |
+| --------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| GET             | `/api/v1/me`                              | profil + daftar keluarga & role                                                                                                  |
+| GET             | `/api/v1/wallets`                         | dompet + saldo                                                                                                                   |
+| POST/PUT/DELETE | `/api/v1/wallets/{id}`                    | kelola dompet (admin)                                                                                                            |
+| GET             | `/api/v1/categories?type=expense`         | kategori (tree)                                                                                                                  |
+| GET             | `/api/v1/transactions`                    | list + filter (`from,to,type,category_id[],wallet_id[],user_id[],tag[],q,min,max,source`)                                        |
+| POST            | `/api/v1/transactions`                    | buat transaksi                                                                                                                   |
+| POST            | `/api/v1/transactions/parse`              | parse teks bebas (`{"text":"bensin 50rb"}`, multi-baris) → preview per baris + `missing`, tanpa simpan (ability `write`)         |
+| GET/PUT/DELETE  | `/api/v1/transactions/{id}`               | detail / ubah / hapus                                                                                                            |
+| GET             | `/api/v1/budgets?period=2026-10`          | budget + realisasi + status                                                                                                      |
+| PUT             | `/api/v1/budgets`                         | set budget (bulk)                                                                                                                |
+| POST            | `/api/v1/receipts`                        | upload struk (multipart, field `file`) → `202` + draft (`status` `pending`, dibaca di queue) + `meta.quota`; kuota habis → `429` |
+| GET             | `/api/v1/receipts/{id}`                   | status & hasil parse (draft, belum jadi transaksi)                                                                               |
+| PATCH           | `/api/v1/receipts/{id}`                   | koreksi draft (`total`, `receipt_date`, `merchant`, `category_id`, `wallet_id`, `items[]`; tanpa `items` = item tetap)           |
+| DELETE          | `/api/v1/receipts/{id}`                   | batalkan draft (`rejected`), tidak ada transaksi                                                                                 |
+| POST            | `/api/v1/receipts/{id}/confirm`           | `{"mode":"total"}` atau `{"mode":"split"}` → `201` + receipt beserta `transactions`; konfirmasi ulang tidak menambah data        |
+| GET             | `/api/v1/summary?period=2026-10`          | ringkasan dashboard (saldo, pemasukan, pengeluaran, selisih, Δ%)                                                                 |
+| GET             | `/api/v1/reports/cashflow?from&to`        | arus kas per bulan                                                                                                               |
+| GET             | `/api/v1/reports/categories?from&to&type` | per kategori                                                                                                                     |
+| GET             | `/api/v1/reports/members?from&to`         | per anggota                                                                                                                      |
+| GET             | `/api/v1/reports/wallets?from&to`         | mutasi per dompet                                                                                                                |
+| GET             | `/api/v1/reports/budget?period`           | budget vs realisasi                                                                                                              |
 
 ## 4. Contoh
 

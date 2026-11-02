@@ -8,7 +8,7 @@ Tujuan: memastikan **data yang diinput, logika, response, dan hasil perhitungan 
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Test runner                  | **Pest 5** (+ `pestphp/pest-plugin-laravel`)                                                                |
 | Database test                | MySQL `budgeting_app_test` (sama dengan production, agar fungsi SQL & agregasi identik) + `RefreshDatabase` |
-| HTTP eksternal               | `Http::fake()` (Telegram API, Claude API)                                                                   |
+| HTTP eksternal               | `Http::fake()` (Telegram API, Gemini API)                                                                   |
 | Queue / Event / Notification | `Queue::fake()`, `Event::fake()`, atau dijalankan sync untuk integration                                    |
 | Waktu                        | `$this->travelTo()` / `Carbon::setTestNow()` — semua test perhitungan periode memakai tanggal tetap         |
 | Frontend                     | **Vitest** + `@vue/test-utils` untuk composable & komponen (format uang, filter)                            |
@@ -50,7 +50,7 @@ Dengan database nyata; menguji **Service + Repository + Model** bersama.
 - Repository: query & agregasi menghasilkan angka benar dari data yang di-seed.
 - Tenancy: data keluarga A tidak pernah muncul di context keluarga B (setiap repository).
 - Event → Listener: transaksi baru → cek budget → `SendTelegramMessageJob` ter-dispatch tepat sekali (BR-F05).
-- Job struk dengan `FakeReceiptParser` dan dengan `Http::fake()` respons Claude.
+- Job struk dengan `FakeReceiptParser` (`respondWith()` untuk hasil/eksepsi tertentu) dan kontrak parser dengan `Http::fake()` respons Gemini (`tests/Feature/Integration/ReceiptParserContractTest.php`).
 - Scheduler recurring idempoten (BR-G02).
 
 ### 2.3 API Test (`tests/Feature/Api`, `tests/Feature/Web`, `tests/Feature/Telegram`)

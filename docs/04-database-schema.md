@@ -144,7 +144,7 @@ Progres = saldo dompet terkait, atau `saved_amount` (kontribusi manual) bila tan
 | ------------------------------------- | ----------------- | ------------------------------------------------------------------------- |
 | id                                    | PK                |                                                                           |
 | family_id, user_id                    | FK                |                                                                           |
-| file_path                             | string            | disk `local` (privat)                                                     |
+| file_path                             | string null       | disk uploads (privat); null setelah file dihapus (BR-H10)                 |
 | file_hash                             | char(64)          | sha256 → deteksi file sama                                                |
 | mime_type                             | string            | image/jpeg, image/png, application/pdf, ...                               |
 | document_type                         | string null       | `receipt`/`transfer_proof`/`ewallet`/`invoice`                            |
@@ -153,7 +153,11 @@ Progres = saldo dompet terkait, atau `saved_amount` (kontribusi manual) bila tan
 | status                                | string            | `pending`/`processing`/`parsed`/`confirmed`/`failed`/`rejected`/`expired` |
 | merchant                              | string null       |                                                                           |
 | receipt_date                          | date null         |                                                                           |
-| total                                 | bigint null       |                                                                           |
+| total                                 | bigint null       | yang dibayar (BR-H01)                                                     |
+| discount, tax                         | bigint            | default 0, dari hasil baca                                                |
+| payment_method                        | string null       | QRIS, tunai, …                                                            |
+| flags                                 | json null         | `total_mismatch`, `date_replaced`, `possible_duplicate` (BR-H03/H04/H06)  |
+| confirmed_at                          | timestamp null    |                                                                           |
 | suggested_category_id                 | FK null           |                                                                           |
 | confidence                            | decimal(3,2) null | 0–1                                                                       |
 | raw_response                          | json null         | output mentah AI                                                          |
@@ -163,7 +167,9 @@ Progres = saldo dompet terkait, atau `saved_amount` (kontribusi manual) bila tan
 
 ### receipt_items
 
-`id, receipt_id, name, qty decimal(8,2), unit_price bigint, total bigint, category_id null`
+`id, receipt_id, name, qty decimal(8,2), unit_price bigint null, total bigint, category_id null` — tanpa `family_id`, hanya diakses lewat receipt.
+
+Draft memakai `suggested_category_id` / `suggested_wallet_id` sebagai pilihan saat ini (hasil AI, lalu koreksi user); transaksi dibuat dari nilai ini saat konfirmasi.
 
 ### activity_log — database terpisah `budgeting_app_log` (koneksi `activity`, BR-B14)
 
@@ -176,7 +182,7 @@ Index: `(family_id, subject_type, subject_id)`, `(family_id, created_at)`, `crea
 
 ### usage_logs
 
-`id, family_id, feature (receipt_scan|...), period (date), count` — unique(family_id, feature, period). Dasar kuota.
+`id, family_id, feature (receipt_scan|...), period (date = bulan label periode keluarga), count, timestamps` — unique(family_id, feature, period). Dasar kuota.
 
 ## 3. Tabel Bawaan Laravel
 

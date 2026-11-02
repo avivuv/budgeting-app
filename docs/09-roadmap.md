@@ -55,14 +55,17 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 - ✅ Consistency test INV-01 … INV-13 lulus (INV-09 struk menyusul di Fase 4), dijaga `InvariantCoverageTest`
 - ✅ E2E Playwright (`pnpm run test:e2e`) + API round-trip test
 
-## Fase 4 — Deteksi Struk (Web & API)
+## Fase 4 — Deteksi Struk (Web & API) ✅ selesai 3 Nov 2026
 
-- ⬜ Migration receipts, receipt_items, usage_logs
-- ⬜ `ReceiptParserInterface`, `FakeReceiptParser`, `GeminiReceiptParser` (saat API key tersedia), test kontrak parser
-- ⬜ `ReceiptService` (validasi tipe, kuota, resize, hash, duplikat, idempotensi konfirmasi), `ProcessReceiptJob`
-- ⬜ Dukungan struk, bukti transfer, screenshot e-wallet, invoice PDF (BR-H11)
-- ⬜ Halaman scan → form review → Simpan (BR-H08/H09), "pecah per item", route gambar terproteksi
-- ⬜ Draft kedaluwarsa & cleanup (BR-H10)
+- ✅ Migration receipts, receipt_items, usage_logs
+- ✅ `ReceiptParserInterface`, `FakeReceiptParser` (default), `GeminiReceiptParser` (+ fallback model), test kontrak parser dengan `Http::fake()` — tinggal isi `GEMINI_API_KEY` & `RECEIPT_PARSER=gemini`
+- ✅ `ReceiptService` (validasi tipe/ukuran/halaman PDF, kuota bulanan, resize ke JPEG 1600px, sha256, peringatan duplikat, konfirmasi idempoten dengan lock), `ProcessReceiptJob` (retry 3×, rate limit, kuota dikembalikan bila gagal sistem)
+- ✅ Dukungan struk, bukti transfer, screenshot e-wallet, invoice PDF (BR-H11); HEIC disimpan apa adanya (tanpa resize)
+- ✅ Halaman Scan struk (kamera HP / pilih file / drag & drop) → form review dengan polling → Simpan atau "Pecah per item" (BR-H08/H09, BR-H02), route gambar terproteksi
+- ✅ API `POST/GET/PATCH/DELETE /receipts`, `POST /receipts/{id}/confirm`
+- ✅ `receipts:expire` tiap jam: draft kedaluwarsa 24 jam, file dihapus setelah 7 hari (BR-H10)
+- ✅ INV-09 & BR-H01…H11 dites (unit, feature, API round-trip, E2E)
+- ⬜ 🎯 Coba dengan struk asli setelah API key Gemini tersedia → catat akurasi
 
 ## Fase 5 — Otomasi, Data & Super Admin
 
@@ -90,4 +93,4 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 - Deploy (hosting diputuskan kemudian), Pulse/Sentry di production
 - Input suara (voice note → teks)
 - Paket berlangganan berbasis kuota
-- E2E test Playwright
+- `ClaudeReceiptParser` bila Gemini kurang akurat

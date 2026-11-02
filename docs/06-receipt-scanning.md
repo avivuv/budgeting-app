@@ -36,10 +36,10 @@ ReceiptService::store()
    - validasi tipe & ukuran (BR-H11)
    - cek kuota bulanan (usage_logs)        → QuotaExceededException
    - download file (Telegram getFile) / simpan upload
-   - gambar: resize max 1600px, JPEG q80 (intervention/image); PDF: disimpan apa adanya
+   - gambar JPG/PNG/WEBP: resize max 1600px, JPEG q80 (intervention/image, GD); PDF & HEIC: disimpan apa adanya (GD tidak bisa membaca HEIC)
    - sha256 → tolak bila file identik sudah ada
    - receipts.status = pending
-   - dispatch ProcessReceiptJob (queue: receipts)
+   - dispatch ProcessReceiptJob (queue `RECEIPT_QUEUE`, default `default` agar worker biasa ikut memproses)
    - balas "⏳ Membaca struk..."
    │
    ▼
@@ -81,7 +81,7 @@ interface ReceiptParserInterface
 ```
 
 - `GeminiReceiptParser` — rencana implementasi utama (Google Gemini, model Flash free tier via Google AI Studio).
-- `ClaudeReceiptParser` — alternatif bila butuh akurasi lebih tinggi.
+- `ClaudeReceiptParser` — alternatif bila butuh akurasi lebih tinggi (belum dibuat; cukup implementasi interface + lulus test kontrak).
 - `FakeReceiptParser` — untuk test & development tanpa API key (`RECEIPT_PARSER=fake`). **Default sampai API key tersedia.**
 - Binding di `AppServiceProvider` berdasarkan `config('receipt.driver')`. Ganti provider = ganti env, tanpa mengubah service/handler.
 - Semua parser memakai prompt & skema output yang sama (`resources/prompts/receipt.md`, §5.4) dan wajib lulus test kontrak yang sama (`tests/Feature/Integration/ReceiptParserContractTest.php`) dengan respons API di-fake.
@@ -179,13 +179,16 @@ API key menyusul; sampai saat itu `RECEIPT_PARSER=fake`.
 ## 9. Konfigurasi
 
 ```env
-RECEIPT_PARSER=fake            # fake | gemini | claude
+RECEIPT_PARSER=fake            # fake | gemini
 GEMINI_API_KEY=
 ANTHROPIC_API_KEY=
-RECEIPT_MODEL=
+RECEIPT_MODEL=gemini-2.5-flash
 RECEIPT_FALLBACK_MODEL=
 RECEIPT_RATE_PER_MINUTE=10
 RECEIPT_MAX_IMAGE_PX=1600
 RECEIPT_MAX_FILE_MB=10
 RECEIPT_MAX_PDF_PAGES=3
+RECEIPT_QUEUE=default
 ```
+
+Lokal: hasil baca diproses oleh queue worker (`composer run dev` sudah menjalankannya). Tanpa worker, struk tetap berstatus "Antre".

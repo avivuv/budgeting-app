@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, Plus } from '@lucide/vue';
+import { ChevronLeft, ChevronRight, Plus, ScanLine } from '@lucide/vue';
 import { useMediaQuery } from '@vueuse/core';
 import { ref, watch } from 'vue';
 import Heading from '@/components/Heading.vue';
 import NativeSelect from '@/components/NativeSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { index as receiptsIndex } from '@/routes/receipts';
 import { bulk, create, index } from '@/routes/transactions';
 import type { Paginated } from '@/types';
 import TransactionBulkBar from '../components/TransactionBulkBar.vue';
@@ -95,12 +96,20 @@ function deleteOne(item: Item) {
                 title="Transaksi"
                 :description="`${aggregates.count} transaksi${isFiltered ? ' sesuai filter' : ''}`"
             />
-            <Button v-if="canCreate" class="hidden md:inline-flex" as-child>
-                <Link :href="create()">
-                    <Plus class="size-4" />
-                    Tambah transaksi
-                </Link>
-            </Button>
+            <div v-if="canCreate" class="flex gap-2">
+                <Button variant="outline" as-child>
+                    <Link :href="receiptsIndex()">
+                        <ScanLine class="size-4" />
+                        Scan struk
+                    </Link>
+                </Button>
+                <Button class="hidden md:inline-flex" as-child>
+                    <Link :href="create()">
+                        <Plus class="size-4" />
+                        Tambah transaksi
+                    </Link>
+                </Button>
+            </div>
         </div>
 
         <TransactionFilterBar

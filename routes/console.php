@@ -11,3 +11,7 @@ Schedule::command('activitylog:clean --force')->dailyAt('01:00')->onOneServer();
 Schedule::command('backup:clean')->dailyAt('01:30')->onOneServer();
 
 Schedule::command('backup:run')->dailyAt('02:00')->onOneServer();
+
+// Receipt drafts expire after 24 hours; stale files are deleted after 7 days (BR-H10).
+
+Schedule::command('receipts:expire')->hourly()->onOneServer();

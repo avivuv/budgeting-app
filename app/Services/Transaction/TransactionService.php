@@ -189,9 +189,9 @@ class TransactionService
         $previousDate = $transaction->date;
 
         return DB::transaction(function () use ($transaction, $data, $previousDate): Transaction {
-            // Source and author never change on edit (BR-B07).
+            // Source, receipt and author never change on edit (BR-B07).
             $attributes = $data->toModelArray();
-            unset($attributes['source']);
+            unset($attributes['source'], $attributes['receipt_id']);
 
             $transaction = $this->transactions->update($transaction, $attributes);
             $this->transactions->syncTags($transaction, $this->tags->idsForNames($data->normalizedTags()));

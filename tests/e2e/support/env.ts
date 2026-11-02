@@ -18,6 +18,8 @@ export const e2eEnv: Record<string, string> = {
     QUEUE_CONNECTION: 'sync',
     MAIL_MAILER: 'array',
     TELESCOPE_ENABLED: 'false',
+    RECEIPT_PARSER: 'fake',
+    UPLOADS_DISK: 'local',
 };
 
 export const DEMO = {

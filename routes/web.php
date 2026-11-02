@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\Family\MemberController;
 use App\Http\Controllers\Web\Family\OnboardingController;
 use App\Http\Controllers\Web\Family\SwitchFamilyController;
 use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\Receipt\ReceiptController;
 use App\Http\Controllers\Web\Report\ReportController;
 use App\Http\Controllers\Web\Savings\SavingGoalController;
 use App\Http\Controllers\Web\Transaction\TransactionController;
@@ -34,6 +35,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('transactions/bulk', [TransactionController::class, 'bulk'])->name('transactions.bulk');
         Route::post('transactions/parse', [TransactionController::class, 'parse'])->name('transactions.parse');
         Route::resource('transactions', TransactionController::class)->except('show');
+
+        Route::get('receipts', [ReceiptController::class, 'index'])->name('receipts.index');
+        Route::post('receipts', [ReceiptController::class, 'store'])->name('receipts.store');
+        Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
+        Route::get('receipts/{receipt}/image', [ReceiptController::class, 'image'])->name('receipts.image');
+        Route::put('receipts/{receipt}', [ReceiptController::class, 'update'])->name('receipts.update');
+        Route::post('receipts/{receipt}/confirm', [ReceiptController::class, 'confirm'])->name('receipts.confirm');
+        Route::delete('receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('receipts.destroy');
 
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read', [NotificationController::class, 'read'])->name('notifications.read');

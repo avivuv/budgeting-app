@@ -35,6 +35,8 @@ class TransactionData extends Data
         public ?string $note = null,
         public TransactionSource $source = TransactionSource::Web,
         public array $tags = [],
+        public ?string $merchant = null,
+        public ?int $receiptId = null,
     ) {}
 
     /**
@@ -53,12 +55,15 @@ class TransactionData extends Data
             note: $transaction->note,
             source: $transaction->source,
             tags: array_values($transaction->tags->map(fn (Tag $tag): string => $tag->name)->all()),
+            merchant: $transaction->merchant,
+            receiptId: $transaction->receipt_id,
         );
     }
 
     /**
      * Columns for the transactions table. Transfers never carry a category,
-     * other types never carry a destination wallet (BR-B03).
+     * other types never carry a destination wallet (BR-B03). Merchant and
+     * receipt come only from receipts, so a form without them keeps them.
      *
      * @return array<string, mixed>
      */
@@ -67,7 +72,7 @@ class TransactionData extends Data
         $isTransfer = $this->type === TransactionType::Transfer;
         $note = $this->note !== null ? trim($this->note) : null;
 
-        return [
+        $attributes = [
             'type' => $this->type,
             'amount' => $this->amount,
             'date' => $this->date->toDateString(),
@@ -77,6 +82,16 @@ class TransactionData extends Data
             'note' => $note === '' ? null : $note,
             'source' => $this->source,
         ];
+
+        if ($this->merchant !== null) {
+            $attributes['merchant'] = $this->merchant;
+        }
+
+        if ($this->receiptId !== null) {
+            $attributes['receipt_id'] = $this->receiptId;
+        }
+
+        return $attributes;
     }
 
     /**

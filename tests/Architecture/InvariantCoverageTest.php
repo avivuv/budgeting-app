@@ -8,10 +8,7 @@ use Illuminate\Support\Facades\File;
 | of later roadmap phases are pending; the list must shrink as they ship.
 */
 
-const PENDING_INVARIANTS = [
-    // Phase 4 — receipts ("split per item" adds up to the receipt total)
-    'INV-09',
-];
+const PENDING_INVARIANTS = [];
 
 function documentedInvariants(): array
 {

@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { categoryOptions } from '@/modules/categories';
+import { index as receiptsIndex } from '@/routes/receipts';
 import { index } from '@/routes/transactions';
 import QuickEntry from '../components/QuickEntry.vue';
 
@@ -173,8 +174,17 @@ const action = computed(() =>
         />
 
         <Card v-if="!isEdit">
-            <CardContent>
+            <CardContent class="flex flex-col gap-3">
                 <QuickEntry @parsed="fill" />
+                <p class="text-xs text-muted-foreground">
+                    Punya struk atau bukti transfer?
+                    <Link
+                        :href="receiptsIndex()"
+                        class="font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                        Scan struk
+                    </Link>
+                </p>
             </CardContent>
         </Card>
 

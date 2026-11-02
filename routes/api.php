@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\BudgetController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
@@ -28,6 +29,7 @@ Route::prefix('v1')
             Route::get('summary', [ReportController::class, 'summary'])->name('summary');
             Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
             Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
+            Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
         });
 
         Route::middleware('abilities:write')->group(function () {
@@ -40,5 +42,10 @@ Route::prefix('v1')
             Route::put('transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
             Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
             Route::put('budgets', [BudgetController::class, 'update'])->name('budgets.update');
+
+            Route::post('receipts', [ReceiptController::class, 'store'])->name('receipts.store');
+            Route::patch('receipts/{receipt}', [ReceiptController::class, 'update'])->name('receipts.update');
+            Route::post('receipts/{receipt}/confirm', [ReceiptController::class, 'confirm'])->name('receipts.confirm');
+            Route::delete('receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('receipts.destroy');
         });
     });

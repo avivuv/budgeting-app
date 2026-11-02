@@ -5,6 +5,7 @@ import {
     ChartPie,
     LayoutGrid,
     PiggyBank,
+    ScanLine,
     Target,
     Tags,
     Users,
@@ -27,6 +28,7 @@ import { dashboard } from '@/routes';
 import { index as budgetsIndex } from '@/routes/budgets';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as membersIndex } from '@/routes/members';
+import { index as receiptsIndex } from '@/routes/receipts';
 import { index as reportsIndex } from '@/routes/reports';
 import { index as savingsIndex } from '@/routes/savings';
 import { index as transactionsIndex } from '@/routes/transactions';
@@ -43,6 +45,11 @@ const mainNavItems: NavItem[] = [
         title: 'Transaksi',
         href: transactionsIndex(),
         icon: ArrowLeftRight,
+    },
+    {
+        title: 'Scan struk',
+        href: receiptsIndex(),
+        icon: ScanLine,
     },
     {
         title: 'Laporan',

@@ -9,9 +9,11 @@ use App\Repositories\Contracts\BudgetRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\FamilyRepositoryInterface;
 use App\Repositories\Contracts\InvitationRepositoryInterface;
+use App\Repositories\Contracts\ReceiptRepositoryInterface;
 use App\Repositories\Contracts\SavingGoalRepositoryInterface;
 use App\Repositories\Contracts\TagRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
+use App\Repositories\Contracts\UsageLogRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\WalletRepositoryInterface;
 use App\Repositories\Eloquent\ActivityRepository;
@@ -19,9 +21,11 @@ use App\Repositories\Eloquent\BudgetRepository;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\FamilyRepository;
 use App\Repositories\Eloquent\InvitationRepository;
+use App\Repositories\Eloquent\ReceiptRepository;
 use App\Repositories\Eloquent\SavingGoalRepository;
 use App\Repositories\Eloquent\TagRepository;
 use App\Repositories\Eloquent\TransactionRepository;
+use App\Repositories\Eloquent\UsageLogRepository;
 use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Eloquent\WalletRepository;
 use Illuminate\Support\ServiceProvider;
@@ -44,5 +48,7 @@ class RepositoryServiceProvider extends ServiceProvider
         ActivityRepositoryInterface::class => ActivityRepository::class,
         BudgetRepositoryInterface::class => BudgetRepository::class,
         SavingGoalRepositoryInterface::class => SavingGoalRepository::class,
+        ReceiptRepositoryInterface::class => ReceiptRepository::class,
+        UsageLogRepositoryInterface::class => UsageLogRepository::class,
     ];
 }

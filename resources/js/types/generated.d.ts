@@ -91,6 +91,43 @@ declare namespace App {
                 pace: number;
             };
         }
+        namespace Receipt {
+            export type ReceiptData = {
+                id: number;
+                status: App.Enums.ReceiptStatus;
+                statusLabel: string;
+                documentType: App.Enums.ReceiptDocumentType | null;
+                documentTypeLabel: string | null;
+                mimeType: string;
+                hasFile: boolean;
+                merchant: string | null;
+                date: string | null;
+                total: number | null;
+                totalFormatted: string | null;
+                discount: number;
+                tax: number;
+                paymentMethod: string | null;
+                categoryId: number | null;
+                walletId: number | null;
+                confidence: number | null;
+                flags: string[];
+                error: string | null;
+                items: App.DTOs.Receipt.ReceiptItemData[];
+                itemsTotal: number;
+                transactionIds: number[];
+                expiresAt: string | null;
+                createdAt: string;
+            };
+            export type ReceiptItemData = {
+                id: number;
+                name: string;
+                qty: number;
+                unitPrice: number | null;
+                total: number;
+                totalFormatted: string;
+                categoryId: number | null;
+            };
+        }
         namespace Report {
             export type CashflowRowData = {
                 key: string;
@@ -245,6 +282,20 @@ declare namespace App {
         export type BudgetStatus = 'safe' | 'warning' | 'over';
         export type CategoryType = 'income' | 'expense';
         export type FamilyRole = 'owner' | 'admin' | 'member' | 'viewer';
+        export type ReceiptConfirmMode = 'total' | 'split';
+        export type ReceiptDocumentType =
+            | 'receipt'
+            | 'transfer_proof'
+            | 'ewallet'
+            | 'invoice';
+        export type ReceiptStatus =
+            | 'pending'
+            | 'processing'
+            | 'parsed'
+            | 'confirmed'
+            | 'failed'
+            | 'rejected'
+            | 'expired';
         export type ReportTab =
             | 'cashflow'
             | 'categories'
