@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\Family\OnboardingController;
 use App\Http\Controllers\Web\Family\SwitchFamilyController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\Report\ReportController;
+use App\Http\Controllers\Web\Savings\SavingGoalController;
 use App\Http\Controllers\Web\Transaction\TransactionController;
 use App\Http\Controllers\Web\Wallet\WalletController;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
         Route::post('budgets/copy', [BudgetController::class, 'copy'])->name('budgets.copy');
         Route::delete('budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
+
+        Route::get('savings', [SavingGoalController::class, 'index'])->name('savings.index');
+        Route::post('savings', [SavingGoalController::class, 'store'])->name('savings.store');
+        Route::put('savings/{goal}', [SavingGoalController::class, 'update'])->name('savings.update');
+        Route::post('savings/{goal}/contribute', [SavingGoalController::class, 'contribute'])->name('savings.contribute');
+        Route::delete('savings/{goal}', [SavingGoalController::class, 'destroy'])->name('savings.destroy');
 
         Route::get('wallets', [WalletController::class, 'index'])->name('wallets.index');
         Route::post('wallets', [WalletController::class, 'store'])->name('wallets.store');

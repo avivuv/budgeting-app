@@ -135,8 +135,8 @@ Unique `(family_id, category_id, period)`. `period` = **tanggal 1 bulan label** 
 
 ### saving_goals ⚑
 
-`id, family_id, name, target_amount, wallet_id null, deadline null, icon, color, achieved_at null`
-Progress = saldo wallet terkait, atau kontribusi manual.
+`id, family_id, name, target_amount bigint, wallet_id null, saved_amount bigint default 0, deadline date null, icon, color, achieved_at null`
+Progres = saldo dompet terkait, atau `saved_amount` (kontribusi manual) bila tanpa dompet (BR-K01…K04).
 
 ### receipts ⚑
 

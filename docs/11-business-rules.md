@@ -130,3 +130,12 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-J08 | Setiap update Telegram diproses **paling banyak sekali** berdasarkan `update_id` (disimpan 24 jam). Update yang dikirim ulang Telegram diabaikan.                                                                 |
 | BR-J09 | Chat pribadi mencatat ke `users.telegram_default_family_id`, **terpisah** dari keluarga aktif di web; diganti lewat `/keluarga`. Default awal = keluarga pertama user.                                            |
 | BR-J10 | Reply ke pesan konfirmasi bot dengan teks koreksi (`ubah 45rb`, `kategori makan`, `dompet bca`, `tanggal kemarin`, `hapus`) mengubah transaksi/draft terkait, dengan aturan izin yang sama seperti edit (BR-B09). |
+
+## K. Tujuan Tabungan
+
+| ID     | Rule                                                                                                                                                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BR-K01 | Progres tujuan = saldo dompet terkait (BR-C01) bila tujuan dihubungkan ke dompet; selain itu = total kontribusi manual (`saved_amount`). Target harus `> 0` dan `≤ 999.999.999.999`.                                      |
+| BR-K02 | Kontribusi manual boleh positif (setor) atau negatif (ambil), tetapi `saved_amount` tidak boleh di bawah 0. Tujuan yang terhubung ke dompet tidak menerima kontribusi manual.                                             |
+| BR-K03 | `persen = progres / target × 100` (BR-A04), `sisa = max(target − progres, 0)`. Tujuan tercapai saat progres ≥ target; `achieved_at` diisi saat pertama kali tercapai dan dikosongkan bila progres turun lagi.             |
+| BR-K04 | Setoran per bulan yang dibutuhkan = `sisa / jumlah periode tersisa sampai periode berisi deadline (termasuk periode berjalan)`, dibulatkan ke atas. Tanpa deadline, deadline lewat, atau sudah tercapai → tidak dihitung. |

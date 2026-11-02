@@ -44,15 +44,16 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 - ✅ `DemoSeeder` untuk data contoh lokal
 - ⬜ 🎯 **Uji pakai oleh keluarga sendiri 1–2 minggu → catat masukan**
 
-## Fase 3 — Budget & Laporan
+## Fase 3 — Budget & Laporan ✅ selesai 2 Nov 2026
 
-- ⬜ Budget per kategori + salin bulan lalu
-- ⬜ `CheckBudgetThresholds` + notifikasi 80%/100% (channel database + email)
-- ⬜ `ReportService` + halaman laporan (arus kas, kategori, anggota, dompet, budget, tahunan, merchant, tag)
-- ⬜ Export Excel & PDF
-- ⬜ API `/summary` & `/reports/*`
-- ⬜ Tujuan tabungan
-- ⬜ Consistency test INV-01 … INV-13 lulus
+- ✅ Budget per kategori (periode = bulan label) + salin periode lalu (BR-F01…F07); halaman Budget, kartu & insight di dashboard
+- ✅ `CheckBudgetThresholds` + notifikasi 80%/100% sekali per periode, reset bila turun (channel database + email); lonceng & halaman notifikasi
+- ✅ `ReportService` + halaman laporan: arus kas (saldo awal–akhir), kategori (+ sub, vs periode lalu), anggota, dompet (mutasi), budget, tahunan (heatmap), merchant, tag
+- ✅ Export Excel (Ringkasan, laporan, Transaksi, Kategori, Budget) & PDF dari tabel yang sama — langsung diunduh (export latar belakang/`GenerateReportJob` belum perlu untuk ukuran data keluarga)
+- ✅ API `/summary`, `/reports/{laporan}`, `GET/PUT /budgets`
+- ✅ Tujuan tabungan (BR-K01…K04): dari saldo dompet atau setoran manual, setoran per bulan sampai tenggat
+- ✅ Consistency test INV-01 … INV-13 lulus (INV-09 struk menyusul di Fase 4), dijaga `InvariantCoverageTest`
+- ✅ E2E Playwright (`pnpm run test:e2e`) + API round-trip test
 
 ## Fase 4 — Deteksi Struk (Web & API)
 

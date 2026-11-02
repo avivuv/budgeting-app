@@ -3,9 +3,11 @@ import { Deferred, Head, Link, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, Lightbulb, Scale } from '@lucide/vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BudgetProgress } from '@/modules/budgets';
+import { SavingGoalCard } from '@/modules/savings';
 import { TransactionItem } from '@/modules/transactions';
 import { dashboard } from '@/routes';
 import { index as budgetsIndex } from '@/routes/budgets';
+import { index as savingsIndex } from '@/routes/savings';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { index as walletsIndex } from '@/routes/wallets';
 import BalanceHeader from '../components/BalanceHeader.vue';
@@ -32,6 +34,7 @@ const props = defineProps<{
     members?: App.DTOs.Dashboard.MemberTotalData[];
     wallets?: App.DTOs.Wallet.WalletItemData[];
     budgets?: App.DTOs.Budget.BudgetItemData[];
+    goals?: App.DTOs.Savings.SavingGoalItemData[];
     recent?: App.DTOs.Transaction.TransactionItemData[];
     canCreate: boolean;
 }>();
@@ -215,6 +218,29 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
                         </div>
                     </Deferred>
                 </DashboardCard>
+
+                <Deferred data="goals">
+                    <template #fallback>
+                        <Skeleton class="h-24 rounded-2xl" />
+                    </template>
+                    <DashboardCard v-if="goals?.length" title="Tujuan tabungan">
+                        <template #action>
+                            <Link
+                                :href="savingsIndex()"
+                                class="text-sm font-medium text-primary"
+                                >Lihat</Link
+                            >
+                        </template>
+                        <div class="flex flex-col gap-4">
+                            <SavingGoalCard
+                                v-for="goal in goals.slice(0, 3)"
+                                :key="goal.id"
+                                :goal="goal"
+                                compact
+                            />
+                        </div>
+                    </DashboardCard>
+                </Deferred>
 
                 <DashboardCard title="Saldo dompet">
                     <template #action>

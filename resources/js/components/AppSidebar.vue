@@ -5,6 +5,7 @@ import {
     ChartPie,
     LayoutGrid,
     PiggyBank,
+    Target,
     Tags,
     Users,
     Wallet,
@@ -27,6 +28,7 @@ import { index as budgetsIndex } from '@/routes/budgets';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as membersIndex } from '@/routes/members';
 import { index as reportsIndex } from '@/routes/reports';
+import { index as savingsIndex } from '@/routes/savings';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { index as walletsIndex } from '@/routes/wallets';
 import type { NavItem } from '@/types';
@@ -51,6 +53,11 @@ const mainNavItems: NavItem[] = [
         title: 'Budget',
         href: budgetsIndex(),
         icon: PiggyBank,
+    },
+    {
+        title: 'Tabungan',
+        href: savingsIndex(),
+        icon: Target,
     },
     {
         title: 'Dompet',

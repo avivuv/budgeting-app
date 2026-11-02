@@ -9,6 +9,7 @@ use App\Repositories\Contracts\BudgetRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\FamilyRepositoryInterface;
 use App\Repositories\Contracts\InvitationRepositoryInterface;
+use App\Repositories\Contracts\SavingGoalRepositoryInterface;
 use App\Repositories\Contracts\TagRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -18,6 +19,7 @@ use App\Repositories\Eloquent\BudgetRepository;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\FamilyRepository;
 use App\Repositories\Eloquent\InvitationRepository;
+use App\Repositories\Eloquent\SavingGoalRepository;
 use App\Repositories\Eloquent\TagRepository;
 use App\Repositories\Eloquent\TransactionRepository;
 use App\Repositories\Eloquent\UserRepository;
@@ -41,5 +43,6 @@ class RepositoryServiceProvider extends ServiceProvider
         InvitationRepositoryInterface::class => InvitationRepository::class,
         ActivityRepositoryInterface::class => ActivityRepository::class,
         BudgetRepositoryInterface::class => BudgetRepository::class,
+        SavingGoalRepositoryInterface::class => SavingGoalRepository::class,
     ];
 }

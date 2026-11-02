@@ -159,6 +159,28 @@ declare namespace App {
                 peakMonth: string | null;
             };
         }
+        namespace Savings {
+            export type SavingGoalItemData = {
+                id: number;
+                name: string;
+                icon: string | null;
+                color: string | null;
+                targetAmount: number;
+                targetFormatted: string;
+                progress: number;
+                progressFormatted: string;
+                remaining: number;
+                remainingFormatted: string;
+                percentage: number | null;
+                achieved: boolean;
+                walletId: number | null;
+                walletName: string | null;
+                deadline: string | null;
+                deadlineFormatted: string | null;
+                monthlyNeeded: number | null;
+                monthlyNeededFormatted: string | null;
+            };
+        }
         namespace Transaction {
             export type ParsedTransactionData = {
                 line: string;
