@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\Category\CategoryController;
+use App\Http\Controllers\Web\Dashboard\DashboardController;
 use App\Http\Controllers\Web\Family\InvitationController;
 use App\Http\Controllers\Web\Family\MemberController;
 use App\Http\Controllers\Web\Family\OnboardingController;
@@ -23,7 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Everything below runs inside the active family (tenant).
     Route::middleware('family')->group(function () {
-        Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::resource('transactions', TransactionController::class)->except('show');
 

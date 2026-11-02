@@ -181,6 +181,9 @@ importers:
       '@vueuse/core':
         specifier: ^12.8.2
         version: 12.8.2(typescript@5.9.3)
+      apexcharts:
+        specifier: 8.7.0
+        version: 8.7.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1152,6 +1155,13 @@ packages:
   ansi-styles@7.0.0:
     resolution: {integrity: sha512-kKvt3m4uwzqL0wlkPd09CmljPJGOZZ4D0fP65sqFSvPkMRKhNi+74MgIJ5QxE6SxqB4t4KyUFGg8+n5zjo6hew==}
     engines: {node: '>=22'}
+
+  apex-commons@0.8.4:
+    resolution: {integrity: sha512-RRv31MAzpSW3Dmjx/hLuuOZFCstFnBnhkIoQ7iodaZY3WSZKCXzQ41ypBhMcvy+6LxENt/rTANvTqt5NR+trTA==}
+
+  apexcharts@8.7.0:
+    resolution: {integrity: sha512-HHpMlM4QvLXFLL6hyn1iivF+3IyoCrBEXYcV9elJuT+Dc4At9P5+RAaSYA1onOrcXg59+VTAsnyUDdm4GRhUfA==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   aria-hidden@1.2.6:
     resolution: {integrity: sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA==}
@@ -2588,6 +2598,12 @@ snapshots:
 
   ansi-styles@7.0.0:
     optional: true
+
+  apex-commons@0.8.4: {}
+
+  apexcharts@8.7.0:
+    dependencies:
+      apex-commons: 0.8.4
 
   aria-hidden@1.2.6:
     dependencies:

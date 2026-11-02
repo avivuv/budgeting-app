@@ -6,6 +6,7 @@ namespace App\Services\Wallet;
 
 use App\DTOs\Wallet\WalletData;
 use App\Enums\WalletType;
+use App\Events\Wallet\WalletChanged;
 use App\Exceptions\Wallet\WalletRuleException;
 use App\Models\Wallet;
 use App\Repositories\Contracts\WalletRepositoryInterface;
@@ -83,17 +84,26 @@ class WalletService
 
     public function create(WalletData $data): Wallet
     {
-        return $this->wallets->create($data->toModelArray());
+        $wallet = $this->wallets->create($data->toModelArray());
+        WalletChanged::dispatch($wallet);
+
+        return $wallet;
     }
 
     public function update(Wallet $wallet, WalletData $data): Wallet
     {
-        return $this->wallets->update($wallet, $data->toModelArray());
+        $wallet = $this->wallets->update($wallet, $data->toModelArray());
+        WalletChanged::dispatch($wallet);
+
+        return $wallet;
     }
 
     public function setArchived(Wallet $wallet, bool $archived): Wallet
     {
-        return $this->wallets->update($wallet, ['is_archived' => $archived]);
+        $wallet = $this->wallets->update($wallet, ['is_archived' => $archived]);
+        WalletChanged::dispatch($wallet);
+
+        return $wallet;
     }
 
     /**
@@ -106,5 +116,6 @@ class WalletService
         }
 
         $this->wallets->delete($wallet);
+        WalletChanged::dispatch($wallet);
     }
 }

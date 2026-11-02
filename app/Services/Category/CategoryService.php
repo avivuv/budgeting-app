@@ -6,6 +6,7 @@ namespace App\Services\Category;
 
 use App\DTOs\Category\CategoryData;
 use App\Enums\CategoryType;
+use App\Events\Category\CategoryChanged;
 use App\Exceptions\Category\CategoryRuleException;
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
@@ -55,12 +56,18 @@ class CategoryService
 
         $this->assertValid($data->type, $data->parentId, $attributes['name'], $category->id);
 
-        return $this->categories->update($category, $attributes);
+        $category = $this->categories->update($category, $attributes);
+        CategoryChanged::dispatch($category);
+
+        return $category;
     }
 
     public function setArchived(Category $category, bool $archived): Category
     {
-        return $this->categories->update($category, ['is_archived' => $archived]);
+        $category = $this->categories->update($category, ['is_archived' => $archived]);
+        CategoryChanged::dispatch($category);
+
+        return $category;
     }
 
     /**
@@ -78,6 +85,7 @@ class CategoryService
         }
 
         $this->categories->delete($category);
+        CategoryChanged::dispatch($category);
     }
 
     /**
@@ -100,6 +108,7 @@ class CategoryService
         return DB::transaction(function () use ($from, $to): int {
             $moved = $this->categories->reassignTransactions($from, $to);
             $this->categories->delete($from);
+            CategoryChanged::dispatch($to);
 
             return $moved;
         });

@@ -14,6 +14,60 @@ declare namespace App {
                 children: App.DTOs.Category.CategoryItemData[];
             };
         }
+        namespace Dashboard {
+            export type CashflowPointData = {
+                key: string;
+                label: string;
+                income: number;
+                expense: number;
+                net: number;
+            };
+            export type CategorySliceData = {
+                categoryId: number;
+                name: string;
+                color: string | null;
+                icon: string | null;
+                amount: number;
+                formatted: string;
+                percentage: number | null;
+            };
+            export type DashboardSummaryData = {
+                balance: App.DTOs.Dashboard.StatData;
+                income: App.DTOs.Dashboard.StatData;
+                expense: App.DTOs.Dashboard.StatData;
+                net: App.DTOs.Dashboard.StatData;
+            };
+            export type MemberTotalData = {
+                userId: number | null;
+                name: string;
+                amount: number;
+                formatted: string;
+                count: number;
+                percentage: number | null;
+            };
+            export type PeriodData = {
+                key: string;
+                label: string;
+                range: string;
+                start: string;
+                end: string;
+                previousKey: string;
+                nextKey: string | null;
+                isCurrent: boolean;
+            };
+            export type StatData = {
+                amount: number;
+                formatted: string;
+                previous: number;
+                change: number | null;
+            };
+            export type TrendPointData = {
+                date: string;
+                label: string;
+                cumulative: number | null;
+                pace: number;
+            };
+        }
         namespace Transaction {
             export type TransactionItemData = {
                 id: number;

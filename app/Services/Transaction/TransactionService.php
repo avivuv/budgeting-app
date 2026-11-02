@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Transaction;
 
 use App\DTOs\Transaction\TransactionData;
+use App\DTOs\Transaction\TransactionFilterData;
 use App\Enums\TransactionType;
+use App\Events\Transaction\TransactionCreated;
+use App\Events\Transaction\TransactionDeleted;
+use App\Events\Transaction\TransactionUpdated;
 use App\Exceptions\Transaction\TransactionRuleException;
 use App\Models\Transaction;
 use App\Models\User;
@@ -38,9 +42,39 @@ class TransactionService
     /**
      * @return LengthAwarePaginator<int, Transaction>
      */
-    public function paginate(int $perPage = 20): LengthAwarePaginator
+    public function paginate(?TransactionFilterData $filter = null, int $perPage = 20): LengthAwarePaginator
     {
-        return $this->transactions->paginateLatest($perPage);
+        return $this->transactions->paginateFiltered($filter ?? new TransactionFilterData, $perPage);
+    }
+
+    /**
+     * Income and expense of everything matching the filter; transfers excluded (BR-B11).
+     *
+     * @return array{income: int, expense: int}
+     */
+    public function totals(TransactionFilterData $filter): array
+    {
+        return $this->transactions->totals($filter);
+    }
+
+    /**
+     * Daily subtotals for the given dates, with the same filter (INV-06).
+     *
+     * @param  list<string>  $dates  Y-m-d
+     * @return array<string, array{income: int, expense: int}>
+     */
+    public function dailyTotals(TransactionFilterData $filter, array $dates): array
+    {
+        if ($dates === []) {
+            return [];
+        }
+
+        sort($dates);
+
+        return array_intersect_key(
+            $this->transactions->dailyTotals($filter->between(max($filter->from ?? $dates[0], $dates[0]), min($filter->to ?? end($dates), end($dates)))),
+            array_flip($dates),
+        );
     }
 
     public function find(int $id): Transaction
@@ -59,6 +93,7 @@ class TransactionService
             ]);
 
             $this->transactions->syncTags($transaction, $this->tags->idsForNames($data->normalizedTags()));
+            TransactionCreated::dispatch($transaction);
 
             return $transaction;
         });
@@ -75,6 +110,7 @@ class TransactionService
 
             $transaction = $this->transactions->update($transaction, $attributes);
             $this->transactions->syncTags($transaction, $this->tags->idsForNames($data->normalizedTags()));
+            TransactionUpdated::dispatch($transaction);
 
             return $transaction;
         });
@@ -86,6 +122,7 @@ class TransactionService
     public function delete(Transaction $transaction): void
     {
         $this->transactions->delete($transaction);
+        TransactionDeleted::dispatch($transaction);
     }
 
     /**

@@ -32,7 +32,7 @@ class TransactionController extends Controller
 
         $perPage = max(1, min(100, $request->integer('per_page', 20)));
 
-        return TransactionResource::collection($this->transactions->paginate($perPage));
+        return TransactionResource::collection($this->transactions->paginate(perPage: $perPage));
     }
 
     public function store(TransactionRequest $request): JsonResponse

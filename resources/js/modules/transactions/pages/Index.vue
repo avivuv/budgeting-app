@@ -1,23 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import {
-    ArrowDownLeft,
-    ArrowLeftRight,
-    ArrowUpRight,
-    ChevronLeft,
-    ChevronRight,
-    Pencil,
-    Plus,
-    Trash2,
-} from '@lucide/vue';
+import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 import TransactionController from '@/actions/App/Http/Controllers/Web/Transaction/TransactionController';
 import Heading from '@/components/Heading.vue';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { create, edit, index } from '@/routes/transactions';
 import type { Paginated } from '@/types';
+import TransactionItem from '../components/TransactionItem.vue';
 
 type Item = App.DTOs.Transaction.TransactionItemData;
 
@@ -45,27 +36,6 @@ const groups = computed(() => {
 
     return [...map.values()];
 });
-
-const style = {
-    expense: {
-        icon: ArrowUpRight,
-        color: 'text-expense',
-        bg: 'bg-expense/10',
-        sign: '-',
-    },
-    income: {
-        icon: ArrowDownLeft,
-        color: 'text-income',
-        bg: 'bg-income/10',
-        sign: '+',
-    },
-    transfer: {
-        icon: ArrowLeftRight,
-        color: 'text-transfer',
-        bg: 'bg-transfer/10',
-        sign: '',
-    },
-} as const;
 
 function destroy(item: Item) {
     if (confirm(`Hapus transaksi ${item.amountFormatted}?`)) {
@@ -116,86 +86,38 @@ function destroy(item: Item) {
             </h2>
             <Card class="py-0">
                 <CardContent class="divide-y px-0">
-                    <div
+                    <TransactionItem
                         v-for="item in group.items"
                         :key="item.id"
-                        class="flex items-center gap-3 px-4 py-3"
+                        :item="item"
                     >
-                        <div
-                            class="flex size-10 shrink-0 items-center justify-center rounded-full"
-                            :class="[
-                                style[item.type].bg,
-                                style[item.type].color,
-                            ]"
-                        >
-                            <component
-                                :is="style[item.type].icon"
-                                class="size-5"
-                            />
-                        </div>
-
-                        <div class="min-w-0 flex-1">
-                            <p class="truncate font-medium">
-                                <template v-if="item.type === 'transfer'">
-                                    {{ item.walletName }} →
-                                    {{ item.toWalletName }}
-                                </template>
-                                <template v-else>
-                                    {{ item.categoryName }}
-                                </template>
-                            </p>
-                            <p class="truncate text-xs text-muted-foreground">
-                                <span v-if="item.note">{{ item.note }} · </span>
-                                <span v-if="item.type !== 'transfer'"
-                                    >{{ item.walletName }} ·
-                                </span>
-                                {{ item.creatorName ?? 'Mantan anggota' }}
-                            </p>
-                            <div
-                                v-if="item.tags.length"
-                                class="mt-1 flex flex-wrap gap-1"
-                            >
-                                <Badge
-                                    v-for="tag in item.tags"
-                                    :key="tag"
-                                    variant="secondary"
-                                    class="text-[10px]"
+                        <template v-if="item.canEdit" #actions>
+                            <div class="flex shrink-0 gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-8"
+                                    as-child
                                 >
-                                    #{{ tag }}
-                                </Badge>
+                                    <Link
+                                        :href="edit(item.id)"
+                                        aria-label="Ubah"
+                                    >
+                                        <Pencil class="size-4" />
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-8 text-muted-foreground hover:text-destructive"
+                                    aria-label="Hapus"
+                                    @click="destroy(item)"
+                                >
+                                    <Trash2 class="size-4" />
+                                </Button>
                             </div>
-                        </div>
-
-                        <p
-                            class="shrink-0 text-right font-semibold tabular-nums"
-                            :class="style[item.type].color"
-                        >
-                            {{ style[item.type].sign
-                            }}{{ item.amountFormatted }}
-                        </p>
-
-                        <div v-if="item.canEdit" class="flex shrink-0 gap-1">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                class="size-8"
-                                as-child
-                            >
-                                <Link :href="edit(item.id)" aria-label="Ubah">
-                                    <Pencil class="size-4" />
-                                </Link>
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                class="size-8 text-muted-foreground hover:text-destructive"
-                                aria-label="Hapus"
-                                @click="destroy(item)"
-                            >
-                                <Trash2 class="size-4" />
-                            </Button>
-                        </div>
-                    </div>
+                        </template>
+                    </TransactionItem>
                 </CardContent>
             </Card>
         </div>
