@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\Family\MemberController;
 use App\Http\Controllers\Web\Family\OnboardingController;
 use App\Http\Controllers\Web\Family\SwitchFamilyController;
 use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\Report\ReportController;
 use App\Http\Controllers\Web\Transaction\TransactionController;
 use App\Http\Controllers\Web\Wallet\WalletController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
         Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
         Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');

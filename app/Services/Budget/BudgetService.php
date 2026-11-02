@@ -172,6 +172,20 @@ class BudgetService
         return $budget;
     }
 
+    /**
+     * Set several budgets of one period, all or nothing (REST API bulk update).
+     *
+     * @param  list<array{category_id: int, amount: int}>  $rows
+     */
+    public function setMany(array $rows, Period $period): void
+    {
+        DB::transaction(function () use ($rows, $period): void {
+            foreach ($rows as $row) {
+                $this->set($row['category_id'], $period, $row['amount']);
+            }
+        });
+    }
+
     public function delete(Budget $budget): void
     {
         $this->budgets->delete($budget);

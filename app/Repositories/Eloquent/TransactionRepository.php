@@ -48,6 +48,13 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
             ->withQueryString();
     }
 
+    public function allFiltered(TransactionFilterData $filter): Collection
+    {
+        return $this->sorted($this->filtered($filter), 'date')
+            ->with(self::RELATIONS)
+            ->get();
+    }
+
     public function latestFiltered(TransactionFilterData $filter, int $limit): Collection
     {
         return $this->sorted($this->filtered($filter), '-date')
@@ -101,6 +108,24 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
         return $sums;
     }
 
+    public function countByCategory(TransactionFilterData $filter): array
+    {
+        $rows = $this->filtered($filter)
+            ->toBase()
+            ->whereNotNull('category_id')
+            ->select('category_id')
+            ->selectRaw('COUNT(*) AS cnt')
+            ->groupBy('category_id')
+            ->get();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row->category_id] = (int) $row->cnt;
+        }
+
+        return $counts;
+    }
+
     public function sumByCreator(TransactionFilterData $filter): array
     {
         $rows = $this->filtered($filter)
@@ -116,6 +141,35 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
         }
 
         return $sums;
+    }
+
+    public function sumByMerchant(TransactionFilterData $filter, int $limit): array
+    {
+        $rows = $this->filtered($filter)
+            ->toBase()
+            ->selectRaw("COALESCE(NULLIF(TRIM(merchant), ''), NULLIF(TRIM(note), '')) AS name, SUM(amount) AS total, COUNT(*) AS cnt")
+            ->whereRaw("COALESCE(NULLIF(TRIM(merchant), ''), NULLIF(TRIM(note), '')) IS NOT NULL")
+            ->groupBy('name')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+
+        return array_values($rows->map(fn ($row): array => ['name' => (string) $row->name, 'amount' => (int) $row->total, 'count' => (int) $row->cnt])->all());
+    }
+
+    public function sumByTag(TransactionFilterData $filter): array
+    {
+        $rows = $this->filtered($filter)
+            ->toBase()
+            ->join('transaction_tag', 'transaction_tag.transaction_id', '=', 'transactions.id')
+            ->join('tags', 'tags.id', '=', 'transaction_tag.tag_id')
+            ->select('tags.name')
+            ->selectRaw('SUM(transactions.amount) AS total, COUNT(*) AS cnt')
+            ->groupBy('tags.name')
+            ->orderByDesc('total')
+            ->get();
+
+        return array_values($rows->map(fn ($row): array => ['name' => (string) $row->name, 'amount' => (int) $row->total, 'count' => (int) $row->cnt])->all());
     }
 
     public function mostUsedCategoryForNote(string $note, TransactionType $type): ?int

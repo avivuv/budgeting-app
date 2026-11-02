@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import {
     ArrowLeftRight,
+    ChartPie,
     LayoutGrid,
     PiggyBank,
     Tags,
@@ -25,6 +26,7 @@ import { dashboard } from '@/routes';
 import { index as budgetsIndex } from '@/routes/budgets';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as membersIndex } from '@/routes/members';
+import { index as reportsIndex } from '@/routes/reports';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { index as walletsIndex } from '@/routes/wallets';
 import type { NavItem } from '@/types';
@@ -39,6 +41,11 @@ const mainNavItems: NavItem[] = [
         title: 'Transaksi',
         href: transactionsIndex(),
         icon: ArrowLeftRight,
+    },
+    {
+        title: 'Laporan',
+        href: reportsIndex(),
+        icon: ChartPie,
     },
     {
         title: 'Budget',

@@ -29,6 +29,13 @@ interface TransactionRepositoryInterface extends BaseRepositoryInterface
     public function paginateFiltered(TransactionFilterData $filter, int $perPage = 20): LengthAwarePaginator;
 
     /**
+     * Every match of the filter in date order, with relations loaded (exports).
+     *
+     * @return Collection<int, Transaction>
+     */
+    public function allFiltered(TransactionFilterData $filter): Collection;
+
+    /**
      * The newest $limit matches of the filter, with relations loaded.
      *
      * @return Collection<int, Transaction>
@@ -57,11 +64,33 @@ interface TransactionRepositoryInterface extends BaseRepositoryInterface
     public function sumByCategory(TransactionFilterData $filter): array;
 
     /**
+     * Number of transactions per category id (direct assignment only).
+     *
+     * @return array<int, int>
+     */
+    public function countByCategory(TransactionFilterData $filter): array;
+
+    /**
      * Sum and count per recorder (created_by); key 0 = deleted account (BR-I04, BR-I08).
      *
      * @return array<int, array{amount: int, count: int}>
      */
     public function sumByCreator(TransactionFilterData $filter): array;
+
+    /**
+     * Sum and count per merchant; transactions without a merchant are grouped
+     * by their note. Biggest first.
+     *
+     * @return list<array{name: string, amount: int, count: int}>
+     */
+    public function sumByMerchant(TransactionFilterData $filter, int $limit): array;
+
+    /**
+     * Sum and count per tag name, biggest first.
+     *
+     * @return list<array{name: string, amount: int, count: int}>
+     */
+    public function sumByTag(TransactionFilterData $filter): array;
 
     /**
      * Category used most often for the same note (case-insensitive), for the

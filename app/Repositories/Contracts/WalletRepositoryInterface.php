@@ -26,6 +26,15 @@ interface WalletRepositoryInterface extends BaseRepositoryInterface
      */
     public function balances(array $walletIds, ?string $until = null): array;
 
+    /**
+     * Money in and out per wallet between two dates (inclusive, BR-D04),
+     * soft-deleted transactions excluded (BR-B08).
+     *
+     * @param  list<int>  $walletIds
+     * @return array<int, array{income: int, expense: int, transferIn: int, transferOut: int}>
+     */
+    public function movements(array $walletIds, string $from, string $to): array;
+
     public function hasTransactions(Wallet $wallet): bool;
 
     /**

@@ -91,6 +91,74 @@ declare namespace App {
                 pace: number;
             };
         }
+        namespace Report {
+            export type CashflowRowData = {
+                key: string;
+                label: string;
+                start: string;
+                end: string;
+                income: App.DTOs.Report.MoneyData;
+                expense: App.DTOs.Report.MoneyData;
+                net: App.DTOs.Report.MoneyData;
+                opening: App.DTOs.Report.MoneyData;
+                closing: App.DTOs.Report.MoneyData;
+            };
+            export type CategoryRowData = {
+                id: number;
+                name: string;
+                color: string | null;
+                amount: App.DTOs.Report.MoneyData;
+                share: number | null;
+                previous: App.DTOs.Report.MoneyData;
+                change: number | null;
+                count: number;
+                children: App.DTOs.Report.CategoryRowData[];
+            };
+            export type MemberRowData = {
+                userId: number | null;
+                name: string;
+                income: App.DTOs.Report.MoneyData;
+                expense: App.DTOs.Report.MoneyData;
+                expenseShare: number | null;
+                count: number;
+            };
+            export type MoneyData = {
+                amount: number;
+                formatted: string;
+            };
+            export type RankedRowData = {
+                name: string;
+                amount: App.DTOs.Report.MoneyData;
+                count: number;
+                share: number | null;
+            };
+            export type WalletMovementData = {
+                id: number;
+                name: string;
+                typeLabel: string;
+                isArchived: boolean;
+                opening: App.DTOs.Report.MoneyData;
+                income: App.DTOs.Report.MoneyData;
+                expense: App.DTOs.Report.MoneyData;
+                transferIn: App.DTOs.Report.MoneyData;
+                transferOut: App.DTOs.Report.MoneyData;
+                closing: App.DTOs.Report.MoneyData;
+            };
+            export type YearlyReportData = {
+                year: number;
+                months: string[];
+                categories: {
+                    id: number;
+                    name: string;
+                    values: number[];
+                    total: App.DTOs.Report.MoneyData;
+                }[];
+                monthTotals: App.DTOs.Report.MoneyData[];
+                total: App.DTOs.Report.MoneyData;
+                income: App.DTOs.Report.MoneyData;
+                peakMonth: string | null;
+            };
+        }
         namespace Transaction {
             export type ParsedTransactionData = {
                 line: string;
@@ -155,6 +223,15 @@ declare namespace App {
         export type BudgetStatus = 'safe' | 'warning' | 'over';
         export type CategoryType = 'income' | 'expense';
         export type FamilyRole = 'owner' | 'admin' | 'member' | 'viewer';
+        export type ReportTab =
+            | 'cashflow'
+            | 'categories'
+            | 'members'
+            | 'wallets'
+            | 'budget'
+            | 'yearly'
+            | 'merchants'
+            | 'tags';
         export type TransactionSource =
             | 'web'
             | 'api'

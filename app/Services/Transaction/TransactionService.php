@@ -50,6 +50,16 @@ class TransactionService
     }
 
     /**
+     * Every transaction matching the filter, oldest first (exports).
+     *
+     * @return Collection<int, Transaction>
+     */
+    public function all(TransactionFilterData $filter): Collection
+    {
+        return $this->transactions->allFiltered($filter);
+    }
+
+    /**
      * Income and expense of everything matching the filter; transfers excluded (BR-B11).
      *
      * @return array{income: int, expense: int}

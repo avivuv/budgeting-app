@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\V1\BudgetController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Middleware\EnsureIdempotency;
@@ -23,6 +25,9 @@ Route::prefix('v1')
             Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
             Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
             Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+            Route::get('summary', [ReportController::class, 'summary'])->name('summary');
+            Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+            Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
         });
 
         Route::middleware('abilities:write')->group(function () {
@@ -34,5 +39,6 @@ Route::prefix('v1')
             Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
             Route::put('transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
             Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+            Route::put('budgets', [BudgetController::class, 'update'])->name('budgets.update');
         });
     });

@@ -69,6 +69,39 @@ class WalletRepository extends BaseRepository implements WalletRepositoryInterfa
         return $balances;
     }
 
+    public function movements(array $walletIds, string $from, string $to): array
+    {
+        if ($walletIds === []) {
+            return [];
+        }
+
+        $base = Transaction::query()->whereBetween('date', [$from, $to]);
+
+        // income / expense / transfer out, booked on the source wallet
+        $outgoing = [];
+        foreach ((clone $base)->toBase()->whereIn('wallet_id', $walletIds)->select('wallet_id', 'type')->selectRaw('SUM(amount) AS total')->groupBy('wallet_id', 'type')->get() as $row) {
+            $outgoing[(int) $row->wallet_id][(string) $row->type] = (int) $row->total;
+        }
+
+        // transfer in, booked on the destination wallet
+        $incoming = [];
+        foreach ((clone $base)->toBase()->where('type', TransactionType::Transfer)->whereIn('to_wallet_id', $walletIds)->select('to_wallet_id')->selectRaw('SUM(amount) AS total')->groupBy('to_wallet_id')->get() as $row) {
+            $incoming[(int) $row->to_wallet_id] = (int) $row->total;
+        }
+
+        $movements = [];
+        foreach ($walletIds as $id) {
+            $movements[$id] = [
+                'income' => $outgoing[$id][TransactionType::Income->value] ?? 0,
+                'expense' => $outgoing[$id][TransactionType::Expense->value] ?? 0,
+                'transferIn' => $incoming[$id] ?? 0,
+                'transferOut' => $outgoing[$id][TransactionType::Transfer->value] ?? 0,
+            ];
+        }
+
+        return $movements;
+    }
+
     public function hasTransactions(Wallet $wallet): bool
     {
         return Transaction::withTrashed()
