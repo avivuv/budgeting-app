@@ -24,4 +24,12 @@ class TagRepository extends BaseRepository implements TagRepositoryInterface
             $names,
         );
     }
+
+    public function names(): array
+    {
+        /** @var list<string> $names */
+        $names = $this->query()->orderBy('name')->pluck('name')->all();
+
+        return $names;
+    }
 }

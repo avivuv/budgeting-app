@@ -191,6 +191,21 @@ it('refreshes cached numbers right after a transaction changes [BR-C04] [INV-08]
     expect(dashboard()->summary($period, noScope())->expense->amount)->toBe(2_287_500);
 });
 
+it('reads widgets back from a serializing cache store', function () {
+    // The array store used in tests keeps objects as-is; real stores serialize
+    // and refuse to unserialize classes (cache.serializable_classes = false).
+    config(['cache.default' => 'database']);
+    GoldenFamily::seed();
+    $period = dashboard()->currentPeriod();
+
+    foreach ([1, 2] as $_) {
+        expect(dashboard()->summary($period, noScope())->expense->amount)->toBe(GoldenFamily::EXPECTED['expense'])
+            ->and(dashboard()->categories($period, noScope())[0]->name)->toBe('Tagihan & Utilitas')
+            ->and(dashboard()->walletBalances($period, noScope()))->toHaveCount(3)
+            ->and(dashboard()->insights($period, noScope()))->toBeArray();
+    }
+});
+
 it('refreshes cached balances after a wallet changes [BR-C04]', function () {
     $golden = GoldenFamily::seed();
     $period = dashboard()->currentPeriod();

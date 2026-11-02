@@ -36,7 +36,10 @@ const options = computed(() => ({
     },
     dataLabels: { enabled: false },
     legend: { position: 'top' as const, horizontalAlign: 'left' as const },
-    xaxis: { tickAmount: 6, labels: { rotate: 0 } },
+    xaxis: {
+        tickAmount: 5,
+        labels: { rotate: 0, hideOverlappingLabels: true },
+    },
     yaxis: { labels: { formatter: (v: number) => formatMoneyShort(v) } },
     tooltip: {
         shared: true,

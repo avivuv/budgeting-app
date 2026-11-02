@@ -6,6 +6,8 @@ namespace App\DTOs\Transaction;
 
 use App\Enums\TransactionSource;
 use App\Enums\TransactionType;
+use App\Models\Tag;
+use App\Models\Transaction;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -34,6 +36,25 @@ class TransactionData extends Data
         public TransactionSource $source = TransactionSource::Web,
         public array $tags = [],
     ) {}
+
+    /**
+     * The current values of a stored transaction, optionally with a new category
+     * (used by bulk actions so they go through the normal update path).
+     */
+    public static function fromTransaction(Transaction $transaction, ?int $categoryId = null): self
+    {
+        return new self(
+            type: $transaction->type,
+            amount: $transaction->amount,
+            date: $transaction->date,
+            walletId: $transaction->wallet_id,
+            toWalletId: $transaction->to_wallet_id,
+            categoryId: $categoryId ?? $transaction->category_id,
+            note: $transaction->note,
+            source: $transaction->source,
+            tags: array_values($transaction->tags->map(fn (Tag $tag): string => $tag->name)->all()),
+        );
+    }
 
     /**
      * Columns for the transactions table. Transfers never carry a category,

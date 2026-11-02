@@ -32,6 +32,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Data;
 
 /**
  * Numbers for the dashboard (docs/07-dashboard-reports.md §3). Each widget is
@@ -95,7 +96,7 @@ class DashboardService
 
     public function summary(Period $period, TransactionFilterData $scope): DashboardSummaryData
     {
-        return $this->remember('summary', $period, $scope, function () use ($period, $scope): DashboardSummaryData {
+        return $this->rememberData('summary', $period, $scope, DashboardSummaryData::class, function () use ($period, $scope): DashboardSummaryData {
             $previous = $this->previous($period);
             $now = $this->transactions->totals($this->scoped($scope, $period));
             $before = $this->transactions->totals($this->scoped($scope, $previous));
@@ -116,7 +117,7 @@ class DashboardService
      */
     public function cashflow(Period $period, TransactionFilterData $scope): array
     {
-        return $this->remember('cashflow', $period, $scope, function () use ($period, $scope): array {
+        return $this->rememberList('cashflow', $period, $scope, CashflowPointData::class, function () use ($period, $scope): array {
             $periods = [$period];
             for ($i = 1; $i < self::CASHFLOW_PERIODS; $i++) {
                 array_unshift($periods, $this->previous($periods[0]));
@@ -148,7 +149,7 @@ class DashboardService
      */
     public function categories(Period $period, TransactionFilterData $scope): array
     {
-        return $this->remember('categories', $period, $scope, function () use ($period, $scope): array {
+        return $this->rememberList('categories', $period, $scope, CategorySliceData::class, function () use ($period, $scope): array {
             $totals = $this->rollUp($this->transactions->sumByCategory($this->expenses($scope, $period)));
             $total = array_sum($totals);
             $roots = $this->rootCategories();
@@ -181,7 +182,7 @@ class DashboardService
      */
     public function trend(Period $period, TransactionFilterData $scope): array
     {
-        return $this->remember('trend', $period, $scope, function () use ($period, $scope): array {
+        return $this->rememberList('trend', $period, $scope, TrendPointData::class, function () use ($period, $scope): array {
             $previous = $this->previous($period);
             $daily = $this->transactions->dailyTotals($this->expenses($scope, $period));
             $previousExpense = $this->transactions->totals($this->scoped($scope, $previous))['expense'];
@@ -214,7 +215,7 @@ class DashboardService
      */
     public function members(Period $period, TransactionFilterData $scope): array
     {
-        return $this->remember('members', $period, $scope, function () use ($period, $scope): array {
+        return $this->rememberList('members', $period, $scope, MemberTotalData::class, function () use ($period, $scope): array {
             $sums = $this->transactions->sumByCreator($this->expenses($scope, $period));
             $names = $this->users->namesByIds(array_values(array_filter(array_keys($sums))));
             $total = array_sum(array_column($sums, 'amount'));
@@ -244,7 +245,7 @@ class DashboardService
      */
     public function walletBalances(Period $period, TransactionFilterData $scope): array
     {
-        return $this->remember('wallets', $period, $scope, function () use ($period, $scope): array {
+        return $this->rememberList('wallets', $period, $scope, WalletItemData::class, function () use ($period, $scope): array {
             $wallets = $this->walletsInScope($scope);
             $balances = $this->wallets->balances($this->ids($wallets), $this->balanceDate($period));
 
@@ -430,12 +431,41 @@ class DashboardService
     }
 
     /**
-     * @template T
+     * Only plain arrays go into the cache: objects are not unserialized from it
+     * (config cache.serializable_classes), so DTOs are rebuilt on the way out.
+     *
+     * @template T of Data
+     *
+     * @param  class-string<T>  $class
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    private function rememberData(string $widget, Period $period, TransactionFilterData $scope, string $class, Closure $callback): Data
+    {
+        return $class::from($this->remember($widget, $period, $scope, fn (): array => $callback()->toArray()));
+    }
+
+    /**
+     * @template T of Data
+     *
+     * @param  class-string<T>  $class
+     * @param  Closure(): list<T>  $callback
+     * @return list<T>
+     */
+    private function rememberList(string $widget, Period $period, TransactionFilterData $scope, string $class, Closure $callback): array
+    {
+        $rows = $this->remember($widget, $period, $scope, fn (): array => array_map(fn (Data $item): array => $item->toArray(), $callback()));
+
+        return array_map(fn (array $row): Data => $class::from($row), $rows);
+    }
+
+    /**
+     * @template T of array
      *
      * @param  Closure(): T  $callback
      * @return T
      */
-    private function remember(string $widget, Period $period, TransactionFilterData $scope, Closure $callback): mixed
+    private function remember(string $widget, Period $period, TransactionFilterData $scope, Closure $callback): array
     {
         $familyId = $this->tenant->id();
         $version = Cache::rememberForever($this->versionKey($familyId), fn (): string => Str::random(12));

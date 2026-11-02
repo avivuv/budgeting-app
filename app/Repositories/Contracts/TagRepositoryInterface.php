@@ -18,4 +18,11 @@ interface TagRepositoryInterface extends BaseRepositoryInterface
      * @return list<int>
      */
     public function idsForNames(array $names): array;
+
+    /**
+     * Tag names of the active family, alphabetical.
+     *
+     * @return list<string>
+     */
+    public function names(): array;
 }

@@ -20,6 +20,8 @@ use App\Repositories\Contracts\WalletRepositoryInterface;
 use App\Services\Tenancy\TenantContext;
 use App\Support\Money\AmountParser;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -69,17 +71,88 @@ class TransactionService
             return [];
         }
 
-        sort($dates);
+        // Only the span of the requested dates needs to be aggregated.
+        $from = max($filter->from ?? min($dates), min($dates));
+        $to = min($filter->to ?? max($dates), max($dates));
 
         return array_intersect_key(
-            $this->transactions->dailyTotals($filter->between(max($filter->from ?? $dates[0], $dates[0]), min($filter->to ?? end($dates), end($dates)))),
+            $this->transactions->dailyTotals($filter->between($from, $to)),
             array_flip($dates),
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function tagNames(): array
+    {
+        return $this->tags->names();
     }
 
     public function find(int $id): Transaction
     {
         return $this->transactions->findOrFail($id);
+    }
+
+    /**
+     * Transactions of the active family by id; ids of another family are not
+     * found (BR-I06), so the caller can answer 404.
+     *
+     * @param  list<int>  $ids
+     * @return Collection<int, Transaction>
+     */
+    public function findMany(array $ids): Collection
+    {
+        $found = $this->transactions->findMany($ids);
+
+        if ($found->count() !== count(array_unique($ids))) {
+            throw (new ModelNotFoundException)->setModel(Transaction::class, $ids);
+        }
+
+        return $found;
+    }
+
+    /**
+     * Bulk action from the list: soft-delete each transaction (BR-B08), each one
+     * logged and invalidating caches like a single delete.
+     *
+     * @param  iterable<Transaction>  $transactions
+     */
+    public function deleteMany(iterable $transactions): int
+    {
+        return DB::transaction(function () use ($transactions): int {
+            $count = 0;
+            foreach ($transactions as $transaction) {
+                $this->delete($transaction);
+                $count++;
+            }
+
+            return $count;
+        });
+    }
+
+    /**
+     * Bulk action from the list: move income/expense transactions to another
+     * category through the normal update path (BR-B02, BR-B14). Transfers have
+     * no category (BR-B03) and are rejected.
+     *
+     * @param  iterable<Transaction>  $transactions
+     */
+    public function changeCategory(iterable $transactions, int $categoryId): int
+    {
+        return DB::transaction(function () use ($transactions, $categoryId): int {
+            $count = 0;
+            foreach ($transactions as $transaction) {
+                if ($transaction->type === TransactionType::Transfer) {
+                    throw TransactionRuleException::transferHasNoCategory();
+                }
+
+                $this->update($transaction, TransactionData::fromTransaction($transaction, categoryId: $categoryId));
+                $count++;
+            }
+
+            return $count;
+        });
     }
 
     public function create(TransactionData $data, User $actor): Transaction

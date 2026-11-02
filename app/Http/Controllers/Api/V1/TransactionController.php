@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\TransactionFilterRequest;
 use App\Http\Requests\Api\V1\TransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
@@ -12,7 +13,6 @@ use App\Models\User;
 use App\Services\Transaction\TransactionService;
 use App\Services\Wallet\WalletService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -26,13 +26,18 @@ class TransactionController extends Controller
         private readonly WalletService $wallets,
     ) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    /**
+     * Same filter as the web list (docs/13-rest-api.md §3); totals of the whole
+     * filter are returned in meta.totals.
+     */
+    public function index(TransactionFilterRequest $request): AnonymousResourceCollection
     {
         Gate::authorize('viewAny', Transaction::class);
 
-        $perPage = max(1, min(100, $request->integer('per_page', 20)));
+        $filter = $request->toFilter();
 
-        return TransactionResource::collection($this->transactions->paginate(perPage: $perPage));
+        return TransactionResource::collection($this->transactions->paginate($filter, $request->perPage()))
+            ->additional(['meta' => ['totals' => $this->transactions->totals($filter)]]);
     }
 
     public function store(TransactionRequest $request): JsonResponse

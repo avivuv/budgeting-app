@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('family')->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
+        Route::post('transactions/bulk', [TransactionController::class, 'bulk'])->name('transactions.bulk');
         Route::resource('transactions', TransactionController::class)->except('show');
 
         Route::get('wallets', [WalletController::class, 'index'])->name('wallets.index');

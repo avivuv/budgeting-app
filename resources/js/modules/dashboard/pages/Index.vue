@@ -59,8 +59,10 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
         query: {
             from: props.period.start,
             to: props.period.end,
-            wallet: props.filters.wallet ? [props.filters.wallet] : undefined,
-            member: props.filters.member ? [props.filters.member] : undefined,
+            wallet_id: props.filters.wallet
+                ? [props.filters.wallet]
+                : undefined,
+            user_id: props.filters.member ? [props.filters.member] : undefined,
             ...query,
         },
     });
@@ -79,7 +81,9 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
             @change="applyFilters"
         />
 
-        <div class="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)]">
+        <div
+            class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)]"
+        >
             <BalanceHeader :summary="summary" :period-label="period.label" />
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -122,7 +126,7 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
             </ul>
         </Deferred>
 
-        <div class="grid gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <DashboardCard
                 title="Arus kas"
                 description="Pemasukan vs pengeluaran 6 periode terakhir"
@@ -146,7 +150,7 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
                             (slice) =>
                                 transactionsOf({
                                     type: 'expense',
-                                    category: [slice.categoryId],
+                                    category_id: [slice.categoryId],
                                 })
                         "
                     />
@@ -175,7 +179,9 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
             </DashboardCard>
         </div>
 
-        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div
+            class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]"
+        >
             <DashboardCard title="Saldo dompet">
                 <template #action>
                     <Link

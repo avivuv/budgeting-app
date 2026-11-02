@@ -17,4 +17,15 @@ enum TransactionSource: string
     case Telegram = 'telegram';
     case Receipt = 'receipt';
     case Recurring = 'recurring';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Web => 'Web',
+            self::Api => 'API',
+            self::Telegram => 'Telegram',
+            self::Receipt => 'Struk',
+            self::Recurring => 'Berulang',
+        };
+    }
 }

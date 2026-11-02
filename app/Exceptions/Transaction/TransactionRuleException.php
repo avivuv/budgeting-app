@@ -23,6 +23,11 @@ final class TransactionRuleException extends BusinessRuleException
         return new self('BR-B05', 'Kategori ini sudah diarsipkan dan tidak bisa dipakai untuk transaksi baru.', 'category_id');
     }
 
+    public static function transferHasNoCategory(): self
+    {
+        return new self('BR-B03', 'Transfer tidak memakai kategori. Hapus transfer dari pilihan.', 'category_id');
+    }
+
     public static function transferTargetRequired(): self
     {
         return new self('BR-B03', 'Pilih dompet tujuan transfer.', 'to_wallet_id');
