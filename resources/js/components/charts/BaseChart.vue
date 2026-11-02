@@ -59,15 +59,22 @@ function themed(): ApexOptions {
     };
 }
 
+// Set on unmount: the library loads asynchronously, and rendering into an
+// element that left the page throws "Element not found".
+let disposed = false;
+
 async function render() {
-    if (!el.value) {
+    const { default: Apex } = await import('apexcharts');
+
+    if (disposed || !el.value?.isConnected) {
         return;
     }
 
-    const { default: Apex } = await import('apexcharts');
     chart.value?.destroy();
     chart.value = new Apex(el.value, themed());
-    await chart.value.render();
+    await chart.value.render().catch(() => {
+        // Unmounted while animating; nothing left to draw into.
+    });
 }
 
 let stopWatchingTheme = () => {};
@@ -79,13 +86,19 @@ onMounted(() => {
 
 watch(
     () => [props.series, props.options],
-    () => void chart.value?.updateOptions(themed()),
+    () => {
+        if (!disposed) {
+            void chart.value?.updateOptions(themed());
+        }
+    },
     { deep: true },
 );
 
 onBeforeUnmount(() => {
+    disposed = true;
     stopWatchingTheme();
     chart.value?.destroy();
+    chart.value = null;
 });
 </script>
 

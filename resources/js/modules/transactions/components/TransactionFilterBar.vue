@@ -54,6 +54,7 @@ function onDate(key: 'from' | 'to', event: Event) {
             <Button
                 variant="outline"
                 class="shrink-0"
+                aria-label="Filter"
                 @click="emit('openSheet')"
             >
                 <SlidersHorizontal class="size-4" />

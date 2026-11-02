@@ -65,6 +65,10 @@ Menguji **request → response** lengkap.
 | Export               | Excel (`Excel::fake()` + assert isi), PDF ter-generate                                                                      |
 | Otorisasi            | matrix role (BR-B09, BR-I03) memakai `dataset()` role × aksi                                                                |
 
+**API integration ("round-trip") test** — tulis lewat API → tersimpan di DB → baca ulang lewat API → nilai harus sama dengan input, dan semua angka turunan (saldo dompet, total sesuai filter, ringkasan) berubah tepat sebesar input. Dimulai dari golden dataset. Contoh: `tests/Feature/Api/V1/TransactionRoundTripTest.php`.
+
+Semua test PHP memakai database salinan khusus `budgeting_app_test` / `budgeting_app_log_test` (dikosongkan oleh `RefreshDatabase`), **tidak pernah** database development.
+
 ### 2.4 Consistency Test (`tests/Feature/Consistency`)
 
 Test kunci untuk menjamin **semua angka sinkron**.
@@ -84,6 +88,15 @@ Test kunci untuk menjamin **semua angka sinkron**.
 | INV-11 | Konfirmasi yang sama dikirim berulang (klik ganda, retry API dengan `Idempotency-Key` sama, update Telegram dikirim ulang) → jumlah transaksi tetap bertambah satu (BR-B13, BR-J08). |
 | INV-12 | Pembayaran tagihan kartu kredit (transfer) tidak menambah pengeluaran; belanja kartu kredit terhitung satu kali (BR-C06).                                                            |
 | INV-13 | Setiap perubahan transaksi menghasilkan tepat satu entri activity log dengan nilai lama & baru yang benar (BR-B14).                                                                  |
+
+### 2.5 E2E Test (`tests/e2e`, Playwright)
+
+Aplikasi sungguhan di browser (desktop 1366px & HP Pixel 7) → server Laravel → MySQL `budgeting_app_e2e` / `budgeting_app_log_e2e`, yang dibuat ulang & di-seed `DemoSeeder` setiap kali dijalankan.
+
+- Alur: login, dashboard + semua widget, pemilih periode, drill-down kategori, input cepat → simpan, filter & urut, aksi massal, budget + notifikasi, bottom nav, infinite scroll, filter sheet.
+- Hasil dicek di tampilan **dan langsung di database** (`tests/e2e/support/db.ts`, read-only): nominal integer, `source`, pencatat, tag, soft delete, flag alert budget, notifikasi.
+- Setiap test otomatis gagal bila ada error JavaScript / console (`support/fixtures.ts`).
+- Menjalankan: `pnpm run build` lalu `pnpm run test:e2e` (PHP 8.4 dari `$PHP` atau `php` di PATH; lokal memakai Chrome terpasang, CI memakai Chromium). Job `e2e` terpisah di CI.
 
 ## 3. Golden Dataset
 

@@ -43,3 +43,6 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 /resources/js/types/typescript-transformer-manifest.json
+/tests/e2e/.auth
+/test-results
+/playwright-report
