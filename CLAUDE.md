@@ -29,7 +29,7 @@ Backend: Laravel 13 (PHP 8.4) REST API · Fortify headless (auth, 2FA, passkeys)
 6. **Testing wajib** — setiap fitur: tulis dulu skenario positif & negatif di `docs/test-cases/<fitur>.md` (dari form + logika fitur), lalu satu test API per skenario dengan format Given–When–Then (seperti orang memakai aplikasi: input → simpan → cek response, DB, baca ulang; negatif → DB tidak berubah). Ditambah unit test untuk perhitungan dan invariant `INV-xx` bila menyentuh angka. Nama test (English) menyebut ID skenario & rule, mis. `[WAL-01] ... [BR-C01]`. → [docs/12-testing-strategy.md](docs/12-testing-strategy.md), [docs/test-cases/](docs/test-cases/README.md)
 7. **UI** — tema putih–biru, pakai token warna (tidak hardcode hex), mobile-first. → [docs/14-ui-design-system.md](docs/14-ui-design-system.md)
 8. **Frontend SPA modular** — `frontend/src/core` (api client, ui, layouts, composables, stores) + `frontend/src/modules/<fitur>/` (routes.ts, api.ts, pages, components, `index.ts`). Data hanya lewat REST API (TanStack Query). Antar modul hanya via `index.ts`. Tidak ada perhitungan bisnis di Vue; tipe dari `core/api/schema.d.ts` (OpenAPI). Pilihan dari master data selalu memakai `SearchableSelect` (bisa dicari); `NativeSelect` hanya untuk enum kecil. → [docs/15-frontend-architecture.md](docs/15-frontend-architecture.md)
-9. **API-first** — setiap aksi yang ada di web wajib punya endpoint `/api/v1` (agar Android tidak tertinggal); format response/error, `X-Family-Id`, `Idempotency-Key` sesuai [docs/13-rest-api.md](docs/13-rest-api.md).
+9. **API-first** — setiap aksi yang ada di web wajib punya endpoint `/api/v1` (agar Android tidak tertinggal); format response/error, `X-Family-Id`, `Idempotency-Key` sesuai [docs/13-rest-api.md](docs/13-rest-api.md). Setiap fitur punya **API contract** di `docs/api-contracts/<fitur>.md` (request, response, error per endpoint) yang ditulis/di-update **sebelum** endpoint dibuat atau diubah. → [docs/api-contracts/](docs/api-contracts/README.md)
 10. **Coding standards** — `strict_types`, DTO `spatie/laravel-data`, Service tidak `final`, Enum, FormRequest, API Resource, naming sesuai [docs/08-coding-standards.md](docs/08-coding-standards.md).
 
 ## Sebelum Selesai / Commit
@@ -66,6 +66,7 @@ Semua harus hijau. Laporkan hasil apa adanya — jika ada test gagal, sampaikan.
 | [17-project-structure](docs/17-project-structure.md)         | menentukan lokasi file baru                                         |
 | [18-api-first-migration](docs/18-api-first-migration.md)     | selama migrasi Inertia → API + SPA                                  |
 | [test-cases/](docs/test-cases/README.md)                     | sebelum menulis test sebuah fitur                                   |
+| [api-contracts/](docs/api-contracts/README.md)               | sebelum membuat/mengubah endpoint                                   |
 
 ## Git
 

@@ -2,7 +2,7 @@
 
 **REST API `/api/v1` adalah satu-satunya pintu HTTP ke backend.** Semua klien memakainya: **web SPA** (`frontend/`), **aplikasi Android** (Kotlin, nanti), dan integrasi lain. Controller API memanggil **Service yang sama** dengan bot Telegram (lihat [02-architecture.md](02-architecture.md)). Semua fitur diuji lewat API dengan test skenario ([test-cases/](test-cases/README.md)).
 
-Dokumentasi OpenAPI di-generate otomatis (Scramble) di `/docs/api` — dipakai untuk tipe TypeScript SPA dan client Kotlin.
+Detail request/response/error per endpoint ada di **API contract per fitur**: [api-contracts/](api-contracts/README.md). Dokumentasi OpenAPI di-generate otomatis (Scramble) di `/docs/api` — dipakai untuk tipe TypeScript SPA dan client Kotlin.
 
 ## 1. Autentikasi & Tenant
 

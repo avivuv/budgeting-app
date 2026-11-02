@@ -4,7 +4,7 @@ Test API ditulis **per fitur, berdasarkan skenario**, seolah-olah orang sedang m
 
 ## Cara menyusun
 
-1. Baca form fitur (FormRequest) dan logikanya (Service + [business rules](../11-business-rules.md)).
+1. Baca form fitur (FormRequest) dan logikanya (Service + [business rules](../11-business-rules.md)), serta [API contract](../api-contracts/README.md) fiturnya.
 2. Tulis semua skenario di `docs/test-cases/<fitur>.md`, positif dan negatif, masing-masing dengan ID (`WAL-01`, `TRX-11`, …).
 3. Setiap skenario = satu test di `tests/Feature/Api/V1/<Fitur>Test.php`. Nama test dalam English dan memuat ID skenario + ID rule.
 4. Skenario berubah → update dokumen dulu, baru test.
