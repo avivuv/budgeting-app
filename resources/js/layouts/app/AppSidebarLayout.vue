@@ -3,6 +3,8 @@ import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import BottomNav from '@/components/BottomNav.vue';
+import QuickAddButton from '@/components/QuickAddButton.vue';
 import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItem } from '@/types';
 
@@ -18,10 +20,16 @@ withDefaults(defineProps<Props>(), {
 <template>
     <AppShell variant="sidebar">
         <AppSidebar />
-        <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
+        <!-- Bottom padding keeps content clear of the phone bottom navigation. -->
+        <AppContent
+            variant="sidebar"
+            class="min-w-0 overflow-x-clip pb-20 md:pb-0"
+        >
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>
-        <Toaster />
+        <BottomNav />
+        <QuickAddButton />
+        <Toaster position="top-center" />
     </AppShell>
 </template>
