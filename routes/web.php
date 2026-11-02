@@ -10,7 +10,8 @@ use App\Http\Controllers\Web\Transaction\TransactionController;
 use App\Http\Controllers\Web\Wallet\WalletController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+// No public landing page: guests end up on the login page, members on the dashboard.
+Route::redirect('/', '/dashboard')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Before a family exists.

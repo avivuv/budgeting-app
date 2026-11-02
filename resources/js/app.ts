@@ -32,8 +32,6 @@ void createInertiaApp({
     },
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
-                return null;
             case name.startsWith('auth/') ||
                 name.startsWith('onboarding/') ||
                 name === 'family/AcceptInvitation':

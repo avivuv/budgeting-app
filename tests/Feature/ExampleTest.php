@@ -1,18 +1,15 @@
 <?php
 
-namespace Tests\Feature;
+use App\Models\User;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+it('sends guests from the root url to the login page', function () {
+    $this->get(route('home'))->assertRedirect('/dashboard');
+    $this->get('/dashboard')->assertRedirect(route('login'));
+});
 
-class ExampleTest extends TestCase
-{
-    use RefreshDatabase;
+it('sends members from the root url to the dashboard', function () {
+    $user = User::factory()->create();
+    createFamily($user);
 
-    public function test_returns_a_successful_response()
-    {
-        $response = $this->get(route('home'));
-
-        $response->assertOk();
-    }
-}
+    $this->actingAs($user)->get(route('home'))->assertRedirect('/dashboard');
+});
