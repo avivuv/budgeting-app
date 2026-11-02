@@ -43,6 +43,18 @@ it('stores a transaction typed as "50rb" [BR-A03] [BR-B07]', function () {
         ->and($transaction->tags()->pluck('name')->sort()->values()->all())->toBe(['kantor', 'mudik']);
 });
 
+it('stores a transaction when the optional tag and note fields are left empty', function () {
+    // Empty inputs arrive as null (ConvertEmptyStringsToNull).
+    $this->actingAs($this->owner)
+        ->post(route('transactions.store'), txInput(['tags' => '', 'note' => '']))
+        ->assertRedirect(route('transactions.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    expect($transaction->tags()->count())->toBe(0)
+        ->and($transaction->note)->toBeNull();
+});
+
 it('returns to the form for "save and add another"', function () {
     $this->actingAs($this->owner)
         ->post(route('transactions.store'), txInput(['add_another' => 1]))
