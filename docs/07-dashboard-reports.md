@@ -92,4 +92,4 @@ modules/receipts/         ReceiptScanner, ReceiptPreview
 modules/reports/          ReportFilter, ExportMenu, YearHeatmap
 ```
 
-Widget dashboard yang berat dikirim sebagai **deferred props** sehingga kartu ringkasan tampil lebih dulu.
+Setiap widget dashboard punya endpoint sendiri (`GET /api/v1/summary`, `/api/v1/dashboard/{widget}`); klien memuatnya paralel dengan skeleton sehingga kartu ringkasan tampil lebih dulu. Angka di web SPA dan Android selalu sama karena berasal dari endpoint yang sama.

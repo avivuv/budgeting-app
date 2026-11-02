@@ -73,7 +73,8 @@ Detail di [15-frontend-architecture.md](15-frontend-architecture.md). Ringkas:
 
 - `<script setup lang="ts">`, Composition API.
 - Struktur modular `core/` + `modules/<fitur>/`; antar modul hanya lewat `index.ts`.
-- Tipe dari `core/types/generated.d.ts` (hasil generate PHP), jangan tulis ulang manual.
+- SPA di `frontend/`; data hanya lewat REST API (`core/api/client.ts` + `api.ts` per modul).
+- Tipe dari `core/api/schema.d.ts` (hasil generate OpenAPI), jangan tulis ulang manual.
 - Tidak ada perhitungan bisnis di frontend — hanya format & tampilan.
 - Komponen UI dasar dari shadcn-vue (`core/components/ui`), jangan duplikasi.
 - Tailwind + token warna; hindari CSS custom kecuali perlu.
@@ -83,7 +84,7 @@ Detail di [15-frontend-architecture.md](15-frontend-architecture.md). Ringkas:
 Detail lengkap di [12-testing-strategy.md](12-testing-strategy.md). Ringkas:
 
 - **Unit**: parser, kalkulator, service dengan repository di-mock.
-- **API/Feature**: REST API, endpoint web (Inertia assertions), webhook Telegram (fixture JSON + `Http::fake`), job struk (`FakeReceiptParser`).
+- **API/Feature**: test skenario per fitur lewat REST API ([test-cases](test-cases/README.md)), webhook Telegram (fixture JSON + `Http::fake`), job struk (`FakeReceiptParser`).
 - **Integration & Consistency**: repository + agregasi, invariant `INV-xx` lintas channel.
 - **Tenancy**: setiap repository punya test isolasi.
 - Nama test menyebut ID rule dari [11-business-rules.md](11-business-rules.md).

@@ -86,6 +86,11 @@
             "@types:check",
             "@php artisan test"
         ],
+        "test:api": [
+            "@php -r \"@unlink('storage/logs/api-trace.log');\"",
+            "@putenv API_TRACE=1",
+            "@php artisan test tests/Feature/Api"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

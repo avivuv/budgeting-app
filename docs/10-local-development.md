@@ -35,7 +35,7 @@ mysql -uroot -e "CREATE DATABASE budgeting_app; CREATE DATABASE budgeting_app_lo
 
 ```bash
 composer install
-pnpm install
+pnpm --dir frontend install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
@@ -93,7 +93,7 @@ TELEGRAM_MODE=polling
 ## 5. Menjalankan Harian
 
 ```bash
-composer run dev        # server + queue + logs + vite (php artisan dev)
+composer run dev        # API server + queue + logs + Vite SPA (frontend/, proxy /api & /sanctum)
 php artisan schedule:work   # scheduler (pembersihan log 30 hari, backup, recurring)
 ```
 
@@ -145,6 +145,7 @@ URL ngrok berubah setiap restart → jalankan ulang `telegram:set-webhook`. Guna
 composer test               # Pint (cek) + Larastan + Pest
 ./vendor/bin/pest --parallel
 ./vendor/bin/pint           # format PHP
-pnpm run check              # format + lint frontend (Vite+)
-pnpm run types:check        # vue-tsc
+pnpm --dir frontend run check        # format + lint SPA (Vite+)
+pnpm --dir frontend run types:check  # vue-tsc
+composer test:api           # API test + catat request/response ke storage/logs/api-trace.log
 ```

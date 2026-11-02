@@ -1,283 +1,235 @@
-# 15 — Frontend Architecture (Vue 3 + Inertia)
+# 15 — Frontend Architecture (Vue 3 SPA)
+
+Web adalah **SPA terpisah** di folder `frontend/` yang hanya berbicara dengan backend lewat **REST API `/api/v1`** ([13-rest-api.md](13-rest-api.md)), sama seperti aplikasi Android. Status migrasi dari versi lama: [18-api-first-migration.md](18-api-first-migration.md).
 
 ## 1. Prinsip
 
-1. **Modular per fitur (feature-based)** — kode dikelompokkan per domain (`transactions`, `budgets`, ...), bukan per jenis file. Fitur baru = folder modul baru, tanpa menyentuh modul lain.
-2. **Server adalah sumber kebenaran** — semua perhitungan (saldo, total, persentase, status budget) dihitung di backend (Service) dan dikirim sebagai props. Frontend **hanya memformat & menampilkan**. Ini menjamin angka di web sama dengan API, bot, dan export (INV-02/03 di [12-testing-strategy.md](12-testing-strategy.md)).
-3. **Layer jelas** — Page (container) → Feature component (presentational) → UI primitive.
-4. **Type-safe end-to-end** — tipe TypeScript di-generate dari DTO/Resource PHP, bukan ditulis ulang manual.
-5. **Batas import tegas** — modul hanya boleh memakai `core` dan _public API_ modul lain; dijaga ESLint.
+1. **API adalah satu-satunya pintu** — SPA tidak punya akses lain ke backend selain `/api/v1` (+ `/sanctum/csrf-cookie`). Apa pun yang bisa dilakukan di web harus bisa dilakukan Android lewat endpoint yang sama.
+2. **Server adalah sumber kebenaran** — semua perhitungan (saldo, total, persentase, status budget) dihitung di backend (Service) dan dikirim dalam response API. Frontend **hanya memformat & menampilkan**. Ini menjamin angka di web sama dengan Android, bot, dan export (INV-02/03 di [12-testing-strategy.md](12-testing-strategy.md)).
+3. **Modular per fitur** — kode dikelompokkan per domain (`transactions`, `budgets`, ...), bukan per jenis file. Fitur baru = folder modul baru.
+4. **Layer jelas** — Page (container) → Feature component (presentational) → UI primitive.
+5. **Type-safe end-to-end** — tipe request/response di-generate dari **OpenAPI** backend, tidak ditulis ulang manual.
+6. **Batas import tegas** — modul hanya boleh memakai `core` dan _public API_ modul lain.
 
-## 2. Struktur Folder
+## 2. Stack
 
-> **Penyesuaian implementasi (Laravel 13 Vue starter kit):** folder shared bawaan starter kit — `components/` (termasuk `components/ui` dari shadcn-vue), `composables/`, `layouts/`, `lib/`, `types/` — **berperan sebagai `core/`** dan tidak dipindah, agar CLI shadcn-vue dan import bawaan tetap bekerja. Halaman bawaan starter kit (auth, settings, Welcome, Dashboard) tetap di `pages/`. **Semua fitur baru** di `modules/<fitur>/pages|components|composables`. Resolver di `app.ts` mencari `modules/<fitur>/pages/<Halaman>.vue` dulu, lalu `pages/`; Blade (`app.blade.php`) dan `App\Support\Inertia\ModulePageFinder` (untuk test) memakai aturan yang sama. Tipe dari PHP ada di `types/generated.d.ts` (`php artisan typescript:transform`). Route di Vue memakai **Wayfinder** (`@/actions/...`, `@/routes/...`).
+| Kebutuhan   | Pilihan                                                                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Framework   | Vue 3 + TypeScript (`<script setup>`), Vite+                                                                                      |
+| Routing     | **Vue Router** (lazy load per halaman, guard auth & keluarga)                                                                     |
+| Data server | **TanStack Query** (`@tanstack/vue-query`) — cache, refetch, polling, infinite list, invalidasi setelah mutasi                    |
+| HTTP        | `ofetch`/`fetch` wrapper di `core/api/client.ts` (cookie + CSRF, `X-Family-Id`, `Idempotency-Key`, error 401/403/404/409/422/429) |
+| Tipe API    | `openapi-typescript` → `core/api/schema.d.ts` dari spec Scramble                                                                  |
+| State lokal | **Pinia** — sesi (user, keluarga aktif, izin) & preferensi UI; **bukan** cache data server                                        |
+| UI          | Tailwind 4 + shadcn-vue (reka-ui), `@lucide/vue`, ApexCharts (`BaseChart`), `@vueuse/core`                                        |
+| Tabel       | TanStack Table (headless) bila perlu show/hide kolom; data selalu server-side                                                     |
+| Test        | Vitest + `@vue/test-utils`; Playwright E2E                                                                                        |
+
+## 3. Struktur Folder
 
 ```
-resources/js/
-├── app.ts                       # bootstrap Inertia, plugin, page resolver
-├── core/                        # shared, tanpa logika domain
-│   ├── components/
-│   │   ├── ui/                  # shadcn-vue primitives (Button, Card, Dialog, Input, ...)
-│   │   ├── common/              # Money, DateText, EmptyState, ConfirmDialog, PageHeader, Avatar
-│   │   ├── charts/              # BaseChart (ApexCharts wrapper + theme token), BarChart, DonutChart, AreaChart, Heatmap
-│   │   └── form/                # FormField, AmountInput, DatePicker, SelectSearch, FileDrop
-│   ├── layouts/                 # AppLayout, AuthLayout, GuestLayout, partials (Sidebar, BottomNav, Fab, FamilySwitcher)
-│   ├── composables/             # useMoney, useDate, usePermission, useFlash, useFilters, useBreakpoint, useTheme
-│   ├── lib/                     # formatter murni (money.ts, date.ts), http.ts (axios utk endpoint non-Inertia), cn.ts
-│   ├── plugins/                 # i18n, apexcharts, pwa
-│   ├── i18n/id.json
-│   └── types/
-│       ├── generated.d.ts       # HASIL GENERATE dari PHP — jangan diedit manual
-│       ├── inertia.d.ts         # SharedProps (auth, family, can, flash)
-│       └── global.d.ts
-│
-└── modules/
-    ├── auth/
-    ├── onboarding/
-    ├── dashboard/
-    ├── transactions/
-    ├── receipts/
-    ├── wallets/
-    ├── categories/
-    ├── budgets/
-    ├── savings/
-    ├── recurring/
-    ├── reports/
-    ├── family/                  # anggota, undangan, pengaturan keluarga
-    ├── telegram/                # linking akun & grup
-    ├── settings/                # profil, password, API token, tampilan
-    └── admin/                   # super admin
+frontend/
+├── index.html
+├── vite.config.ts               # proxy /api & /sanctum → backend saat dev; build ke ../public/app
+├── public/                      # manifest.webmanifest, sw.js, offline.html, ikon
+└── src/
+    ├── main.ts                  # createApp + router + pinia + vue-query
+    ├── router/                  # routes.ts (gabungan routes tiap modul), guards.ts
+    ├── core/                    # shared, tanpa logika domain
+    │   ├── api/                 # client.ts, schema.d.ts (GENERATED), errors.ts, useApiForm.ts
+    │   ├── components/
+    │   │   ├── ui/              # shadcn-vue primitives
+    │   │   ├── common/          # Money, DateText, EmptyState, ConfirmDialog, PageHeader, SearchableSelect
+    │   │   ├── charts/          # BaseChart + Bar/Donut/Area/Heatmap
+    │   │   └── form/            # FormField, AmountInput, DatePicker, FileDrop
+    │   ├── layouts/             # AppLayout (sidebar, bottom nav, FAB, FamilySwitcher), AuthLayout
+    │   ├── composables/         # useMoney, useDate, usePermission, useToast, useFilters, useBreakpoint, useTheme
+    │   ├── stores/              # session.ts (user, families, currentFamily, can), ui.ts
+    │   └── lib/                 # formatter murni, cn.ts, pwa.ts
+    └── modules/
+        ├── auth/                # login, register, 2FA, passkey, lupa/reset password, verifikasi email
+        ├── onboarding/
+        ├── dashboard/
+        ├── transactions/
+        ├── receipts/
+        ├── wallets/
+        ├── categories/
+        ├── budgets/
+        ├── savings/
+        ├── recurring/
+        ├── reports/
+        ├── family/              # anggota, undangan, pengaturan keluarga
+        ├── notifications/
+        ├── telegram/            # linking akun & grup
+        ├── settings/            # profil, keamanan, API token, tampilan
+        └── admin/               # super admin
 ```
 
-### 2.1 Anatomi satu modul
+### 3.1 Anatomi satu modul
 
 ```
 modules/transactions/
-├── pages/                       # di-render oleh Inertia (container)
-│   ├── Index.vue
-│   ├── Create.vue
-│   └── Edit.vue
-├── components/                  # presentational, khusus modul ini
-│   ├── TransactionList.vue
-│   ├── TransactionItem.vue
-│   ├── TransactionForm.vue
-│   └── TransactionFilterBar.vue
-├── composables/                 # logika UI modul
-│   ├── useTransactionForm.ts
-│   └── useTransactionFilters.ts
-├── constants.ts                 # opsi enum untuk select, ikon sumber, dll
-├── types.ts                     # tipe lokal (re-export dari generated bila perlu)
-├── __tests__/                   # Vitest
-└── index.ts                     # PUBLIC API modul (komponen/composable yang boleh dipakai modul lain)
+├── routes.ts                    # route modul (path, name, meta: { auth, permission, title })
+├── api.ts                       # query & mutation TanStack untuk endpoint modul ini
+├── pages/                       # container: Index.vue, Create.vue, Edit.vue
+├── components/                  # presentational: TransactionList, TransactionItem, TransactionForm, ...
+├── composables/                 # logika UI modul (useTransactionFilters, ...)
+├── constants.ts
+├── __tests__/
+└── index.ts                     # PUBLIC API modul
 ```
 
-Contoh: `dashboard` memakai `TransactionItem` → harus lewat `@/modules/transactions` (index.ts), bukan `@/modules/transactions/components/TransactionItem.vue`.
+Contoh: `dashboard` memakai `TransactionItem` → harus lewat `@/modules/transactions` (index.ts).
 
-## 3. Layer & Tanggung Jawab
+## 4. Layer & Tanggung Jawab
 
-| Layer                                          | Tugas                                                                                     | Tidak boleh                                                      |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **Page** (`modules/*/pages`)                   | Terima props Inertia, pilih layout, susun komponen, hubungkan event ke `router`/`useForm` | Markup detail berulang, hitung angka bisnis                      |
-| **Feature component** (`modules/*/components`) | Tampilkan data via `props`, kirim aksi via `emit`                                         | Akses `router`/`usePage` langsung (kecuali komponen form khusus) |
-| **Composable**                                 | State & perilaku yang dapat dipakai ulang (filter ↔ query string, form, polling)          | Markup                                                           |
-| **Core UI**                                    | Primitive generik tanpa pengetahuan domain                                                | Import dari `modules/*`                                          |
-| **lib**                                        | Fungsi murni (format uang/tanggal)                                                        | Side effect, state                                               |
+| Layer                 | Tugas                                                                          | Tidak boleh                                           |
+| --------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| **Page**              | Ambil data via query modul, susun komponen, hubungkan event ke mutation/router | Hitung angka bisnis, `fetch` langsung                 |
+| **Feature component** | Tampilkan data via `props`, kirim aksi via `emit`                              | Memanggil API / router langsung (kecuali form khusus) |
+| **Module `api.ts`**   | Satu-satunya tempat modul memanggil `core/api/client`; query key, invalidasi   | Markup                                                |
+| **Composable**        | State & perilaku UI yang dapat dipakai ulang                                   | Markup                                                |
+| **Core**              | Primitive generik, client API, sesi                                            | Import dari `modules/*`                               |
 
-## 4. Page Resolver & Penamaan
+## 5. Data & State
 
-Backend: `Inertia::render('transactions/Index', [...])` → `modules/transactions/pages/Index.vue`.
+| Jenis data                        | Sumber               | Alat                                                                                  |
+| --------------------------------- | -------------------- | ------------------------------------------------------------------------------------- |
+| List, detail, ringkasan, laporan  | Endpoint API         | `useQuery` (query key memuat `familyId` + filter)                                     |
+| Simpan / ubah / hapus             | Endpoint API         | `useMutation` → invalidasi query terkait (mis. transaksi → dompet, dashboard, budget) |
+| Sesi: user, keluarga, peran, izin | `GET /api/v1/me`     | Pinia `session` (dimuat saat start & setelah login/switch keluarga)                   |
+| Widget berat (dashboard, laporan) | Endpoint per widget  | query paralel + skeleton                                                              |
+| Status async (scan struk)         | `GET /receipts/{id}` | `refetchInterval` selama status membaca                                               |
+| List panjang (transaksi)          | Pagination API       | desktop: halaman; HP: `useInfiniteQuery`                                              |
+| Filter                            | Query string URL     | `useFilters()` ↔ `router.replace({ query })` → masuk query key                        |
+| Preferensi UI                     | Lokal                | Pinia + `localStorage`                                                                |
+
+**Pinia tidak menyimpan data server** selain sesi; data selalu lewat TanStack Query agar tidak basi.
+
+### 5.1 Client API
 
 ```ts
-// app.ts
-createInertiaApp({
-    title: (title) => (title ? `${title} · Budgeting` : 'Budgeting'),
-    resolve: (name) => {
-        const [module, ...page] = name.split('/');
-        const pages = import.meta.glob<DefineComponent>(
-            './modules/*/pages/**/*.vue',
-        );
-        return resolvePageComponent(
-            `./modules/${module}/pages/${page.join('/')}.vue`,
-            pages,
-        );
+// core/api/client.ts (ringkas)
+export const api = $fetch.create({
+    baseURL: '/api/v1',
+    credentials: 'include', // cookie Sanctum
+    onRequest({ options }) {
+        options.headers.set('Accept', 'application/json');
+        options.headers.set('X-XSRF-TOKEN', readCookie('XSRF-TOKEN'));
+        const family = useSession().currentFamilyId;
+        if (family) options.headers.set('X-Family-Id', String(family));
     },
-    setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(i18n)
-            .mount(el);
+    onResponseError({ response }) {
+        // 401 → ke /login · 403 → toast "tidak berhak" · 404 → halaman tidak ditemukan
+        // 409 (belum punya keluarga) → /onboarding · 422 → ApiValidationError (errors per field) · 429 → toast
     },
-    progress: { color: '#2563EB' },
 });
 ```
 
-- Halaman di-_lazy load_ per modul (code splitting otomatis via `import.meta.glob`).
-- Layout default dipasang per page: `defineOptions({ layout: AppLayout })`.
+- `POST` pembuat data otomatis mengirim `Idempotency-Key` (UUID per submit) — klik ganda tidak menggandakan data (BR-B13).
+- Login SPA: `GET /sanctum/csrf-cookie` → `POST /api/v1/auth/login` → `GET /api/v1/me`.
 
-## 5. State & Data
+### 5.2 Izin
 
-| Jenis data                                            | Sumber                                            | Alat                                                                    |
-| ----------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
-| Data halaman (list, detail, ringkasan)                | Props Inertia dari controller                     | `defineProps<...>()`                                                    |
-| Data global (user, keluarga aktif, role, izin, flash) | Shared props `HandleInertiaRequests`              | `usePage<SharedProps>()` via `useAuth()`, `usePermission()`             |
-| Widget berat (grafik dashboard, laporan)              | **Deferred props** Inertia v3                     | `<Deferred data="cashflow">` + skeleton                                 |
-| Status async (scan struk)                             | Polling                                           | `usePoll()` Inertia v3 / partial reload `only: ['receipt']`             |
-| List panjang (transaksi)                              | Pagination / `InfiniteScroll` (`Inertia::scroll`) | Inertia v3                                                              |
-| Filter                                                | Query string                                      | `useFilters()` → `router.get(url, filters, { preserveState, replace })` |
-| Preferensi UI (tema, sidebar, tab terakhir)           | Lokal                                             | **Pinia** + persist `localStorage`                                      |
-| Form                                                  | —                                                 | Inertia `useForm()` (error validasi dari server otomatis)               |
-
-**Pinia hanya untuk state UI lintas halaman**, bukan untuk cache data server. Ini mencegah data basi dan duplikasi sumber kebenaran.
-
-### 5.1 Shared props
-
-```ts
-// core/types/inertia.d.ts
-export interface SharedProps {
-    auth: { user: App.Data.UserData | null };
-    family: App.Data.CurrentFamilyData | null; // id, name, currency, timezone, role
-    families: App.Data.FamilyOptionData[]; // untuk switcher
-    can: Record<App.Enums.Ability, boolean>; // dari Policy backend
-    flash: { success?: string; error?: string };
-    quota: { receipt_remaining: number } | null;
-}
-```
-
-`usePermission()` hanya membaca `can` dari server — frontend **tidak** menentukan izin sendiri (cukup menyembunyikan tombol; backend tetap memvalidasi).
+`usePermission()` membaca `can` dari `GET /me` (dihitung Policy backend). Frontend hanya menyembunyikan tombol; backend tetap memvalidasi setiap request.
 
 ## 6. Type Safety
 
-- **`spatie/laravel-typescript-transformer`** membaca DTO (`#[TypeScript]`), API Resource data class, dan Enum PHP → `core/types/generated.d.ts` (namespace `App.Data.*`, `App.Enums.*`).
-- Perintah: `php artisan typescript:transform` — dijalankan di `composer run dev` dan CI (CI gagal bila file generated berbeda → tipe frontend selalu sinkron dengan backend).
-- Route: **Wayfinder** — `import { index } from @/actions/.../TransactionController` atau `@/routes/transactions`, fungsi TypeScript ter-generate dari route Laravel (pengganti Ziggy `route()`).
+- Backend menghasilkan **OpenAPI** (Scramble) dari FormRequest + API Resource; `pnpm run api:types` → `core/api/schema.d.ts`. CI gagal bila file generated tidak sinkron dengan spec.
+- Komponen memakai tipe dari schema (`components['schemas']['Transaction']`), tidak menulis interface sendiri.
+- Route frontend diberi `name`; navigasi memakai `router.push({ name: 'transactions.edit', params: { id } })`.
 - `vue-tsc --noEmit` wajib bersih.
 
-## 6b. List Data / Tabel
+## 7. List Data / Tabel
 
-**Tidak memakai jQuery DataTables.** Library itu memanipulasi DOM langsung sehingga bentrok dengan Vue, memproses data di browser (lambat untuk ribuan transaksi), dan sulit diberi tema. Penggantinya:
+**Tidak memakai jQuery DataTables** (bentrok dengan Vue, proses di browser).
 
-| Bagian       | Pilihan                                                                                                                                                                                                                                       |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Engine tabel | **TanStack Table v8** (`@tanstack/vue-table`) — headless, dipakai oleh komponen _Data Table_ shadcn-vue, tampilan 100% Tailwind                                                                                                               |
-| Data         | **Server-side**: pagination, sort, filter, search dikerjakan di backend (Repository `paginateFiltered`), frontend hanya mengirim query string                                                                                                 |
-| Komponen     | `core/components/data-table/` — `DataTable.vue`, `DataTablePagination.vue`, `DataTableToolbar.vue` (search, filter chips, reset), `DataTableColumnHeader.vue` (sort), `DataTableViewOptions.vue` (show/hide kolom), `DataTableRowActions.vue` |
-| State        | `useDataTable()` → sinkron ke query string (`?page=2&sort=-date&type=expense&q=bensin`) via `router.get(..., { preserveState: true, preserveScroll: true, replace: true })`, search di-debounce 300ms                                         |
+- **Server-side**: pagination, sort, filter, search dikerjakan backend (Repository `paginateFiltered`); frontend hanya mengirim query.
+- Query: `page`, `per_page` (1–100, UI 10/20/50/100, default 20), `sort` (whitelist per resource), `q`, filter spesifik. Transaksi: `from`, `to`, `type`, `category_id[]`, `wallet_id[]`, `user_id[]`, `tag[]`, `source`, `min`, `max` (boleh `50rb`).
+- Response: `{ data, meta: { current_page, last_page, per_page, total, ... }, links }`.
+- Total/subtotal (mis. total sesuai filter, subtotal harian) dihitung backend dan dikirim di `meta`, tidak dijumlah di browser (INV-06).
 
-> **Implementasi transaksi (Fase 2):** tabel desktop masih tabel Tailwind biasa (`TransactionTable.vue`: sort server-side, pilih baris, aksi massal) tanpa TanStack — kolomnya tetap dan semua logika ada di server. TanStack dipertimbangkan bila tabel lain butuh show/hide kolom. Prop `transactions` dikirim sebagai `Inertia::scroll(...)`: desktop memakai link halaman (kunjungan penuh mengganti data), HP memakai `<InfiniteScroll>` (partial reload menambah data, `daily` ikut di-merge).
+| Layar            | Bentuk                                                                        |
+| ---------------- | ----------------------------------------------------------------------------- |
+| Desktop ≥ 1024px | Tabel: sort, aksi baris, pilih banyak baris untuk aksi massal                 |
+| HP / tablet      | Kartu per tanggal (subtotal harian) + infinite scroll; filter di bottom sheet |
 
-### Kontrak backend ↔ frontend
+Export memakai **filter aktif** dan mengunduh file dari endpoint export API; tidak export dari data di browser.
 
-- Query: `page`, `per_page` (1–100, UI menawarkan 10/20/50/100, default 20), `sort` (`date`, `-date`, `amount`, `-amount`; whitelist per resource), `q`, dan filter spesifik. Transaksi: `from`, `to`, `type`, `category_id[]` (induk ikut sub-kategori), `wallet_id[]` (asal atau tujuan), `user_id[]`, `tag[]`, `source`, `min`, `max` (boleh `50rb`).
-- Response: `LengthAwarePaginator` dari Repository → `Data::collect()` → `{ data, meta: { current_page, last_page, per_page, total }, links }` — **format sama untuk Inertia dan REST API**.
-- Total/subtotal (mis. "Total pengeluaran sesuai filter: Rp 2.287.500") dihitung backend dan dikirim sebagai prop terpisah `aggregates`, bukan dijumlah di browser (INV-06).
-- Kolom sort & filter di-whitelist di `FormRequest` (cegah SQL injection & query berat).
+## 8. Pilihan (Select / Combobox)
 
-### Tampilan per layar
+| Sumber pilihan                                                | Komponen                                                                                                                            |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Master data** (dompet, kategori, anggota, tag, merchant, …) | **`SearchableSelect`** (reka-ui Combobox) — wajib bisa dicari; grup, indentasi sub-item, `keywords` (ketik "bensin" → Transportasi) |
+| Enum kecil & tetap (≤ ~7 opsi)                                | `NativeSelect`                                                                                                                      |
 
-| Layar            | Bentuk                                                                                                                                   |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Desktop ≥ 1024px | Tabel penuh: kolom bisa disort, sembunyikan kolom, aksi baris, **pilih banyak baris** untuk aksi massal (ubah kategori, hapus)           |
-| HP / tablet      | **List kartu** dikelompokkan per tanggal (subtotal harian) + **infinite scroll** (`<InfiniteScroll>` Inertia v3); filter di bottom sheet |
+- Saat edit, nilai lama yang sudah diarsipkan tetap tampil sebagai "(diarsipkan)".
+- Opsi kategori lewat `categoryOptions()` dari `@/modules/categories`.
 
-Satu sumber data, dua renderer: `DataTable` (desktop) dan `DataList` (mobile) memakai `useDataTable()` yang sama.
-
-### Dipakai di
-
-Transaksi (utama), struk, dompet, kategori, anggota & undangan, transaksi berulang, laporan (tabel detail), admin (daftar keluarga). Daftar pendek (< 50 baris, mis. dompet) tetap memakai komponen yang sama tanpa pagination.
-
-### Export
-
-Tombol Export di toolbar memakai **filter yang sedang aktif** dan memanggil endpoint backend (Excel/PDF); tidak export dari data di browser.
-
-## 6c. Pilihan (Select / Combobox)
-
-| Sumber pilihan                                                                       | Komponen                                                                                                                                                                                                                |
-| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Master data** (dompet, kategori, anggota, tag, merchant, …)                        | **`SearchableSelect`** (`components/SearchableSelect.vue`, reka-ui Combobox) — wajib bisa dicari; mendukung grup, indentasi sub-item, dan `keywords` tambahan (mis. kata kunci kategori: ketik "bensin" → Transportasi) |
-| Enum kecil & tetap (≤ ~7 opsi: jenis dompet, jenis kategori, peran, tanggal periode) | `NativeSelect`                                                                                                                                                                                                          |
-
-- Tidak memakai Select2/jQuery (bentrok dengan Vue).
-- `SearchableSelect` menulis nilai ke hidden input `name` sehingga bekerja dengan `<Form>` Inertia.
-- Saat edit, nilai lama yang sudah diarsipkan tetap ditampilkan sebagai "(diarsipkan)" agar tidak berganti diam-diam.
-- Opsi kategori dibuat lewat `categoryOptions()` dari `@/modules/categories`.
-
-## 7. Form & Validasi
+## 9. Form & Validasi
 
 ```ts
-// modules/transactions/composables/useTransactionForm.ts
-import {
-    store,
-    update,
-} from '@/actions/App/Http/Controllers/Web/Transaction/TransactionController';
+// modules/transactions/pages/Create.vue (ringkas)
+const form = useApiForm({
+    type: 'expense',
+    amount: '',
+    date: today(),
+    wallet_id: null,
+    category_id: null,
+    note: '',
+    tags: [],
+});
+const create = useCreateTransaction(); // dari modules/transactions/api.ts
 
-export function useTransactionForm(initial?: App.Data.TransactionData) {
-    const form = useForm({
-        type: initial?.type ?? 'expense',
-        amount: initial?.amount ?? null,
-        date: initial?.date ?? today(),
-        wallet_id: initial?.wallet_id ?? null,
-        category_id: initial?.category_id ?? null,
-        note: initial?.note ?? '',
-        tags: initial?.tags ?? [],
-    });
-
-    const submit = () =>
-        initial
-            ? form.submit(update(initial.id), {
-                  preserveScroll: true,
-              })
-            : form.submit(store(), {
-                  onSuccess: () => form.reset('amount', 'note'),
-              });
-
-    return { form, submit };
+async function submit() {
+    await form.submit((values) => create.mutateAsync(values)); // 422 → form.errors per field
+    toast.success('Transaksi tersimpan');
+    router.push({ name: 'transactions.index' });
 }
 ```
 
-- Validasi utama di **backend** (FormRequest, satu sumber dengan API). Frontend hanya validasi ringan (wajib isi, format) untuk UX.
-- `AmountInput` menampilkan `Rp 50.000` tetapi mengirim integer `50000`; menerima ketikan `50rb` lalu diparse oleh endpoint `/transactions/parse` (pakai `AmountParser` yang sama dengan bot) — tidak ada parser duplikat di JS.
+- `useApiForm` (core) menyimpan nilai, `processing`, dan `errors` dari response 422 (termasuk pelanggaran business rule yang punya `field`).
+- Validasi utama di **backend** (FormRequest). Frontend hanya validasi ringan untuk UX.
+- `AmountInput` menerima ketikan `50rb` dan mengirim teks apa adanya; backend mem-parse dengan `AmountParser` — tidak ada parser duplikat di JS.
 
-## 8. Komponen & Tema
+## 10. Komponen & Tema
 
-- Primitive dari **shadcn-vue** di `core/components/ui` (dikopi ke repo, bebas dimodifikasi).
+- Primitive **shadcn-vue** di `core/components/ui` (dikopi ke repo, bebas dimodifikasi).
 - Semua warna lewat token CSS ([14-ui-design-system.md](14-ui-design-system.md)); `BaseChart` membaca token agar grafik ikut light/dark.
-- Komponen ≤ ~200 baris; lebih dari itu dipecah.
-- Props diberi tipe (`defineProps<{ ... }>()`), event (`defineEmits<{ ... }>()`), slot didokumentasikan bila ada.
-- Naming: PascalCase multi-word; komponen modul diberi prefix domain (`TransactionItem`, `BudgetProgress`).
+- Komponen ≤ ~200 baris; props/emit bertipe; PascalCase multi-word; prefix domain (`TransactionItem`, `BudgetProgress`).
 
-## 9. Aturan Import (ESLint)
+## 11. Aturan Import
 
-| Dari           | Boleh import                                             |
-| -------------- | -------------------------------------------------------- |
-| `core/**`      | `core/**` saja                                           |
-| `modules/X/**` | `core/**`, `modules/X/**`, `@/modules/Y` (index.ts saja) |
-| `app.ts`       | semua                                                    |
+| Dari                   | Boleh import                                             |
+| ---------------------- | -------------------------------------------------------- |
+| `core/**`              | `core/**` saja                                           |
+| `modules/X/**`         | `core/**`, `modules/X/**`, `@/modules/Y` (index.ts saja) |
+| `main.ts`, `router/**` | semua                                                    |
 
-Ditegakkan dengan `eslint-plugin-boundaries`. Alias: `@/core`, `@/modules`.
+Dijaga lint (boundaries) + test Vitest batas modul. Alias: `@/core`, `@/modules`.
 
-## 10. Kualitas & Testing
+## 12. Kualitas & Testing
 
-| Alat                                                | Fungsi                                                                                                     |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| ESLint (`@vue/eslint-config-typescript`) + Prettier | lint & format                                                                                              |
-| `vue-tsc`                                           | type check                                                                                                 |
-| **Vitest** + `@vue/test-utils`                      | unit test `lib/*`, composables, komponen penting (`AmountInput`, `BudgetProgress`, `TransactionFilterBar`) |
-| Playwright _(fase lanjutan)_                        | E2E alur utama: login → catat transaksi → dashboard ter-update                                             |
+| Alat                           | Fungsi                                                                     |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| Vite+ (`vp check`)             | lint & format                                                              |
+| `vue-tsc`                      | type check                                                                 |
+| **Vitest** + `@vue/test-utils` | `lib/*`, client API (header, error mapping), composables, komponen penting |
+| **Playwright**                 | E2E alur utama di SPA sampai database                                      |
 
-Test frontend fokus pada **format & interaksi**, karena perhitungan sudah diuji di backend.
+Test frontend fokus pada **format & interaksi**; perhitungan sudah diuji di backend lewat test API.
 
-## 11. Performa & PWA
+## 13. Performa & PWA
 
-- Lazy load per halaman (otomatis), ApexCharts di-import dinamis di `BaseChart`.
-- Deferred props untuk widget berat; skeleton loading.
-- Prefetch link navigasi utama (`<Link prefetch>`).
-- PWA manual (bukan `vite-plugin-pwa`, karena aset Laravel ada di `/build/` sedangkan service worker harus ber-scope `/`): `public/manifest.webmanifest`, `public/sw.js` (cache-first hanya untuk `/build/assets/*` & ikon; halaman & data selalu dari network), `public/offline.html`; didaftarkan oleh `lib/pwa.ts` hanya di build produksi. Input transaksi offline **tidak** didukung (Telegram sudah mencakup kebutuhan input cepat).
+- Lazy load per halaman (route `component: () => import(...)`), ApexCharts di-import dinamis.
+- Widget dashboard dimuat paralel dengan skeleton; prefetch query saat hover menu utama.
+- PWA manual: `manifest.webmanifest`, `sw.js` (cache-first hanya aset build & ikon; data API selalu dari network), `offline.html`. Input offline **tidak** didukung.
 
-## 12. Checklist Fitur Baru (Frontend)
+## 14. Checklist Fitur Baru (Frontend)
 
-1. Buat folder `modules/<fitur>/` dengan `pages/`, `components/`, `index.ts`.
-2. Controller `Inertia::render('<fitur>/<Page>')` dengan props dari DTO ber-`#[TypeScript]`.
-3. Jalankan `typescript:transform`.
-4. Gunakan komponen `core` sebelum membuat yang baru.
-5. Tambah route ke navigasi (`core/layouts/partials/navigation.ts`) dengan permission.
-6. Vitest untuk composable/komponen baru; lint & type check bersih.
+1. Endpoint API sudah ada + test skenario hijau ([test-cases](test-cases/README.md)).
+2. `pnpm run api:types` untuk memperbarui `schema.d.ts`.
+3. Buat `modules/<fitur>/` dengan `routes.ts`, `api.ts`, `pages/`, `components/`, `index.ts`; daftarkan routes di `router/routes.ts`.
+4. Pakai komponen `core` sebelum membuat yang baru.
+5. Tambah ke navigasi dengan permission.
+6. Vitest untuk composable/komponen baru; E2E untuk alur utama; lint & type check bersih.

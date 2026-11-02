@@ -7,13 +7,13 @@ Pelengkap [02-architecture.md](02-architecture.md). Dokumen ini adalah **acuan i
 ```
  Entry points                     Application                Data
 ┌──────────────────────┐   DTO   ┌────────────┐  DTO/array ┌──────────────┐   ┌───────┐
-│ Web Controller       │────────▶│            │───────────▶│              │──▶│ Model │──▶ MySQL
-│ Api/V1 Controller    │         │  Service   │            │  Repository  │   └───────┘
+│ Api/V1 Controller    │────────▶│            │───────────▶│              │──▶│ Model │──▶ MySQL
+│ Fortify (auth JSON)  │         │  Service   │            │  Repository  │   └───────┘
 │ Telegram Handler     │         │            │◀───────────│ (interface)  │
 │ Job / Command        │◀────────│            │ Model/DTO  └──────────────┘
 └──────────────────────┘ Model/  └─────┬──────┘
    ▲   FormRequest       DTO           │ event / job / external client
-   │   Resource / Inertia              ▼
+   │   API Resource (JSON)             ▼
    │                         Events → Listeners, Jobs, Clients (Telegram, AI)
 ```
 
@@ -38,19 +38,19 @@ app/
 │   ├── Transaction/  Budget/  Receipt/  Tenancy/
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Web/                     # Inertia
-│   │   ├── Api/V1/
+│   │   ├── Api/V1/{Domain}/         # satu-satunya pintu HTTP (SPA & Android)
 │   │   └── Telegram/WebhookController.php
 │   ├── Middleware/
 │   ├── Requests/
-│   │   ├── Concerns/TransactionRules.php   # rule validasi dipakai Web & API
-│   │   ├── Web/  Api/V1/
-│   └── Resources/                   # API Resource
+│   │   ├── Concerns/                # rule validasi bersama (TransactionRules, ParsesAmounts, ...)
+│   │   └── Api/V1/{Domain}/
+│   └── Resources/{Domain}/          # API Resource (bentuk JSON + sumber schema OpenAPI)
 ├── Jobs/
 ├── Models/  Models/Concerns/  Models/Scopes/
 ├── Policies/
 ├── Providers/
 │   ├── AppServiceProvider.php
+│   ├── FortifyServiceProvider.php   # Fortify headless (JSON)
 │   └── RepositoryServiceProvider.php
 ├── Repositories/
 │   ├── Contracts/
@@ -230,55 +230,51 @@ Konvensi method Service: kata kerja bisnis (`create`, `transfer`, `undoLast`, `c
 
 - Semua exception bisnis turunan `App\Exceptions\DomainException` dengan `userMessage()` dan `status()` (default 422).
 - `bootstrap/app.php` → `withExceptions()` merender:
-    - **Web**: redirect back + flash error.
-    - **API**: `{"message": userMessage}` dengan status yang sesuai.
+    - **API** (semua klien: SPA & Android): `{"message": userMessage, "errors": {field: [userMessage]}, "rule": "BR-xxx"}` dengan status yang sesuai.
+    - Validasi FormRequest: 422 `{"message", "errors"}`; belum login: 401; Policy: 403; tidak ditemukan / keluarga lain: 404; belum punya keluarga: 409.
     - **Telegram**: handler menangkap dan membalas `userMessage` ke chat.
 - `ModelNotFoundException` dari tenant scope → 404 (BR-I06).
 
 ## 7. Controller (contoh lengkap)
 
 ```php
-// Web
+// app/Http/Controllers/Api/V1/Transaction/TransactionController.php
 final class TransactionController extends Controller
 {
-    public function __construct(private readonly TransactionService $service, private readonly TransactionQueryService $query) {}
+    public function __construct(
+        private readonly TransactionService $service,
+        private readonly TransactionQueryService $query,
+    ) {}
 
-    public function index(TransactionIndexRequest $request): Response
+    public function index(TransactionFilterRequest $request): AnonymousResourceCollection
     {
-        $filter = TransactionFilterData::from($request->validated());
-        return Inertia::render('transactions/Index', [
-            'transactions' => TransactionListItemData::collect($this->query->paginate($filter)),
-            'filters'      => $filter,
-            'options'      => Inertia::defer(fn () => $this->query->filterOptions()),
-        ]);
+        $filter = $request->toFilter();
+
+        return TransactionResource::collection($this->query->paginate($filter))
+            ->additional(['meta' => ['totals' => $this->query->totals($filter)]]);
     }
 
-    public function store(StoreTransactionRequest $request): RedirectResponse
+    public function store(TransactionRequest $request): JsonResponse
     {
-        $this->service->create(TransactionData::from($request->validated()), $request->user());
-        return back()->with('success', __('transactions.saved'));
-    }
-}
+        Gate::authorize('create', Transaction::class);
 
-// API — memanggil service yang sama
-final class TransactionController extends Controller
-{
-    public function store(StoreTransactionRequest $request, TransactionService $service): TransactionResource
-    {
-        $trx = $service->create(TransactionData::from([...$request->validated(), 'source' => 'api']), $request->user());
-        return TransactionResource::make($trx->load('wallet', 'category', 'creator', 'tags'));
+        $transaction = $this->service->create($request->toData($request->source()), $request->user());
+
+        return TransactionResource::make($transaction->load('wallet', 'category', 'creator', 'tags'))
+            ->response()->setStatusCode(201);
     }
 }
 ```
+
+SPA, Android, dan integrasi lain memakai controller yang sama. `source` transaksi (BR-B07) ditentukan dari cara login: sesi cookie SPA → `web`, token → `api`; bukan lewat controller berbeda.
 
 Read-heavy (list, laporan) boleh memakai _query service_ terpisah (`TransactionQueryService`, `ReportService`) agar service tulis tetap ramping (pemisahan baca/tulis ringan ala CQRS).
 
 ## 8. DTO
 
-Memakai `spatie/laravel-data` agar satu class melayani: validasi input → DTO → output Inertia → tipe TypeScript.
+Memakai `spatie/laravel-data` untuk membawa data antar layer secara type-safe (input FormRequest → Service, hasil Service → API Resource). Bentuk JSON & schema OpenAPI ditentukan oleh API Resource, bukan DTO.
 
 ```php
-#[TypeScript]
 final class TransactionData extends Data
 {
     public function __construct(
@@ -332,14 +328,16 @@ Penjagaan scope tenant (BR-I07): `tests/Architecture/TenantScopeBypassTest.php` 
 
 Service sengaja **tidak** `final` agar bisa di-mock (Mockery) di test controller & handler.
 
+Arch test tambahan: tidak ada `Inertia`/`Wayfinder` di `app/`, semua controller HTTP di `App\Http\Controllers\Api` atau `Telegram`, controller API hanya mengembalikan `JsonResource`/`JsonResponse`/`Response`.
+
 ## 10. Checklist Fitur Baru (Backend)
 
 1. Rule bisnis dicatat di [11-business-rules.md](11-business-rules.md).
 2. Migration + Model (+ `BelongsToFamily`) + Factory.
 3. `XRepositoryInterface` + `XRepository` + binding.
-4. DTO input/output (`#[TypeScript]`).
+4. DTO input/output.
 5. `XService` (logika & rule) + exception domain.
-6. FormRequest (Web & API, rule bersama) + Policy.
-7. Controller Web / API / Handler Telegram yang tipis.
-8. Test: unit (Support/Service), API/feature, tenancy, consistency bila menyentuh angka.
-9. `typescript:transform`, Pint, Larastan, arch test hijau.
+6. FormRequest `Api/V1` + Policy.
+7. Controller `Api/V1` + API Resource (dan Handler Telegram) yang tipis.
+8. Skenario di `docs/test-cases/<fitur>.md` → test API skenario (positif & negatif), unit (Support/Service), tenancy, consistency bila menyentuh angka.
+9. OpenAPI ter-update (Scramble), Pint, Larastan, arch test hijau.

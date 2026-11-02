@@ -1,33 +1,33 @@
 # 17 — Project Structure
 
-Satu repository (monolith Inertia): **backend Laravel** dan **frontend Vue** hidup di project yang sama, dibangun oleh Vite, dan di-deploy sebagai satu aplikasi. Pemisahan dilakukan di level folder, bukan di level repo.
+Satu repository berisi dua aplikasi yang hanya terhubung lewat **REST API `/api/v1`**:
 
-Alasan: satu bahasa routing & auth (session Laravel), tidak perlu CORS/token untuk web, tipe TypeScript di-generate langsung dari PHP, satu pipeline CI. REST API `/api/v1` tetap tersedia untuk client lain.
+- **Backend** — Laravel di root repo: REST API, auth (Fortify headless + Sanctum), queue, scheduler, webhook Telegram. Tidak me-render halaman.
+- **Frontend web** — SPA Vue 3 di `frontend/`, di-build ke `public/app/` dan dilayani di domain yang sama.
+
+Aplikasi **Android (Kotlin)** akan menjadi klien ketiga di repo terpisah, memakai API & spec OpenAPI yang sama. Alasan arsitektur: [18-api-first-migration.md](18-api-first-migration.md).
 
 ## 1. Root
 
 ```
 budgeting-app/
 ├── app/                      # ⚙️ BACKEND — kode aplikasi Laravel
-├── bootstrap/                # app.php (middleware, exception rendering, routing)
-├── config/                   # konfigurasi + telegram.php, receipt.php, tenancy.php
+├── bootstrap/                # app.php (middleware, exception rendering JSON, routing)
+├── config/                   # konfigurasi + telegram.php, receipt.php, tenancy.php, scramble.php
 ├── database/                 # migrations, factories, seeders
-├── docs/                     # 📚 dokumentasi project
-├── lang/id/                  # teks Bahasa Indonesia (validasi, pesan, bot)
-├── public/                   # entry web + build Vite (public/build, di-ignore git)
+├── docs/                     # 📚 dokumentasi project + docs/test-cases (skenario per fitur)
+├── frontend/                 # 🖥️ FRONTEND — SPA Vue 3 + TypeScript (package.json sendiri)
+├── lang/id/                  # teks Bahasa Indonesia (validasi, pesan API, bot)
+├── public/                   # index.php + public/app (build SPA, di-ignore git)
 ├── resources/
-│   ├── css/                  # 🎨 Tailwind + token tema
-│   ├── js/                   # 🖥️ FRONTEND — Vue 3 + TypeScript
 │   ├── prompts/              # prompt AI (receipt.md)
-│   └── views/                # Blade: root Inertia, template PDF, email
-├── routes/                   # web, api, telegram, console
+│   └── views/                # Blade: template PDF & email saja
+├── routes/                   # api, telegram, console (+ spa fallback)
 ├── storage/                  # log, cache, file struk privat
-├── tests/                    # 🧪 Pest (backend) — Vitest ada di resources/js
-├── .github/workflows/        # CI
+├── tests/                    # 🧪 Pest (backend)
+├── .github/workflows/        # CI backend + frontend
 ├── CLAUDE.md  README.md
-├── composer.json  package.json
-├── vite.config.ts  tsconfig.json  eslint.config.js  .prettierrc
-├── phpunit.xml  phpstan.neon  pint.json  vitest.config.ts
+├── composer.json  phpunit.xml  phpstan.neon  pint.json
 └── .env.example  .gitignore  .editorconfig
 ```
 
@@ -39,22 +39,21 @@ app/
 │   ├── Telegram/
 │   └── Ai/
 ├── Console/Commands/         # telegram:poll, telegram:set-webhook, recurring:run, receipts:expire
-├── DTOs/{Domain}/            # *Data (spatie/laravel-data, #[TypeScript])
+├── DTOs/{Domain}/            # *Data (spatie/laravel-data)
 ├── Enums/
 ├── Events/  Listeners/
 ├── Exceptions/{Domain}/      # turunan DomainException
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Web/{Domain}/     # Inertia controllers
-│   │   ├── Api/V1/           # REST API controllers
+│   │   ├── Api/V1/{Domain}/  # REST API controllers (satu-satunya pintu HTTP untuk klien)
 │   │   └── Telegram/         # WebhookController
 │   ├── Middleware/
-│   ├── Requests/{Web,Api/V1,Concerns}/
-│   └── Resources/            # API Resource
+│   ├── Requests/Api/V1/{Domain}/
+│   └── Resources/{Domain}/   # API Resource (bentuk JSON + sumber schema OpenAPI)
 ├── Jobs/
 ├── Models/  Models/Concerns/  Models/Scopes/
 ├── Policies/
-├── Providers/                # App, Repository, Event
+├── Providers/                # App, Repository, Event, Fortify
 ├── Repositories/
 │   ├── Contracts/            # *RepositoryInterface
 │   ├── Eloquent/             # *Repository
@@ -66,30 +65,27 @@ app/
 
 Detail peran tiap folder: [16-backend-architecture.md](16-backend-architecture.md).
 
-**Domain** yang dipakai konsisten di semua folder ber-`{Domain}`: `Family`, `Wallet`, `Category`, `Transaction`, `Budget`, `Saving`, `Recurring`, `Receipt`, `Report`, `Telegram`, `Admin`.
+**Domain** yang dipakai konsisten di semua folder ber-`{Domain}`: `Auth`, `Family`, `Wallet`, `Category`, `Transaction`, `Budget`, `Saving`, `Recurring`, `Receipt`, `Report`, `Notification`, `Settings`, `Telegram`, `Admin`.
 
-## 3. Frontend (`resources/js/`)
+## 3. Frontend (`frontend/`)
 
 ```
-resources/js/
-├── app.ts                    # bootstrap Inertia + page resolver
-├── core/
-│   ├── components/{ui,common,charts,form,data-table}/
-│   ├── layouts/  layouts/partials/
-│   ├── composables/
-│   ├── lib/
-│   ├── plugins/
-│   ├── i18n/
-│   └── types/                # generated.d.ts (auto), inertia.d.ts, global.d.ts
-└── modules/
-    └── {feature}/            # auth, onboarding, dashboard, transactions, receipts, wallets,
-        ├── pages/            # categories, budgets, savings, recurring, reports, family,
-        ├── components/       # telegram, settings, admin
-        ├── composables/
-        ├── constants.ts
-        ├── types.ts
-        ├── __tests__/
-        └── index.ts
+frontend/
+├── index.html  vite.config.ts  tsconfig.json  package.json
+├── public/                   # manifest, sw.js, offline.html, ikon
+└── src/
+    ├── main.ts
+    ├── router/
+    ├── core/{api,components,layouts,composables,stores,lib}/
+    └── modules/
+        └── {feature}/        # auth, onboarding, dashboard, transactions, receipts, wallets,
+            ├── routes.ts     # categories, budgets, savings, recurring, reports, family,
+            ├── api.ts        # notifications, telegram, settings, admin
+            ├── pages/
+            ├── components/
+            ├── composables/
+            ├── __tests__/
+            └── index.ts
 ```
 
 Detail: [15-frontend-architecture.md](15-frontend-architecture.md).
@@ -100,37 +96,36 @@ Detail: [15-frontend-architecture.md](15-frontend-architecture.md).
 config/
 ├── telegram.php              # token, username, secret, mode
 ├── receipt.php               # driver, model, rate, quota default
-└── tenancy.php               # default kategori/dompet, batas
+├── tenancy.php               # default kategori/dompet, batas
+└── scramble.php              # dokumentasi OpenAPI /docs/api
 
 database/
 ├── migrations/               # urutan sesuai 04-database-schema.md
 ├── factories/                # semua model, dengan state (expense(), income(), transfer())
-└── seeders/
-    ├── DatabaseSeeder.php
-    ├── DemoSeeder.php
-    └── data/default_categories.php
+└── seeders/  (DatabaseSeeder, DemoSeeder, data/default_categories.php)
 
 resources/views/
-├── app.blade.php             # root Inertia
 ├── pdf/reports/              # template laporan PDF
 └── emails/                   # undangan, dll
 
 routes/
-├── web.php                   # memuat routes/web/*.php
-├── web/                      # dipecah per domain: transactions.php, budgets.php, reports.php, ...
-├── api.php                   # /api/v1 → routes/api/v1/*.php
-├── api/v1/
+├── api.php                   # /api/v1 (auth, me, families, wallets, ... per domain)
 ├── telegram.php              # POST /telegram/webhook
+├── spa.php                   # fallback: semua path non-API → public/app/index.html
 └── console.php               # jadwal scheduler
 
 storage/app/private/receipts/{family_id}/{yyyy}/{mm}/
 
+docs/test-cases/              # skenario positif & negatif per fitur (sumber test API)
+
 tests/
 ├── Architecture/
 ├── Unit/{Support,Services,Telegram}/
-├── Feature/{Api/V1,Web,Telegram,Integration,Tenancy,Consistency}/
-├── Fixtures/{telegram,receipts}/  GoldenFamilySeeder.php  golden_expected.php
+├── Feature/{Api/V1,Telegram,Integration,Tenancy,Consistency}/
+├── Fixtures/{telegram,receipts}/  GoldenFamily.php
 └── Concerns/                 # WithFamily, ActsAsTelegram
+
+frontend/tests/e2e/           # Playwright (SPA → API → DB)
 
 .github/workflows/
 └── tests.yml                 # PHP + Node, MySQL + Redis service, semua quality gate
@@ -140,25 +135,26 @@ tests/
 
 Contoh fitur **Budget**:
 
-| Lapisan                     | File                                                                                                                                                                                                                                             |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rule                        | `docs/11-business-rules.md` (BR-F**)                                                                                                                                                                                                             |
-| Migration / Model / Factory | `database/migrations/*_create_budgets_table.php`, `app/Models/Budget.php`, `database/factories/BudgetFactory.php`                                                                                                                                |
-| Repository                  | `app/Repositories/Contracts/BudgetRepositoryInterface.php`, `app/Repositories/Eloquent/BudgetRepository.php`                                                                                                                                     |
-| Kalkulator murni            | `app/Support/Budget/BudgetCalculator.php`                                                                                                                                                                                                        |
-| Service                     | `app/Services/Budget/BudgetService.php`                                                                                                                                                                                                          |
-| DTO                         | `app/DTOs/Budget/BudgetData.php`, `BudgetProgressData.php`                                                                                                                                                                                       |
-| Event/Listener              | `app/Listeners/CheckBudgetThresholds.php`                                                                                                                                                                                                        |
-| Request / Policy            | `app/Http/Requests/Web/Budget/*`, `app/Http/Requests/Api/V1/*`, `app/Policies/BudgetPolicy.php`                                                                                                                                                  |
-| Controller                  | `app/Http/Controllers/Web/Budget/BudgetController.php`, `app/Http/Controllers/Api/V1/BudgetController.php`                                                                                                                                       |
-| Bot                         | `app/Telegram/Handlers/Commands/BudgetCommand.php`                                                                                                                                                                                               |
-| Route                       | `routes/web/budgets.php`, `routes/api/v1/budgets.php`                                                                                                                                                                                            |
-| Frontend                    | `resources/js/modules/budgets/{pages,components,composables,index.ts}`                                                                                                                                                                           |
-| Test                        | `tests/Unit/Support/BudgetCalculatorTest.php`, `tests/Unit/Services/BudgetServiceTest.php`, `tests/Feature/Api/V1/BudgetTest.php`, `tests/Feature/Web/BudgetTest.php`, `tests/Feature/Consistency/*`, `resources/js/modules/budgets/__tests__/*` |
+| Lapisan                     | File                                                                                                                                                                                                            |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rule                        | `docs/11-business-rules.md` (BR-F**)                                                                                                                                                                            |
+| Skenario test               | `docs/test-cases/budgets.md`                                                                                                                                                                                    |
+| Migration / Model / Factory | `database/migrations/*_create_budgets_table.php`, `app/Models/Budget.php`, `database/factories/BudgetFactory.php`                                                                                               |
+| Repository                  | `app/Repositories/Contracts/BudgetRepositoryInterface.php`, `app/Repositories/Eloquent/BudgetRepository.php`                                                                                                    |
+| Kalkulator murni            | `app/Support/Budget/BudgetCalculator.php`                                                                                                                                                                       |
+| Service                     | `app/Services/Budget/BudgetService.php`                                                                                                                                                                         |
+| DTO                         | `app/DTOs/Budget/BudgetData.php`, `BudgetProgressData.php`                                                                                                                                                      |
+| Event/Listener              | `app/Listeners/CheckBudgetThresholds.php`                                                                                                                                                                       |
+| Request / Policy            | `app/Http/Requests/Api/V1/Budget/*`, `app/Policies/BudgetPolicy.php`                                                                                                                                            |
+| Controller / Resource       | `app/Http/Controllers/Api/V1/Budget/BudgetController.php`, `app/Http/Resources/Budget/BudgetResource.php`                                                                                                       |
+| Bot                         | `app/Telegram/Handlers/Commands/BudgetCommand.php`                                                                                                                                                              |
+| Route                       | `routes/api.php` (grup `budgets`)                                                                                                                                                                               |
+| Frontend                    | `frontend/src/modules/budgets/{routes.ts,api.ts,pages,components,index.ts}`                                                                                                                                     |
+| Test                        | `tests/Unit/Support/BudgetCalculatorTest.php`, `tests/Feature/Api/V1/BudgetTest.php` (skenario), `tests/Feature/Consistency/*`, `frontend/src/modules/budgets/__tests__/*`, `frontend/tests/e2e/budgets.e2e.ts` |
 
 ## 6. Alias & Namespace
 
-| Konteks   | Alias                                                                                                       |
-| --------- | ----------------------------------------------------------------------------------------------------------- |
-| PHP       | PSR-4 `App\` → `app/`, `Database\` → `database/`, `Tests\` → `tests/`                                       |
-| TS / Vite | `@/core` → `resources/js/core`, `@/modules` → `resources/js/modules`, `@/types` → `resources/js/core/types` |
+| Konteks   | Alias                                                                 |
+| --------- | --------------------------------------------------------------------- |
+| PHP       | PSR-4 `App\` → `app/`, `Database\` → `database/`, `Tests\` → `tests/` |
+| TS / Vite | `@/core` → `frontend/src/core`, `@/modules` → `frontend/src/modules`  |

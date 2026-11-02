@@ -1,6 +1,6 @@
 # 12 — Testing Strategy
 
-Tujuan: memastikan **data yang diinput, logika, response, dan hasil perhitungan selalu sinkron** — di semua channel (web, REST API, Telegram, struk) dan semua tampilan (dashboard, laporan, export, bot).
+Tujuan: memastikan **data yang diinput, logika, response, dan hasil perhitungan selalu sinkron** — di semua klien (web SPA, Android, Telegram, struk) yang semuanya masuk lewat REST API atau bot dan semua tampilan (dashboard, laporan, export, bot).
 
 ## 1. Tools
 
@@ -21,7 +21,7 @@ Tujuan: memastikan **data yang diinput, logika, response, dan hasil perhitungan 
               ┌───────────────────────┐
               │  Consistency / E2E     │  sedikit — skenario utuh lintas channel
               ├───────────────────────┤
-              │  API & Integration     │  endpoint web, REST API, webhook Telegram, job
+              │  API & Integration     │  skenario REST API, webhook Telegram, job
               ├───────────────────────┤
               │  Unit                  │  banyak — parser, kalkulator, service (repo di-mock)
               └───────────────────────┘
@@ -53,14 +53,22 @@ Dengan database nyata; menguji **Service + Repository + Model** bersama.
 - Job struk dengan `FakeReceiptParser` (`respondWith()` untuk hasil/eksepsi tertentu) dan kontrak parser dengan `Http::fake()` respons Gemini (`tests/Feature/Integration/ReceiptParserContractTest.php`).
 - Scheduler recurring idempoten (BR-G02).
 
-### 2.3 API Test (`tests/Feature/Api`, `tests/Feature/Web`, `tests/Feature/Telegram`)
+### 2.3 API Test (`tests/Feature/Api/V1`, `tests/Feature/Telegram`)
 
-Menguji **request → response** lengkap.
+REST API adalah **satu-satunya pintu** web SPA dan Android, jadi semua fitur diuji lewat API.
+
+**Test skenario per fitur** — sumbernya dokumen [test-cases/](test-cases/README.md): untuk setiap fitur, form dan logikanya dibaca lalu semua skenario positif & negatif ditulis (ID `WAL-01`, `TRX-11`, …). Satu skenario = satu test, ditulis seolah-olah orang memakai aplikasi (Given–When–Then): login sebagai user tertentu → kirim isi form persis seperti diketik → cek response, isi database, dan hasil baca ulang. Skenario negatif juga memastikan database tidak berubah. Bukan test per field.
+
+```php
+it('[WAL-01] creates a bank wallet with an opening balance [BR-C01]', function () { /* GIVEN · WHEN · THEN */ });
+```
+
+`composer test:api` menjalankan test API sambil mencatat setiap request & response asli ke `storage/logs/api-trace.log` (`API_TRACE=1`).
 
 | Kelompok             | Yang diassert                                                                                                               |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | REST API `/api/v1/*` | status code, struktur JSON (`assertJsonStructure`), nilai (`assertJsonPath`), validasi 422 + pesan, 401/403/404, pagination |
-| Web (Inertia)        | `assertInertia(fn ($page) => $page->component('Dashboard')->where('summary.expense', 1250000))`                             |
+| Auth                 | login/logout SPA (cookie), token Android, 2FA, passkey, reset password — semua JSON                                         |
 | Webhook Telegram     | fixture JSON update → record di DB + isi pesan balasan (`Http::assertSent`)                                                 |
 | Export               | Excel (`Excel::fake()` + assert isi), PDF ter-generate                                                                      |
 | Otorisasi            | matrix role (BR-B09, BR-I03) memakai `dataset()` role × aksi                                                                |
@@ -75,7 +83,7 @@ Test kunci untuk menjamin **semua angka sinkron**.
 
 | ID     | Invariant                                                                                                                                                                            |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| INV-01 | Input identik via **web**, **REST API**, dan **Telegram** menghasilkan baris `transactions` identik (kecuali `source`, id, timestamp).                                               |
+| INV-01 | Input identik via **REST API** (sesi SPA maupun token) dan **Telegram** menghasilkan baris `transactions` identik (kecuali `source`, id, timestamp).                                 |
 | INV-02 | `Σ saldo wallet` (halaman dompet) = `total_saldo` (dashboard) = `/saldo` (bot) = API `/summary`.                                                                                     |
 | INV-03 | `pemasukan`, `pengeluaran` di dashboard = laporan arus kas = export Excel = `/bulan` bot, untuk periode yang sama.                                                                   |
 | INV-04 | `Σ per kategori` (laporan kategori) = total pengeluaran periode.                                                                                                                     |
@@ -89,14 +97,14 @@ Test kunci untuk menjamin **semua angka sinkron**.
 | INV-12 | Pembayaran tagihan kartu kredit (transfer) tidak menambah pengeluaran; belanja kartu kredit terhitung satu kali (BR-C06).                                                            |
 | INV-13 | Setiap perubahan transaksi menghasilkan tepat satu entri activity log dengan nilai lama & baru yang benar (BR-B14).                                                                  |
 
-### 2.5 E2E Test (`tests/e2e`, Playwright)
+### 2.5 E2E Test (`frontend/tests/e2e`, Playwright)
 
-Aplikasi sungguhan di browser (desktop 1366px & HP Pixel 7) → server Laravel → MySQL `budgeting_app_e2e` / `budgeting_app_log_e2e`, yang dibuat ulang & di-seed `DemoSeeder` setiap kali dijalankan.
+SPA sungguhan di browser (desktop 1366px & HP Pixel 7) → REST API Laravel → MySQL `budgeting_app_e2e` / `budgeting_app_log_e2e`, yang dibuat ulang & di-seed `DemoSeeder` setiap kali dijalankan.
 
 - Alur: login, dashboard + semua widget, pemilih periode, drill-down kategori, input cepat → simpan, filter & urut, aksi massal, budget + notifikasi, bottom nav, infinite scroll, filter sheet.
-- Hasil dicek di tampilan **dan langsung di database** (`tests/e2e/support/db.ts`, read-only): nominal integer, `source`, pencatat, tag, soft delete, flag alert budget, notifikasi.
+- Hasil dicek di tampilan **dan langsung di database** (`frontend/tests/e2e/support/db.ts`, read-only): nominal integer, `source`, pencatat, tag, soft delete, flag alert budget, notifikasi.
 - Setiap test otomatis gagal bila ada error JavaScript / console (`support/fixtures.ts`).
-- Menjalankan: `pnpm run build` lalu `pnpm run test:e2e` (PHP 8.4 dari `$PHP` atau `php` di PATH; lokal memakai Chrome terpasang, CI memakai Chromium). Job `e2e` terpisah di CI.
+- Menjalankan: build SPA lalu `pnpm run test:e2e` di `frontend/` (PHP 8.4 dari `$PHP` atau `php` di PATH; lokal memakai Chrome terpasang, CI memakai Chromium). Job `e2e` terpisah di CI.
 
 ## 3. Golden Dataset
 
@@ -170,8 +178,7 @@ tests/
 │ ├── Services/
 │ └── Telegram/Parsers/
 ├── Feature/
-│ ├── Api/V1/ # REST API
-│ ├── Web/ # Inertia endpoints
+│ ├── Api/V1/ # test skenario per fitur (docs/test-cases)
 │ ├── Telegram/ # webhook, commands, callback
 │ ├── Integration/ # repository, listener, job, scheduler
 │ ├── Tenancy/ # isolasi
@@ -182,7 +189,8 @@ tests/
 │ ├── GoldenFamilySeeder.php
 │ └── golden_expected.php
 └── Concerns/ # WithFamily, ActsAsTelegram
-resources/js/**/**tests**/ # Vitest
+frontend/src/**/**tests**/ # Vitest
+frontend/tests/e2e/ # Playwright
 
 ```
 
@@ -199,7 +207,7 @@ resources/js/**/**tests**/ # Vitest
 ## 8. Definition of Done per Fitur
 1. Business rule baru/ubah dicatat di [11-business-rules.md](11-business-rules.md).
 2. Unit test untuk logika/perhitungan.
-3. API/feature test untuk setiap endpoint/command baru (happy path, validasi, otorisasi, tenant).
+3. Skenario fitur di `docs/test-cases/<fitur>.md` (positif & negatif) dan test API untuk setiap skenario (validasi, otorisasi, tenant termasuk).
 4. Invariant consistency yang relevan ditambah/diperbarui.
 5. Semua gate hijau.
 ```

@@ -6,7 +6,8 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 
 **Strategi:**
 
-- **Web & REST API dulu, bot Telegram terakhir.** Semua logika ada di Service, jadi saat bot dibuat, ia tinggal memanggil Service yang sudah teruji.
+- **API-first.** Backend hanya REST API; web SPA dan Android (nanti) adalah klien. Fase 1–4 dibangun dengan Inertia dan dipindahkan di **Fase M** sebelum fitur baru ([18-api-first-migration.md](18-api-first-migration.md)).
+- **Bot Telegram terakhir.** Semua logika ada di Service, jadi saat bot dibuat, ia tinggal memanggil Service yang sudah teruji.
 - **MVP = Fase 1 + 2.** Setelah MVP selesai, aplikasi dipakai keluarga sendiri selama 1–2 minggu. Masukan dari pemakaian itu dipakai untuk menyesuaikan fase berikutnya sebelum lanjut.
 
 ## Fase 0 — Dokumentasi & Repo
@@ -67,6 +68,29 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 - ✅ INV-09 & BR-H01…H11 dites (unit, feature, API round-trip, E2E)
 - ⬜ 🎯 Coba dengan struk asli setelah API key Gemini tersedia → catat akurasi
 
+## Fase M — Migrasi API-first 🟨 mulai 3 Nov 2026
+
+Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Inertia lama tetap jalan sampai pengganti SPA-nya siap.
+
+- ✅ **M0 Dokumen** — keputusan arsitektur, semua dokumen diperbarui ke API-first, format test case per fitur ([test-cases](test-cases/README.md)), `composer test:api` (trace input/output)
+- ⬜ **M1 Fondasi API** — Fortify headless + Sanctum stateful, `/api/v1/auth/*` (SPA & token Android), error JSON + `rule`, OpenAPI (Scramble), test skenario auth
+- ⬜ **M2 API lengkap + test skenario per fitur** (dokumen skenario direview dulu, test API lama dirombak)
+    - ⬜ Dompet ([skenario](test-cases/wallets.md) draft)
+    - ⬜ Kategori
+    - ⬜ Transaksi
+    - ⬜ Budget
+    - ⬜ Ringkasan, Dashboard, Laporan & Export
+    - ⬜ Tabungan
+    - ⬜ Scan Struk
+    - ⬜ Keluarga, Anggota & Undangan
+    - ⬜ Onboarding
+    - ⬜ Notifikasi
+    - ⬜ Profil, Keamanan & Token
+- ⬜ **M3 Kerangka SPA** — `frontend/`, router, auth pages, layout, switch keluarga, tema, PWA
+- ⬜ **M4 Pindah halaman per fitur** — halaman SPA + E2E → hapus halaman, controller, route & test Inertia-nya
+- ⬜ **M5 Bersih-bersih** — hapus Inertia, Wayfinder, `resources/js`; update CI & dokumen
+- 🎯 Setelah M2: API lengkap → aplikasi Android bisa mulai dikerjakan
+
 ## Fase 5 — Otomasi, Data & Super Admin
 
 - ⬜ Transaksi berulang + pengingat tagihan
@@ -90,6 +114,7 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 
 ## Nanti
 
+- Aplikasi Android native (Kotlin) memakai REST API + client dari OpenAPI; push notification (FCM)
 - Deploy (hosting diputuskan kemudian), Pulse/Sentry di production
 - Input suara (voice note → teks)
 - Paket berlangganan berbasis kuota

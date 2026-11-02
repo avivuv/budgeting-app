@@ -1,6 +1,6 @@
 # 05 — Telegram Bot
 
-> **Dikerjakan di fase terakhir** ([09-roadmap.md](09-roadmap.md)). Semua Service (transaksi, struk, laporan, budget) sudah jadi dan teruji lewat web & REST API lebih dulu; bot hanya menjadi _entry point_ baru yang memanggil Service tersebut. Notifikasi sebelum bot ada dikirim lewat notifikasi web (database) & email; saat bot jadi, channel Telegram ditambahkan ke Notification yang sama.
+> **Dikerjakan di fase terakhir** ([09-roadmap.md](09-roadmap.md)). Semua Service (transaksi, struk, laporan, budget) sudah jadi dan teruji lewat REST API lebih dulu; bot hanya menjadi _entry point_ baru yang memanggil Service tersebut. Notifikasi sebelum bot ada dikirim lewat notifikasi web (database) & email; saat bot jadi, channel Telegram ditambahkan ke Notification yang sama.
 
 ## 1. Mode Operasi
 

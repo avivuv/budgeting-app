@@ -174,7 +174,7 @@ API key menyusul; sampai saat itu `RECEIPT_PARSER=fake`.
 ## 8. Web Upload
 
 - Halaman _Transaksi → Scan Struk_: drag & drop, pilih file (gambar/PDF), atau kamera HP (`<input accept="image/*,application/pdf" capture="environment">`).
-- Polling status (`usePoll` Inertia) sampai `parsed`, lalu hasil baca tampil sebagai **form review yang sudah terisi** (total, tanggal, merchant, kategori, dompet, item; semua bisa diedit). **Belum ada transaksi tersimpan** sampai user menekan Simpan (BR-H08, BR-H09).
+- Klien (SPA/Android) mem-polling `GET /api/v1/receipts/{id}` sampai `parsed`, lalu hasil baca tampil sebagai **form review yang sudah terisi** (total, tanggal, merchant, kategori, dompet, item; semua bisa diedit). **Belum ada transaksi tersimpan** sampai user menekan Simpan (BR-H08, BR-H09).
 
 ## 9. Konfigurasi
 
