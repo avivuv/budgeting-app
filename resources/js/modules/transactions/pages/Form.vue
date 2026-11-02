@@ -6,7 +6,7 @@ import {
     ArrowUpRight,
     History,
 } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import TransactionController from '@/actions/App/Http/Controllers/Web/Transaction/TransactionController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { categoryOptions } from '@/modules/categories';
 import { index } from '@/routes/transactions';
+import QuickEntry from '../components/QuickEntry.vue';
 
 type Category = App.DTOs.Category.CategoryItemData;
 type TransactionType = App.Enums.TransactionType;
@@ -86,6 +87,24 @@ const toWalletId = ref<number | string | null>(
 const categoryId = ref<number | string | null>(
     props.transaction?.categoryId ?? null,
 );
+const amount = ref(props.transaction ? String(props.transaction.amount) : '');
+const date = ref(props.transaction?.date ?? props.today);
+const note = ref(props.transaction?.note ?? '');
+const tags = ref(props.transaction?.tags.join(', ') ?? '');
+
+/** Quick entry result → form fields; the user still reviews and submits. */
+async function fill(item: App.DTOs.Transaction.ParsedTransactionData) {
+    type.value = item.type;
+    // The type watcher clears a category of another type; set ours afterwards.
+    await nextTick();
+    amount.value = item.amount !== null ? String(item.amount) : '';
+    date.value = item.date;
+    walletId.value = item.walletId ?? walletId.value;
+    toWalletId.value = item.toWalletId;
+    categoryId.value = item.categoryId;
+    note.value = item.note ?? '';
+    tags.value = item.tags.join(', ');
+}
 
 // Keep the current value selectable even if it was archived meanwhile,
 // so editing never silently switches wallet or category.
@@ -153,6 +172,12 @@ const action = computed(() =>
             description="Nominal boleh ditulis singkat: 50rb, 1,5jt, atau 250.000."
         />
 
+        <Card v-if="!isEdit">
+            <CardContent>
+                <QuickEntry @parsed="fill" />
+            </CardContent>
+        </Card>
+
         <Card>
             <CardContent>
                 <Form
@@ -196,12 +221,10 @@ const action = computed(() =>
                             name="amount"
                             inputmode="text"
                             autocomplete="off"
+                            v-model="amount"
                             class="h-12 text-lg font-semibold tabular-nums"
-                            :default-value="
-                                transaction ? String(transaction.amount) : ''
-                            "
                             placeholder="50rb"
-                            autofocus
+                            :autofocus="isEdit"
                             required
                         />
                         <InputError :message="errors.amount" />
@@ -214,8 +237,8 @@ const action = computed(() =>
                                 id="date"
                                 name="date"
                                 type="date"
+                                v-model="date"
                                 :max="today"
-                                :default-value="transaction?.date ?? today"
                                 required
                             />
                             <InputError :message="errors.date" />
@@ -277,8 +300,8 @@ const action = computed(() =>
                         <Input
                             id="note"
                             name="note"
+                            v-model="note"
                             maxlength="255"
-                            :default-value="transaction?.note ?? ''"
                             placeholder="Bensin motor, makan siang kantor…"
                         />
                         <InputError :message="errors.note" />
@@ -289,7 +312,7 @@ const action = computed(() =>
                         <Input
                             id="tags"
                             name="tags"
-                            :default-value="transaction?.tags.join(', ') ?? ''"
+                            v-model="tags"
                             placeholder="mudik, liburan-bali"
                         />
                         <InputError :message="errors.tags" />

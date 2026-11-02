@@ -105,16 +105,35 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
     {
         $rows = $this->filtered($filter)
             ->toBase()
-            ->selectRaw('COALESCE(created_by, 0) AS creator, SUM(amount) AS total, COUNT(*) AS cnt')
-            ->groupByRaw('COALESCE(created_by, 0)')
+            ->select('created_by')
+            ->selectRaw('SUM(amount) AS total, COUNT(*) AS cnt')
+            ->groupBy('created_by')
             ->get();
 
         $sums = [];
         foreach ($rows as $row) {
-            $sums[(int) $row->creator] = ['amount' => (int) $row->total, 'count' => (int) $row->cnt];
+            $sums[(int) ($row->created_by ?? 0)] = ['amount' => (int) $row->total, 'count' => (int) $row->cnt];
         }
 
         return $sums;
+    }
+
+    public function mostUsedCategoryForNote(string $note, TransactionType $type): ?int
+    {
+        // utf8mb4_unicode_ci compares case-insensitively.
+        $categoryId = $this->query()
+            ->toBase()
+            ->select('category_id')
+            ->selectRaw('COUNT(*) AS uses, MAX(id) AS latest')
+            ->where('type', $type)
+            ->whereNotNull('category_id')
+            ->where('note', trim($note))
+            ->groupBy('category_id')
+            ->orderByDesc('uses')
+            ->orderByDesc('latest')
+            ->value('category_id');
+
+        return $categoryId !== null ? (int) $categoryId : null;
     }
 
     public function findMany(array $ids): Collection

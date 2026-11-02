@@ -30,6 +30,7 @@ Route::prefix('v1')
             Route::put('wallets/{wallet}', [WalletController::class, 'update'])->name('wallets.update');
             Route::delete('wallets/{wallet}', [WalletController::class, 'destroy'])->name('wallets.destroy');
 
+            Route::post('transactions/parse', [TransactionController::class, 'parse'])->name('transactions.parse');
             Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
             Route::put('transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
             Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');

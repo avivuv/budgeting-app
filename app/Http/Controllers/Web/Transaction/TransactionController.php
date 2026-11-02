@@ -11,6 +11,7 @@ use App\Enums\TransactionSource;
 use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\Transaction\BulkTransactionRequest;
+use App\Http\Requests\Web\Transaction\ParseTransactionRequest;
 use App\Http\Requests\Web\Transaction\TransactionFilterRequest;
 use App\Http\Requests\Web\Transaction\TransactionRequest;
 use App\Models\Category;
@@ -21,10 +22,12 @@ use App\Services\Activity\ActivityService;
 use App\Services\Category\CategoryService;
 use App\Services\Family\MembershipService;
 use App\Services\Tenancy\TenantContext;
+use App\Services\Transaction\TransactionParser;
 use App\Services\Transaction\TransactionService;
 use App\Services\Wallet\WalletService;
 use App\Support\Money\MoneyFormatter;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -85,6 +88,17 @@ class TransactionController extends Controller
             'options' => fn () => $this->filterOptions(),
             'canCreate' => $user->can('create', Transaction::class),
         ]);
+    }
+
+    /**
+     * Quick entry: read "bensin 50rb" into form fields. Nothing is saved; the
+     * user reviews the form and submits it as usual.
+     */
+    public function parse(ParseTransactionRequest $request, TransactionParser $parser): JsonResponse
+    {
+        Gate::authorize('create', Transaction::class);
+
+        return response()->json(['data' => $parser->parse($request->text())]);
     }
 
     /**

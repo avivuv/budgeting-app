@@ -69,6 +69,26 @@ declare namespace App {
             };
         }
         namespace Transaction {
+            export type ParsedTransactionData = {
+                line: string;
+                type: App.Enums.TransactionType;
+                typeLabel: string;
+                amount: number | null;
+                amountFormatted: string | null;
+                date: string;
+                dateFormatted: string;
+                walletId: number | null;
+                walletName: string | null;
+                toWalletId: number | null;
+                toWalletName: string | null;
+                categoryId: number | null;
+                categoryName: string | null;
+                categorySource: string | null;
+                note: string | null;
+                tags: string[];
+                missing: string[];
+                complete: boolean;
+            };
             export type TransactionItemData = {
                 id: number;
                 type: App.Enums.TransactionType;

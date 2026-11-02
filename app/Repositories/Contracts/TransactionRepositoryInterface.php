@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTOs\Transaction\TransactionFilterData;
+use App\Enums\TransactionType;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -61,6 +62,12 @@ interface TransactionRepositoryInterface extends BaseRepositoryInterface
      * @return array<int, array{amount: int, count: int}>
      */
     public function sumByCreator(TransactionFilterData $filter): array;
+
+    /**
+     * Category used most often for the same note (case-insensitive), for the
+     * history step of the category guess (BR-E05).
+     */
+    public function mostUsedCategoryForNote(string $note, TransactionType $type): ?int;
 
     /**
      * @param  list<int>  $ids
