@@ -34,13 +34,14 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 - ✅ GitHub Actions CI (PHP 8.4, MySQL, pnpm, semua gate)
 - ✅ Backup harian (`spatie/laravel-backup`) kedua database + file upload, terjadwal 02:00
 
-## Fase 2 — Dashboard & Daftar Transaksi `MVP`
+## Fase 2 — Dashboard & Daftar Transaksi `MVP` 🟨 fitur selesai 2 Nov 2026, menunggu uji pakai
 
-- ⬜ Layout (Sidebar, BottomNav, FAB), tema putih–biru, dark mode
-- ⬜ `DashboardService` + cache; stat cards, arus kas, donut kategori, tren harian, per anggota, saldo dompet, transaksi terbaru
-- ⬜ DataTable server-side (desktop) + list kartu infinite scroll (mobile), filter lengkap
-- ⬜ Input cepat di web: field teks bebas `bensin 50rb` → `/transactions/parse` (parser yang sama nanti dipakai bot)
-- ⬜ PWA
+- ✅ Layout: sidebar (desktop), bottom nav + FAB "+" (HP), tombol "+" melayang (desktop); tema putih–biru & dark mode dari Fase 1
+- ✅ `DashboardService` + cache per widget (5 menit, invalidasi lewat event transaksi/dompet/kategori — BR-C04); ringkasan + Δ% vs periode lalu, arus kas 6 periode, donut kategori (sub-kategori digabung ke induk, BR-E04), tren harian kumulatif, per anggota, saldo dompet, transaksi terbaru, insight; filter periode/dompet/anggota; deferred props
+- ✅ Daftar transaksi: filter lengkap di query string (web & API sama), total & subtotal harian dari server (INV-06), tabel + urut + aksi massal (desktop), kartu per tanggal + infinite scroll (HP)
+- ✅ Input cepat: "Ketik cepat" di form → `POST /transactions/parse` (+ `/api/v1/transactions/parse`); `TransactionTextParser` + `TransactionParser` siap dipakai bot
+- ✅ PWA: manifest, ikon, service worker (aset saja), halaman offline
+- ✅ `DemoSeeder` untuk data contoh lokal
 - ⬜ 🎯 **Uji pakai oleh keluarga sendiri 1–2 minggu → catat masukan**
 
 ## Fase 3 — Budget & Laporan

@@ -116,16 +116,16 @@ createInertiaApp({
 
 ## 5. State & Data
 
-| Jenis data                                            | Sumber                                     | Alat                                                                    |
-| ----------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------- |
-| Data halaman (list, detail, ringkasan)                | Props Inertia dari controller              | `defineProps<...>()`                                                    |
-| Data global (user, keluarga aktif, role, izin, flash) | Shared props `HandleInertiaRequests`       | `usePage<SharedProps>()` via `useAuth()`, `usePermission()`             |
-| Widget berat (grafik dashboard, laporan)              | **Deferred props** Inertia v3              | `<Deferred data="cashflow">` + skeleton                                 |
-| Status async (scan struk)                             | Polling                                    | `usePoll()` Inertia v3 / partial reload `only: ['receipt']`             |
-| List panjang (transaksi)                              | Pagination / `WhenVisible` infinite scroll | Inertia v3                                                              |
-| Filter                                                | Query string                               | `useFilters()` → `router.get(url, filters, { preserveState, replace })` |
-| Preferensi UI (tema, sidebar, tab terakhir)           | Lokal                                      | **Pinia** + persist `localStorage`                                      |
-| Form                                                  | —                                          | Inertia `useForm()` (error validasi dari server otomatis)               |
+| Jenis data                                            | Sumber                                            | Alat                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
+| Data halaman (list, detail, ringkasan)                | Props Inertia dari controller                     | `defineProps<...>()`                                                    |
+| Data global (user, keluarga aktif, role, izin, flash) | Shared props `HandleInertiaRequests`              | `usePage<SharedProps>()` via `useAuth()`, `usePermission()`             |
+| Widget berat (grafik dashboard, laporan)              | **Deferred props** Inertia v3                     | `<Deferred data="cashflow">` + skeleton                                 |
+| Status async (scan struk)                             | Polling                                           | `usePoll()` Inertia v3 / partial reload `only: ['receipt']`             |
+| List panjang (transaksi)                              | Pagination / `InfiniteScroll` (`Inertia::scroll`) | Inertia v3                                                              |
+| Filter                                                | Query string                                      | `useFilters()` → `router.get(url, filters, { preserveState, replace })` |
+| Preferensi UI (tema, sidebar, tab terakhir)           | Lokal                                             | **Pinia** + persist `localStorage`                                      |
+| Form                                                  | —                                                 | Inertia `useForm()` (error validasi dari server otomatis)               |
 
 **Pinia hanya untuk state UI lintas halaman**, bukan untuk cache data server. Ini mencegah data basi dan duplikasi sumber kebenaran.
 
@@ -163,19 +163,21 @@ export interface SharedProps {
 | Komponen     | `core/components/data-table/` — `DataTable.vue`, `DataTablePagination.vue`, `DataTableToolbar.vue` (search, filter chips, reset), `DataTableColumnHeader.vue` (sort), `DataTableViewOptions.vue` (show/hide kolom), `DataTableRowActions.vue` |
 | State        | `useDataTable()` → sinkron ke query string (`?page=2&sort=-date&type=expense&q=bensin`) via `router.get(..., { preserveState: true, preserveScroll: true, replace: true })`, search di-debounce 300ms                                         |
 
+> **Implementasi transaksi (Fase 2):** tabel desktop masih tabel Tailwind biasa (`TransactionTable.vue`: sort server-side, pilih baris, aksi massal) tanpa TanStack — kolomnya tetap dan semua logika ada di server. TanStack dipertimbangkan bila tabel lain butuh show/hide kolom. Prop `transactions` dikirim sebagai `Inertia::scroll(...)`: desktop memakai link halaman (kunjungan penuh mengganti data), HP memakai `<InfiniteScroll>` (partial reload menambah data, `daily` ikut di-merge).
+
 ### Kontrak backend ↔ frontend
 
-- Query: `page`, `per_page` (10/20/50/100, default 20), `sort` (`date`, `-date`, `amount`, `-amount`; whitelist per resource), `q`, dan filter spesifik.
+- Query: `page`, `per_page` (1–100, UI menawarkan 10/20/50/100, default 20), `sort` (`date`, `-date`, `amount`, `-amount`; whitelist per resource), `q`, dan filter spesifik. Transaksi: `from`, `to`, `type`, `category_id[]` (induk ikut sub-kategori), `wallet_id[]` (asal atau tujuan), `user_id[]`, `tag[]`, `source`, `min`, `max` (boleh `50rb`).
 - Response: `LengthAwarePaginator` dari Repository → `Data::collect()` → `{ data, meta: { current_page, last_page, per_page, total }, links }` — **format sama untuk Inertia dan REST API**.
 - Total/subtotal (mis. "Total pengeluaran sesuai filter: Rp 2.287.500") dihitung backend dan dikirim sebagai prop terpisah `aggregates`, bukan dijumlah di browser (INV-06).
 - Kolom sort & filter di-whitelist di `FormRequest` (cegah SQL injection & query berat).
 
 ### Tampilan per layar
 
-| Layar            | Bentuk                                                                                                                              |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Desktop ≥ 1024px | Tabel penuh: kolom bisa disort, sembunyikan kolom, aksi baris, **pilih banyak baris** untuk aksi massal (ubah kategori, hapus)      |
-| HP / tablet      | **List kartu** dikelompokkan per tanggal (subtotal harian) + **infinite scroll** (`WhenVisible` Inertia v3); filter di bottom sheet |
+| Layar            | Bentuk                                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop ≥ 1024px | Tabel penuh: kolom bisa disort, sembunyikan kolom, aksi baris, **pilih banyak baris** untuk aksi massal (ubah kategori, hapus)           |
+| HP / tablet      | **List kartu** dikelompokkan per tanggal (subtotal harian) + **infinite scroll** (`<InfiniteScroll>` Inertia v3); filter di bottom sheet |
 
 Satu sumber data, dua renderer: `DataTable` (desktop) dan `DataList` (mobile) memakai `useDataTable()` yang sama.
 
@@ -269,7 +271,7 @@ Test frontend fokus pada **format & interaksi**, karena perhitungan sudah diuji 
 - Lazy load per halaman (otomatis), ApexCharts di-import dinamis di `BaseChart`.
 - Deferred props untuk widget berat; skeleton loading.
 - Prefetch link navigasi utama (`<Link prefetch>`).
-- `vite-plugin-pwa`: installable, cache aset statis, halaman offline sederhana. Input transaksi offline **tidak** didukung (Telegram sudah mencakup kebutuhan input cepat).
+- PWA manual (bukan `vite-plugin-pwa`, karena aset Laravel ada di `/build/` sedangkan service worker harus ber-scope `/`): `public/manifest.webmanifest`, `public/sw.js` (cache-first hanya untuk `/build/assets/*` & ikon; halaman & data selalu dari network), `public/offline.html`; didaftarkan oleh `lib/pwa.ts` hanya di build produksi. Input transaksi offline **tidak** didukung (Telegram sudah mencakup kebutuhan input cepat).
 
 ## 12. Checklist Fitur Baru (Frontend)
 

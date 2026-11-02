@@ -43,6 +43,14 @@ php artisan migrate --seed
 
 URL lokal (virtual host Laragon): `http://budgeting-app.test`.
 
+Data contoh (opsional) — keluarga demo dengan transaksi 3 bulan terakhir, dibuat lewat service sehingga semua business rule berlaku:
+
+```bash
+php artisan db:seed --class=DemoSeeder   # login: demo@budgeting.test / password (anggota: ibu@budgeting.test)
+```
+
+Jika virtual host belum aktif (Apache belum di-reload), jalankan `php artisan serve --port=8123` lalu buka `http://127.0.0.1:8123`.
+
 ## 4. Environment (.env)
 
 ```env

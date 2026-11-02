@@ -8,7 +8,7 @@
 - Dark mode mengikuti sistem.
 - Format: `Rp 1.250.000`, singkat di grafik `1,25 jt`; tanggal `31 Okt 2026`.
 - Semua angka bisa diklik → drill-down ke daftar transaksi terfilter.
-- PWA installable (`vite-plugin-pwa`).
+- PWA installable (manifest + service worker manual, lihat [15 §11](15-frontend-architecture.md#11-performa--pwa)).
 
 ## 2. Navigasi
 
