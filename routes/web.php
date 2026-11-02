@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Web\Budget\BudgetController;
 use App\Http\Controllers\Web\Category\CategoryController;
 use App\Http\Controllers\Web\Dashboard\DashboardController;
 use App\Http\Controllers\Web\Family\InvitationController;
 use App\Http\Controllers\Web\Family\MemberController;
 use App\Http\Controllers\Web\Family\OnboardingController;
 use App\Http\Controllers\Web\Family\SwitchFamilyController;
+use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\Transaction\TransactionController;
 use App\Http\Controllers\Web\Wallet\WalletController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('transactions/bulk', [TransactionController::class, 'bulk'])->name('transactions.bulk');
         Route::post('transactions/parse', [TransactionController::class, 'parse'])->name('transactions.parse');
         Route::resource('transactions', TransactionController::class)->except('show');
+
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+        Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
+        Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
+        Route::post('budgets/copy', [BudgetController::class, 'copy'])->name('budgets.copy');
+        Route::delete('budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
 
         Route::get('wallets', [WalletController::class, 'index'])->name('wallets.index');
         Route::post('wallets', [WalletController::class, 'store'])->name('wallets.store');

@@ -57,4 +57,21 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         return $user->tokens()->whereKey($tokenId)->delete() > 0;
     }
+
+    public function unreadNotificationCount(User $user): int
+    {
+        return $user->unreadNotifications()->count();
+    }
+
+    public function notifications(User $user, int $limit): Collection
+    {
+        return $user->notifications()->latest()->limit($limit)->get();
+    }
+
+    public function markNotificationsRead(User $user, ?string $id = null): void
+    {
+        $user->unreadNotifications()
+            ->when($id !== null, fn ($query) => $query->whereKey($id))
+            ->update(['read_at' => now()]);
+    }
 }

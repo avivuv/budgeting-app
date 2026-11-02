@@ -125,8 +125,8 @@ Index: `(family_id, date)`, `(family_id, category_id, date)`, `(family_id, walle
 
 ### budgets
 
-`id, family_id, category_id, period (date, hari pertama periode), amount bigint, alert_80_sent_at null, alert_100_sent_at null`
-Unique `(family_id, category_id, period)`. Opsi "salin dari bulan lalu".
+`id, family_id, category_id, period (date), amount bigint, alert_80_sent_at null, alert_100_sent_at null`
+Unique `(family_id, category_id, period)`. `period` = **tanggal 1 bulan label** (mis. `2026-11-01` untuk periode "Nov 2026"), bukan tanggal mulai periode, agar budget tidak bergeser bila `period_start_day` keluarga diubah (BR-D02). Hanya kategori `expense` (BR-F01); budget kategori induk menghitung sub-kategorinya (BR-F02). Flag alert di-reset bila realisasi turun di bawah ambang (BR-F05). Opsi "salin dari bulan lalu" (BR-F07).
 
 ### recurring_rules ⚑
 

@@ -10,6 +10,7 @@ use App\Http\Requests\Web\Dashboard\DashboardRequest;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\Budget\BudgetService;
 use App\Services\Family\MembershipService;
 use App\Services\Report\DashboardService;
 use App\Services\Wallet\WalletService;
@@ -23,6 +24,7 @@ class DashboardController extends Controller
         private readonly DashboardService $dashboard,
         private readonly WalletService $wallets,
         private readonly MembershipService $members,
+        private readonly BudgetService $budgets,
     ) {}
 
     /**
@@ -53,6 +55,8 @@ class DashboardController extends Controller
             'trend' => Inertia::defer(fn () => $this->dashboard->trend($period, $scope), 'charts'),
             'members' => Inertia::defer(fn () => $this->dashboard->members($period, $scope), 'charts'),
             'wallets' => Inertia::defer(fn () => $this->dashboard->walletBalances($period, $scope), 'lists'),
+            // Budgets are family-wide, so the wallet/member filter does not apply.
+            'budgets' => Inertia::defer(fn () => $this->budgets->overview($period), 'lists'),
             'recent' => Inertia::defer(fn () => $this->dashboard->recent($period, $scope)
                 ->map(fn (Transaction $transaction) => TransactionItemData::fromTransaction($transaction, $user->can('update', $transaction)))
                 ->values(), 'lists'),

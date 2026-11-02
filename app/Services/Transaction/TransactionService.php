@@ -176,14 +176,16 @@ class TransactionService
     {
         $this->assertValid($data, $transaction);
 
-        return DB::transaction(function () use ($transaction, $data): Transaction {
+        $previousDate = $transaction->date;
+
+        return DB::transaction(function () use ($transaction, $data, $previousDate): Transaction {
             // Source and author never change on edit (BR-B07).
             $attributes = $data->toModelArray();
             unset($attributes['source']);
 
             $transaction = $this->transactions->update($transaction, $attributes);
             $this->transactions->syncTags($transaction, $this->tags->idsForNames($data->normalizedTags()));
-            TransactionUpdated::dispatch($transaction);
+            TransactionUpdated::dispatch($transaction, $previousDate);
 
             return $transaction;
         });

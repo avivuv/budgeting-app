@@ -2,8 +2,10 @@
 import { Deferred, Head, Link, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, Lightbulb, Scale } from '@lucide/vue';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BudgetProgress } from '@/modules/budgets';
 import { TransactionItem } from '@/modules/transactions';
 import { dashboard } from '@/routes';
+import { index as budgetsIndex } from '@/routes/budgets';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { index as walletsIndex } from '@/routes/wallets';
 import BalanceHeader from '../components/BalanceHeader.vue';
@@ -29,6 +31,7 @@ const props = defineProps<{
     trend?: App.DTOs.Dashboard.TrendPointData[];
     members?: App.DTOs.Dashboard.MemberTotalData[];
     wallets?: App.DTOs.Wallet.WalletItemData[];
+    budgets?: App.DTOs.Budget.BudgetItemData[];
     recent?: App.DTOs.Transaction.TransactionItemData[];
     canCreate: boolean;
 }>();
@@ -182,21 +185,53 @@ function transactionsOf(query: Record<string, string | number | number[]>) {
         <div
             class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]"
         >
-            <DashboardCard title="Saldo dompet">
-                <template #action>
-                    <Link
-                        :href="walletsIndex()"
-                        class="text-sm font-medium text-primary"
-                        >Kelola</Link
-                    >
-                </template>
-                <Deferred data="wallets">
-                    <template #fallback>
-                        <Skeleton class="h-40 rounded-xl" />
+            <div class="flex flex-col gap-4">
+                <DashboardCard title="Budget">
+                    <template #action>
+                        <Link
+                            :href="
+                                budgetsIndex({ query: { period: period.key } })
+                            "
+                            class="text-sm font-medium text-primary"
+                            >Atur</Link
+                        >
                     </template>
-                    <WalletBalanceList :wallets="wallets ?? []" />
-                </Deferred>
-            </DashboardCard>
+                    <Deferred data="budgets">
+                        <template #fallback>
+                            <Skeleton class="h-32 rounded-xl" />
+                        </template>
+                        <p
+                            v-if="!budgets?.length"
+                            class="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground"
+                        >
+                            Belum ada budget di periode ini.
+                        </p>
+                        <div v-else class="flex flex-col gap-4">
+                            <BudgetProgress
+                                v-for="item in budgets.slice(0, 6)"
+                                :key="item.id"
+                                :item="item"
+                            />
+                        </div>
+                    </Deferred>
+                </DashboardCard>
+
+                <DashboardCard title="Saldo dompet">
+                    <template #action>
+                        <Link
+                            :href="walletsIndex()"
+                            class="text-sm font-medium text-primary"
+                            >Kelola</Link
+                        >
+                    </template>
+                    <Deferred data="wallets">
+                        <template #fallback>
+                            <Skeleton class="h-40 rounded-xl" />
+                        </template>
+                        <WalletBalanceList :wallets="wallets ?? []" />
+                    </Deferred>
+                </DashboardCard>
+            </div>
 
             <DashboardCard title="Transaksi terbaru">
                 <template #action>

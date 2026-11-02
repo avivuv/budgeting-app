@@ -1,5 +1,28 @@
 declare namespace App {
     namespace DTOs {
+        namespace Budget {
+            export type BudgetItemData = {
+                id: number;
+                categoryId: number;
+                categoryName: string;
+                categoryIcon: string | null;
+                categoryColor: string | null;
+                isSubCategory: boolean;
+                amount: number;
+                amountFormatted: string;
+                amountShort: string;
+                spent: number;
+                spentFormatted: string;
+                spentShort: string;
+                remaining: number;
+                remainingFormatted: string;
+                percentage: number | null;
+                status: App.Enums.BudgetStatus;
+                statusLabel: string;
+                dailyAllowance: number;
+                dailyAllowanceFormatted: string;
+            };
+        }
         namespace Category {
             export type CategoryItemData = {
                 id: number;
@@ -129,6 +152,7 @@ declare namespace App {
     }
     namespace Enums {
         export type Appearance = 'system' | 'light' | 'dark';
+        export type BudgetStatus = 'safe' | 'warning' | 'over';
         export type CategoryType = 'income' | 'expense';
         export type FamilyRole = 'owner' | 'admin' | 'member' | 'viewer';
         export type TransactionSource =

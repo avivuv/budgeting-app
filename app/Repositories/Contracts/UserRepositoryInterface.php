@@ -7,6 +7,7 @@ namespace App\Repositories\Contracts;
 use App\Enums\Appearance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Notifications\DatabaseNotification;
 use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -36,4 +37,18 @@ interface UserRepositoryInterface extends BaseRepositoryInterface
     public function createApiToken(User $user, string $name, array $abilities, \DateTimeInterface $expiresAt): NewAccessToken;
 
     public function revokeApiToken(User $user, int $tokenId): bool;
+
+    public function unreadNotificationCount(User $user): int;
+
+    /**
+     * Newest notifications of the user.
+     *
+     * @return Collection<int, DatabaseNotification>
+     */
+    public function notifications(User $user, int $limit): Collection;
+
+    /**
+     * Mark one notification (or all when $id is null) as read.
+     */
+    public function markNotificationsRead(User $user, ?string $id = null): void;
 }

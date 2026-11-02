@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\File;
 */
 
 const PENDING_BUSINESS_RULES = [
-    // Phase 3 — budgets & reports
-    'BR-F01', 'BR-F02', 'BR-F03', 'BR-F04', 'BR-F05', 'BR-F07',
     // Phase 4 — receipts
     'BR-H01', 'BR-H02', 'BR-H03', 'BR-H04', 'BR-H05', 'BR-H06', 'BR-H07', 'BR-H08', 'BR-H09', 'BR-H10', 'BR-H11',
     // Phase 5 — recurring transactions, data export

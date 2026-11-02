@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Family\FamilyService;
 use App\Services\Tenancy\TenantContext;
 use App\Services\User\AppearanceService;
+use App\Services\User\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -54,6 +55,10 @@ class HandleInertiaRequests extends Middleware
             // Resolved lazily, after the "family" route middleware has set the tenant.
             'families' => fn () => $this->families($request),
             'family' => fn () => $this->currentFamily($request),
+            // Badge of the notification bell (docs/07 §4b).
+            'unreadNotifications' => fn () => $request->user() instanceof User
+                ? app(NotificationService::class)->unreadCount($request->user())
+                : 0,
         ];
     }
 

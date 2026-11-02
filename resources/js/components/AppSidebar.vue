@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowLeftRight, LayoutGrid, Tags, Users, Wallet } from '@lucide/vue';
+import {
+    ArrowLeftRight,
+    LayoutGrid,
+    PiggyBank,
+    Tags,
+    Users,
+    Wallet,
+} from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import FamilySwitcher from '@/components/FamilySwitcher.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,6 +22,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as budgetsIndex } from '@/routes/budgets';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as membersIndex } from '@/routes/members';
 import { index as transactionsIndex } from '@/routes/transactions';
@@ -31,6 +39,11 @@ const mainNavItems: NavItem[] = [
         title: 'Transaksi',
         href: transactionsIndex(),
         icon: ArrowLeftRight,
+    },
+    {
+        title: 'Budget',
+        href: budgetsIndex(),
+        icon: PiggyBank,
     },
     {
         title: 'Dompet',

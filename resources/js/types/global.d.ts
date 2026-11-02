@@ -25,6 +25,7 @@ declare module '@inertiajs/core' {
             appearance: Appearance;
             family: CurrentFamily | null;
             families: FamilyOption[];
+            unreadNotifications: number;
             [key: string]: unknown;
         };
     }

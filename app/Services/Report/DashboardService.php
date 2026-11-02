@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Report;
 
+use App\DTOs\Budget\BudgetItemData;
 use App\DTOs\Dashboard\CashflowPointData;
 use App\DTOs\Dashboard\CategorySliceData;
 use App\DTOs\Dashboard\DashboardSummaryData;
@@ -13,6 +14,7 @@ use App\DTOs\Dashboard\StatData;
 use App\DTOs\Dashboard\TrendPointData;
 use App\DTOs\Transaction\TransactionFilterData;
 use App\DTOs\Wallet\WalletItemData;
+use App\Enums\BudgetStatus;
 use App\Enums\CategoryType;
 use App\Enums\TransactionType;
 use App\Models\Category;
@@ -22,11 +24,11 @@ use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\WalletRepositoryInterface;
+use App\Services\Budget\BudgetService;
 use App\Services\Tenancy\TenantContext;
 use App\Support\Math\Percentage;
 use App\Support\Money\MoneyFormatter;
 use App\Support\Period\Period;
-use App\Support\Period\PeriodResolver;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
@@ -58,6 +60,8 @@ class DashboardService
         private readonly CategoryRepositoryInterface $categories,
         private readonly UserRepositoryInterface $users,
         private readonly TenantContext $tenant,
+        private readonly PeriodService $periods,
+        private readonly BudgetService $budgets,
     ) {}
 
     /**
@@ -65,12 +69,12 @@ class DashboardService
      */
     public function today(): CarbonImmutable
     {
-        return CarbonImmutable::now($this->tenant->get()->timezone)->startOfDay();
+        return $this->periods->today();
     }
 
     public function currentPeriod(): Period
     {
-        return PeriodResolver::containing($this->today(), $this->tenant->get()->period_start_day);
+        return $this->periods->current();
     }
 
     /**
@@ -78,15 +82,7 @@ class DashboardService
      */
     public function period(?string $key): Period
     {
-        $current = $this->currentPeriod();
-
-        if ($key === null || preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $key, $m) !== 1) {
-            return $current;
-        }
-
-        $period = PeriodResolver::forMonth((int) $m[1], (int) $m[2], $this->tenant->get()->period_start_day);
-
-        return $period->key() > $current->key() ? $current : $period;
+        return $this->periods->fromKey($key);
     }
 
     public function periodData(Period $period): PeriodData
@@ -290,6 +286,20 @@ class DashboardService
                 $insights[] = sprintf('Pengeluaran %s naik %s%% dari periode lalu.', $category['name'], $this->percent($category['change']));
             }
 
+            // Budgets are family-wide: only without a wallet/member filter.
+            if ($isCurrent && $scope->walletIds === [] && $scope->userIds === []) {
+                $budgetItems = $this->budgets->overview($period);
+                $over = array_values(array_filter($budgetItems, fn (BudgetItemData $b): bool => $b->status === BudgetStatus::Over));
+
+                if ($budgetItems !== []) {
+                    $insights[] = 'Sisa budget harian: '.$this->budgets->totals($budgetItems, $period)['dailyAllowanceFormatted'].'.';
+                }
+
+                if ($over !== []) {
+                    $insights[] = 'Budget terlampaui: '.implode(', ', array_map(fn (BudgetItemData $b): string => $b->categoryName, $over)).'.';
+                }
+            }
+
             if ($isCurrent && $summary->expense->amount > 0) {
                 $days = (int) $period->start->diffInDays($this->today()) + 1;
                 $insights[] = 'Rata-rata pengeluaran harian: '.MoneyFormatter::format(intdiv($summary->expense->amount, $days)).'.';
@@ -407,9 +417,7 @@ class DashboardService
 
     private function previous(Period $period): Period
     {
-        $label = CarbonImmutable::create($period->year, $period->month, 1)->subMonthNoOverflow();
-
-        return PeriodResolver::forMonth($label->year, $label->month, $this->tenant->get()->period_start_day);
+        return $this->periods->previous($period);
     }
 
     private function scoped(TransactionFilterData $scope, Period $period): TransactionFilterData

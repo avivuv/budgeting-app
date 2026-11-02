@@ -6,6 +6,7 @@ namespace App\Events\Transaction;
 
 use App\Events\AffectsFamilyFinances;
 use App\Models\Transaction;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 
@@ -16,8 +17,12 @@ class TransactionUpdated implements AffectsFamilyFinances, ShouldDispatchAfterCo
 {
     use Dispatchable;
 
+    /**
+     * @param  CarbonImmutable|null  $previousDate  date before the edit, so its period is re-checked too
+     */
     public function __construct(
         public readonly Transaction $transaction,
+        public readonly ?CarbonImmutable $previousDate = null,
     ) {}
 
     public function familyId(): int

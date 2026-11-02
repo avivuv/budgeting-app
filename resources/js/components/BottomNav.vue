@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { ArrowLeftRight, LayoutGrid, Menu, Plus, Wallet } from '@lucide/vue';
+import { ArrowLeftRight, LayoutGrid, Menu, PiggyBank, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
@@ -9,7 +9,7 @@ import {
     create as createTransaction,
     index as transactionsIndex,
 } from '@/routes/transactions';
-import { index as walletsIndex } from '@/routes/wallets';
+import { index as budgetsIndex } from '@/routes/budgets';
 
 /*
  * Phone navigation (docs/14 §4): four destinations with the "+ Transaksi" FAB
@@ -26,7 +26,7 @@ const left = [
     { title: 'Beranda', href: dashboard(), icon: LayoutGrid },
     { title: 'Transaksi', href: transactionsIndex(), icon: ArrowLeftRight },
 ];
-const right = [{ title: 'Dompet', href: walletsIndex(), icon: Wallet }];
+const right = [{ title: 'Budget', href: budgetsIndex(), icon: PiggyBank }];
 </script>
 
 <template>
