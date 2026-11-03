@@ -56,4 +56,6 @@ interface UserRepositoryInterface extends BaseRepositoryInterface
      * Mark one notification (or all when $id is null) as read.
      */
     public function markNotificationsRead(User $user, ?string $id = null): void;
+
+    public function ownsNotification(User $user, string $id): bool;
 }

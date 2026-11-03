@@ -69,6 +69,7 @@ class BudgetThresholdNotification extends Notification implements ShouldQueue
             'kind' => 'budget_threshold',
             'family_id' => $this->familyId,
             'budget_id' => $this->budgetId,
+            'period' => $this->periodKey,
             'threshold' => $this->threshold,
             'title' => $this->title(),
             'message' => $this->message(),

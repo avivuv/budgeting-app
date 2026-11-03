@@ -91,17 +91,17 @@ Error: tabel status/field/pesan/rule
 
 ## 3. Daftar kontrak
 
-| Fitur                                  | Kontrak                            | Skenario test                                    | Status          |
-| -------------------------------------- | ---------------------------------- | ------------------------------------------------ | --------------- |
-| Auth                                   | [auth.md](auth.md)                 | [auth.md](../test-cases/auth.md)                 | ✅ selesai (M1) |
-| Dompet                                 | [wallets.md](wallets.md)           | [wallets.md](../test-cases/wallets.md)           | ✅ selesai (M2) |
-| Kategori                               | [categories.md](categories.md)     | [categories.md](../test-cases/categories.md)     | ✅ selesai (M2) |
-| Transaksi                              | [transactions.md](transactions.md) | [transactions.md](../test-cases/transactions.md) | ✅ selesai (M2) |
-| Budget                                 | [budgets.md](budgets.md)           | [budgets.md](../test-cases/budgets.md)           | ✅ selesai (M2) |
-| Ringkasan, Dashboard, Laporan & Export | [reports.md](reports.md)           | [reports.md](../test-cases/reports.md)           | ✅ selesai (M2) |
-| Tabungan                               | [savings.md](savings.md)           | [savings.md](../test-cases/savings.md)           | ✅ selesai (M2) |
-| Scan Struk                             | [receipts.md](receipts.md)         | [receipts.md](../test-cases/receipts.md)         | ✅ selesai (M2) |
-| Keluarga, Anggota & Undangan           | [family.md](family.md)             | [family.md](../test-cases/family.md)             | ✅ selesai (M2) |
-| Onboarding                             | [onboarding.md](onboarding.md)     | [onboarding.md](../test-cases/onboarding.md)     | ✅ selesai (M2) |
-| Notifikasi                             | notifications.md                   | notifications.md                                 | belum           |
-| Profil, Keamanan & Token               | settings.md                        | settings.md                                      | belum           |
+| Fitur                                  | Kontrak                              | Skenario test                                      | Status          |
+| -------------------------------------- | ------------------------------------ | -------------------------------------------------- | --------------- |
+| Auth                                   | [auth.md](auth.md)                   | [auth.md](../test-cases/auth.md)                   | ✅ selesai (M1) |
+| Dompet                                 | [wallets.md](wallets.md)             | [wallets.md](../test-cases/wallets.md)             | ✅ selesai (M2) |
+| Kategori                               | [categories.md](categories.md)       | [categories.md](../test-cases/categories.md)       | ✅ selesai (M2) |
+| Transaksi                              | [transactions.md](transactions.md)   | [transactions.md](../test-cases/transactions.md)   | ✅ selesai (M2) |
+| Budget                                 | [budgets.md](budgets.md)             | [budgets.md](../test-cases/budgets.md)             | ✅ selesai (M2) |
+| Ringkasan, Dashboard, Laporan & Export | [reports.md](reports.md)             | [reports.md](../test-cases/reports.md)             | ✅ selesai (M2) |
+| Tabungan                               | [savings.md](savings.md)             | [savings.md](../test-cases/savings.md)             | ✅ selesai (M2) |
+| Scan Struk                             | [receipts.md](receipts.md)           | [receipts.md](../test-cases/receipts.md)           | ✅ selesai (M2) |
+| Keluarga, Anggota & Undangan           | [family.md](family.md)               | [family.md](../test-cases/family.md)               | ✅ selesai (M2) |
+| Onboarding                             | [onboarding.md](onboarding.md)       | [onboarding.md](../test-cases/onboarding.md)       | ✅ selesai (M2) |
+| Notifikasi                             | [notifications.md](notifications.md) | [notifications.md](../test-cases/notifications.md) | ✅ selesai (M2) |
+| Profil, Keamanan & Token               | settings.md                          | settings.md                                        | belum           |

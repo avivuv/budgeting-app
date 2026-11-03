@@ -46,17 +46,17 @@ composer test:api        # API test + catat setiap request/response ke storage/l
 
 Urutan mengikuti tahap M1–M2 di [18-api-first-migration.md](../18-api-first-migration.md).
 
-| Fitur                                                | Dokumen                            | Status        |
-| ---------------------------------------------------- | ---------------------------------- | ------------- |
-| Auth (login SPA, token Android, 2FA, passkey, reset) | [auth.md](auth.md)                 | ✅ test hijau |
-| Dompet                                               | [wallets.md](wallets.md)           | ✅ test hijau |
-| Kategori                                             | [categories.md](categories.md)     | ✅ test hijau |
-| Transaksi                                            | [transactions.md](transactions.md) | ✅ test hijau |
-| Budget                                               | [budgets.md](budgets.md)           | ✅ test hijau |
-| Ringkasan, Dashboard, Laporan & Export               | [reports.md](reports.md)           | ✅ test hijau |
-| Tabungan                                             | [savings.md](savings.md)           | ✅ test hijau |
-| Scan Struk                                           | [receipts.md](receipts.md)         | ✅ test hijau |
-| Keluarga, Anggota & Undangan                         | [family.md](family.md)             | ✅ test hijau |
-| Onboarding                                           | [onboarding.md](onboarding.md)     | ✅ test hijau |
-| Notifikasi                                           | notifications.md                   | belum         |
-| Profil, Keamanan & Token                             | settings.md                        | belum         |
+| Fitur                                                | Dokumen                              | Status        |
+| ---------------------------------------------------- | ------------------------------------ | ------------- |
+| Auth (login SPA, token Android, 2FA, passkey, reset) | [auth.md](auth.md)                   | ✅ test hijau |
+| Dompet                                               | [wallets.md](wallets.md)             | ✅ test hijau |
+| Kategori                                             | [categories.md](categories.md)       | ✅ test hijau |
+| Transaksi                                            | [transactions.md](transactions.md)   | ✅ test hijau |
+| Budget                                               | [budgets.md](budgets.md)             | ✅ test hijau |
+| Ringkasan, Dashboard, Laporan & Export               | [reports.md](reports.md)             | ✅ test hijau |
+| Tabungan                                             | [savings.md](savings.md)             | ✅ test hijau |
+| Scan Struk                                           | [receipts.md](receipts.md)           | ✅ test hijau |
+| Keluarga, Anggota & Undangan                         | [family.md](family.md)               | ✅ test hijau |
+| Onboarding                                           | [onboarding.md](onboarding.md)       | ✅ test hijau |
+| Notifikasi                                           | [notifications.md](notifications.md) | ✅ test hijau |
+| Profil, Keamanan & Token                             | settings.md                          | belum         |

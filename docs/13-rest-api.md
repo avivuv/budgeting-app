@@ -161,8 +161,8 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | ✅  | PATCH  | `/receipts/{id}`         | koreksi draft (`total`, `receipt_date`, `merchant`, `category_id`, `wallet_id`, `items[]`)        |
 | ✅  | DELETE | `/receipts/{id}`         | batalkan draft (`rejected`)                                                                       |
 | ✅  | POST   | `/receipts/{id}/confirm` | `{"mode":"total"}` / `{"mode":"split"}` → `201` + transaksi; konfirmasi ulang tidak menambah data |
-| ⬜  | GET    | `/notifications`         | notifikasi (budget, pengingat, …)                                                                 |
-| ⬜  | POST   | `/notifications/read`    | tandai dibaca (semua / per id)                                                                    |
+| ✅  | GET    | `/notifications`         | notifikasi (budget, pengingat, …)                                                                 |
+| ✅  | POST   | `/notifications/read`    | tandai dibaca (semua / per id)                                                                    |
 
 ## 4. Contoh
 

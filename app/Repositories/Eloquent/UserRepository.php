@@ -82,4 +82,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             ->when($id !== null, fn ($query) => $query->whereKey($id))
             ->update(['read_at' => now()]);
     }
+
+    public function ownsNotification(User $user, string $id): bool
+    {
+        return $user->notifications()->whereKey($id)->exists();
+    }
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Family\FamilyController;
 use App\Http\Controllers\Api\V1\Family\InvitationController;
 use App\Http\Controllers\Api\V1\Family\MemberController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\Notification\NotificationController;
 use App\Http\Controllers\Api\V1\Receipt\ReceiptController;
 use App\Http\Controllers\Api\V1\Report\ReportController;
 use App\Http\Controllers\Api\V1\Savings\SavingGoalController;
@@ -58,12 +59,14 @@ Route::prefix('v1')
     ->middleware(['auth:sanctum', 'family:optional', 'throttle:api', EnsureIdempotency::class.':user'])
     ->group(function () {
         Route::get('invitations/token/{token}', [InvitationController::class, 'show'])->middleware('abilities:read')->name('invitations.token.show');
+        Route::get('notifications', [NotificationController::class, 'index'])->middleware('abilities:read')->name('notifications.index');
 
         Route::middleware('abilities:write')->group(function () {
             Route::post('families', [FamilyController::class, 'store'])->name('families.store');
             Route::put('families/{family}/switch', [FamilyController::class, 'switch'])->whereNumber('family')->name('families.switch');
             Route::post('families/{family}/leave', [FamilyController::class, 'leave'])->whereNumber('family')->name('families.leave');
             Route::post('invitations/token/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.token.accept');
+            Route::post('notifications/read', [NotificationController::class, 'read'])->name('notifications.read');
         });
     });
 
