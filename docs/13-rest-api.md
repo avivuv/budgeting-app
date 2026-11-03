@@ -143,8 +143,8 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | ✅  | PUT                 | `/budgets`                                      | set budget (bulk)                                                  |
 | ✅  | POST                | `/budgets/copy`                                 | salin dari periode lalu                                            |
 | ✅  | DELETE              | `/budgets/{id}`                                 | hapus budget                                                       |
-| ⬜  | GET/POST/PUT/DELETE | `/savings` · `/savings/{id}`                    | tujuan tabungan (BR-K01..K04)                                      |
-| ⬜  | POST                | `/savings/{id}/contributions`                   | setor ke tabungan                                                  |
+| ✅  | GET/POST/PUT/DELETE | `/savings` · `/savings/{id}`                    | tujuan tabungan (BR-K01..K04)                                      |
+| ✅  | POST                | `/savings/{id}/contributions`                   | setor ke tabungan                                                  |
 | ✅  | GET                 | `/summary?period=2026-10`                       | ringkasan (saldo, pemasukan, pengeluaran, selisih, Δ%)             |
 | ✅  | GET                 | `/dashboard/{widget}`                           | widget dashboard (arus kas, kategori, tren, anggota, insight, …)   |
 | ✅  | GET                 | `/reports/{laporan}?from&to`                    | laporan per jenis (arus kas, kategori, anggota, dompet, budget, …) |

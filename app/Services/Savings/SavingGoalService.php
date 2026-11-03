@@ -50,6 +50,21 @@ class SavingGoalService
         return $items;
     }
 
+    /**
+     * One goal with its progress, as in overview().
+     */
+    public function item(SavingGoal $goal): SavingGoalItemData
+    {
+        $value = $this->progressOf([$goal])[$goal->id];
+        $deadline = $goal->deadline !== null ? $this->periods->containing($goal->deadline) : null;
+
+        return SavingGoalItemData::fromGoal(
+            $goal->loadMissing('wallet'),
+            $value,
+            SavingGoalCalculator::monthlyNeeded($goal->target_amount, $value, $this->periods->current(), $deadline),
+        );
+    }
+
     public function find(int $id): SavingGoal
     {
         return $this->goals->findOrFail($id);

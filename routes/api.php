@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Category\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\Report\ReportController;
+use App\Http\Controllers\Api\V1\Savings\SavingGoalController;
 use App\Http\Controllers\Api\V1\Transaction\TransactionController;
 use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Middleware\EnsureIdempotency;
@@ -64,6 +65,7 @@ Route::prefix('v1')
             Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
             Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
             Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
+            Route::get('savings', [SavingGoalController::class, 'index'])->name('savings.index');
             Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
         });
 
@@ -87,6 +89,11 @@ Route::prefix('v1')
             Route::put('budgets', [BudgetController::class, 'update'])->name('budgets.update');
             Route::post('budgets/copy', [BudgetController::class, 'copy'])->name('budgets.copy');
             Route::delete('budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
+
+            Route::post('savings', [SavingGoalController::class, 'store'])->name('savings.store');
+            Route::put('savings/{goal}', [SavingGoalController::class, 'update'])->name('savings.update');
+            Route::post('savings/{goal}/contributions', [SavingGoalController::class, 'contribute'])->name('savings.contribute');
+            Route::delete('savings/{goal}', [SavingGoalController::class, 'destroy'])->name('savings.destroy');
 
             Route::post('receipts', [ReceiptController::class, 'store'])->name('receipts.store');
             Route::patch('receipts/{receipt}', [ReceiptController::class, 'update'])->name('receipts.update');
