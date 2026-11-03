@@ -15,13 +15,16 @@ use App\Services\Tenancy\TenantContext;
  */
 trait RespondsWithMe
 {
-    protected function me(User $user): MeResource
+    /**
+     * @param  bool  $stored  use the stored active family, not the request's (after switch/leave/accept)
+     */
+    protected function me(User $user, bool $stored = false): MeResource
     {
         $families = app(FamilyService::class);
         $tenant = app(TenantContext::class);
 
         // X-Family-Id (already checked by the family middleware) wins over the stored active family.
-        $currentId = $tenant->has() ? $tenant->id() : $families->resolveActive($user)?->id;
+        $currentId = $tenant->has() && ! $stored ? $tenant->id() : $families->resolveActive($user->refresh())?->id;
 
         return new MeResource($user, $families->familiesOf($user), $currentId);
     }

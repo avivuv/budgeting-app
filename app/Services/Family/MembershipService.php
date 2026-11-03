@@ -54,6 +54,23 @@ class MembershipService
         $this->families->removeMember($this->tenant->get(), $member);
     }
 
+    /**
+     * Leave a family by id (REST API), without it being the active one.
+     * Returns false when the user is not a member (BR-I06).
+     */
+    public function leaveFamily(User $user, int $familyId): bool
+    {
+        $family = $this->families->findForMember($familyId, $user);
+
+        if ($family === null) {
+            return false;
+        }
+
+        $this->tenant->run($family, fn () => $this->leave($user));
+
+        return true;
+    }
+
     public function leave(User $user): void
     {
         if ($this->families->roleOf($this->tenant->get(), $user) === FamilyRole::Owner) {

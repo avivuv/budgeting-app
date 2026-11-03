@@ -101,7 +101,7 @@ Error: tabel status/field/pesan/rule
 | Ringkasan, Dashboard, Laporan & Export | [reports.md](reports.md)           | [reports.md](../test-cases/reports.md)           | ✅ selesai (M2) |
 | Tabungan                               | [savings.md](savings.md)           | [savings.md](../test-cases/savings.md)           | ✅ selesai (M2) |
 | Scan Struk                             | [receipts.md](receipts.md)         | [receipts.md](../test-cases/receipts.md)         | ✅ selesai (M2) |
-| Keluarga, Anggota & Undangan           | family.md                          | family.md                                        | belum           |
+| Keluarga, Anggota & Undangan           | [family.md](family.md)             | [family.md](../test-cases/family.md)             | ✅ selesai (M2) |
 | Onboarding                             | onboarding.md                      | onboarding.md                                    | belum           |
 | Notifikasi                             | notifications.md                   | notifications.md                                 | belum           |
 | Profil, Keamanan & Token               | settings.md                        | settings.md                                      | belum           |

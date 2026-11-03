@@ -106,11 +106,11 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | --- | ---------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
 | ⬜  | POST             | `/families`                                                        | buat keluarga (onboarding: dompet & kategori default) |
 | ⬜  | PATCH            | `/families/{id}`                                                   | pengaturan keluarga (nama, zona waktu, awal periode)  |
-| ⬜  | PUT              | `/families/{id}/switch`                                            | jadikan keluarga aktif                                |
-| ⬜  | POST             | `/families/{id}/leave`                                             | keluar dari keluarga                                  |
-| ⬜  | GET/PATCH/DELETE | `/members` · `/members/{id}`                                       | anggota, ubah peran, keluarkan (BR-I01..I04)          |
-| ⬜  | GET/POST/DELETE  | `/invitations` · `/invitations/{id}`                               | undangan keluarga                                     |
-| ⬜  | GET · POST       | `/invitations/token/{token}` · `/invitations/token/{token}/accept` | lihat & terima undangan                               |
+| ✅  | PUT              | `/families/{id}/switch`                                            | jadikan keluarga aktif                                |
+| ✅  | POST             | `/families/{id}/leave`                                             | keluar dari keluarga                                  |
+| ✅  | GET/PATCH/DELETE | `/members` · `/members/{id}`                                       | anggota, ubah peran, keluarkan (BR-I01..I04)          |
+| ✅  | GET/POST/DELETE  | `/invitations` · `/invitations/{id}`                               | undangan keluarga                                     |
+| ✅  | GET · POST       | `/invitations/token/{token}` · `/invitations/token/{token}/accept` | lihat & terima undangan                               |
 
 ### Master data
 

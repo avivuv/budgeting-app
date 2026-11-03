@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\Budget\BudgetController;
 use App\Http\Controllers\Api\V1\Category\CategoryController;
+use App\Http\Controllers\Api\V1\Family\FamilyController;
+use App\Http\Controllers\Api\V1\Family\InvitationController;
+use App\Http\Controllers\Api\V1\Family\MemberController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Receipt\ReceiptController;
 use App\Http\Controllers\Api\V1\Report\ReportController;
@@ -49,6 +52,20 @@ Route::get('v1/me', MeController::class)
     ->middleware(['auth:sanctum', 'family:optional', 'throttle:api', 'abilities:read'])
     ->name('api.v1.me');
 
+// Works on any family of the user, or before joining one (invitation by token, BR-I07).
+Route::prefix('v1')
+    ->name('api.v1.')
+    ->middleware(['auth:sanctum', 'family:optional', 'throttle:api'])
+    ->group(function () {
+        Route::get('invitations/token/{token}', [InvitationController::class, 'show'])->middleware('abilities:read')->name('invitations.token.show');
+
+        Route::middleware('abilities:write')->group(function () {
+            Route::put('families/{family}/switch', [FamilyController::class, 'switch'])->whereNumber('family')->name('families.switch');
+            Route::post('families/{family}/leave', [FamilyController::class, 'leave'])->whereNumber('family')->name('families.leave');
+            Route::post('invitations/token/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.token.accept');
+        });
+    });
+
 Route::prefix('v1')
     ->name('api.v1.')
     ->middleware(['auth:sanctum', 'family', 'throttle:api', EnsureIdempotency::class])
@@ -66,6 +83,8 @@ Route::prefix('v1')
             Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
             Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
             Route::get('savings', [SavingGoalController::class, 'index'])->name('savings.index');
+            Route::get('members', [MemberController::class, 'index'])->name('members.index');
+            Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
             Route::get('receipts', [ReceiptController::class, 'index'])->name('receipts.index');
             Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
             Route::get('receipts/{receipt}/image', [ReceiptController::class, 'image'])->name('receipts.image');
@@ -91,6 +110,11 @@ Route::prefix('v1')
             Route::put('budgets', [BudgetController::class, 'update'])->name('budgets.update');
             Route::post('budgets/copy', [BudgetController::class, 'copy'])->name('budgets.copy');
             Route::delete('budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
+
+            Route::patch('members/{member}', [MemberController::class, 'update'])->whereNumber('member')->name('members.update');
+            Route::delete('members/{member}', [MemberController::class, 'destroy'])->whereNumber('member')->name('members.destroy');
+            Route::post('invitations', [InvitationController::class, 'store'])->name('invitations.store');
+            Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->whereNumber('invitation')->name('invitations.destroy');
 
             Route::post('savings', [SavingGoalController::class, 'store'])->name('savings.store');
             Route::put('savings/{goal}', [SavingGoalController::class, 'update'])->name('savings.update');
