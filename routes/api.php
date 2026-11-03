@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\Budget\BudgetController;
 use App\Http\Controllers\Api\V1\Category\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
-use App\Http\Controllers\Api\V1\ReceiptController;
+use App\Http\Controllers\Api\V1\Receipt\ReceiptController;
 use App\Http\Controllers\Api\V1\Report\ReportController;
 use App\Http\Controllers\Api\V1\Savings\SavingGoalController;
 use App\Http\Controllers\Api\V1\Transaction\TransactionController;
@@ -66,7 +66,9 @@ Route::prefix('v1')
             Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
             Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
             Route::get('savings', [SavingGoalController::class, 'index'])->name('savings.index');
+            Route::get('receipts', [ReceiptController::class, 'index'])->name('receipts.index');
             Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
+            Route::get('receipts/{receipt}/image', [ReceiptController::class, 'image'])->name('receipts.image');
         });
 
         Route::middleware('abilities:write')->group(function () {

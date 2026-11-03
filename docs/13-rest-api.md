@@ -154,10 +154,10 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 
 |     | Method | Path                     | Fungsi                                                                                            |
 | --- | ------ | ------------------------ | ------------------------------------------------------------------------------------------------- |
-| ⬜  | GET    | `/receipts`              | struk terakhir + `meta.quota`                                                                     |
+| ✅  | GET    | `/receipts`              | struk terakhir + `meta.quota`                                                                     |
 | ✅  | POST   | `/receipts`              | upload (multipart `file`) → `202` + draft + `meta.quota`; kuota habis → `429`                     |
 | ✅  | GET    | `/receipts/{id}`         | status & hasil parse (draft)                                                                      |
-| ⬜  | GET    | `/receipts/{id}/image`   | file struk (ter-auth)                                                                             |
+| ✅  | GET    | `/receipts/{id}/image`   | file struk (ter-auth)                                                                             |
 | ✅  | PATCH  | `/receipts/{id}`         | koreksi draft (`total`, `receipt_date`, `merchant`, `category_id`, `wallet_id`, `items[]`)        |
 | ✅  | DELETE | `/receipts/{id}`         | batalkan draft (`rejected`)                                                                       |
 | ✅  | POST   | `/receipts/{id}/confirm` | `{"mode":"total"}` / `{"mode":"split"}` → `201` + transaksi; konfirmasi ulang tidak menambah data |

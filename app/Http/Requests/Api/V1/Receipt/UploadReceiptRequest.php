@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Api\V1;
+namespace App\Http\Requests\Api\V1\Receipt;
 
 use App\Http\Requests\Concerns\ReceiptRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * "total" or "split" when saving a receipt (BR-H01, BR-H02).
+ * Receipt or proof of payment upload (BR-H11).
  */
-class ConfirmReceiptRequest extends FormRequest
+class UploadReceiptRequest extends FormRequest
 {
     use ReceiptRules;
 
@@ -19,6 +19,6 @@ class ConfirmReceiptRequest extends FormRequest
      */
     public function rules(): array
     {
-        return $this->confirmRules();
+        return $this->uploadRules();
     }
 }

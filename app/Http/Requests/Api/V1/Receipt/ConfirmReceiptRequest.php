@@ -2,28 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Api\V1;
+namespace App\Http\Requests\Api\V1\Receipt;
 
 use App\Http\Requests\Concerns\ReceiptRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Corrections to a receipt draft (BR-H09).
+ * "total" or "split" when saving a receipt (BR-H01, BR-H02).
  */
-class ReceiptDraftRequest extends FormRequest
+class ConfirmReceiptRequest extends FormRequest
 {
     use ReceiptRules;
-
-    protected function prepareForValidation(): void
-    {
-        $this->prepareDraft();
-    }
 
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
-        return $this->draftRules();
+        return $this->confirmRules();
     }
 }

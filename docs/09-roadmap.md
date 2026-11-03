@@ -81,7 +81,7 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
     - ✅ Budget ([kontrak](api-contracts/budgets.md), [skenario](test-cases/budgets.md)) — salin & hapus via API, response snake_case `data`+`meta` (periode, total, kategori tersedia, `can_manage`), error per baris `budgets.N.*`, BR-F08 (maks satu periode ke depan → 422) & BR-F09 (kategori arsip) baru; `BudgetTest` BUD-01…29
     - ✅ Ringkasan, Dashboard, Laporan & Export ([kontrak](api-contracts/reports.md), [skenario](test-cases/reports.md)) — `GET /dashboard/{widget}` (9 widget), export Excel/PDF via API, semua key snake_case, periode yang belum dimulai → 422; `ReportTest` REP-01…27 menggantikan `ReportApiTest`
     - ✅ Tabungan ([kontrak](api-contracts/savings.md), [skenario](test-cases/savings.md)) — CRUD + setor/ambil via API (idempoten), aturan form dipakai bersama web lewat trait; `SavingGoalTest` SAV-01…27
-    - ⬜ Scan Struk
+    - ✅ Scan Struk ([kontrak](api-contracts/receipts.md), [skenario](test-cases/receipts.md)) — daftar struk + kuota, gambar struk via API, `receipt_date` konsisten dengan PATCH, label status & pesan; `ReceiptTest` RCP-01…29 menggantikan `ReceiptApiTest`
     - ⬜ Keluarga, Anggota & Undangan
     - ⬜ Onboarding
     - ⬜ Notifikasi
