@@ -42,4 +42,14 @@ final class CategoryRuleException extends BusinessRuleException
     {
         return new self('BR-E03', 'Pilih kategori tujuan yang berbeda.', 'target_id');
     }
+
+    public static function mergeIntoArchived(): self
+    {
+        return new self('BR-E03', 'Kategori tujuan sedang diarsipkan. Aktifkan dulu kategori tersebut.', 'target_id');
+    }
+
+    public static function typeLocked(): self
+    {
+        return new self('BR-E06', 'Jenis kategori tidak bisa diubah karena sudah dipakai transaksi atau punya sub-kategori.', 'type');
+    }
 }

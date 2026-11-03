@@ -27,6 +27,11 @@ class BudgetRepository extends BaseRepository implements BudgetRepositoryInterfa
             ->get();
     }
 
+    public function forCategory(int $categoryId): Collection
+    {
+        return $this->query()->where('category_id', $categoryId)->orderBy('period')->get();
+    }
+
     public function findForCategory(int $categoryId, string $period): ?Budget
     {
         return $this->query()

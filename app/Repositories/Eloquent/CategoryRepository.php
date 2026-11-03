@@ -70,8 +70,12 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
 
     public function reassignTransactions(Category $from, Category $to): int
     {
-        return Transaction::withTrashed()
-            ->where('category_id', $from->id)
-            ->update(['category_id' => $to->id]);
+        $transactions = Transaction::withTrashed()->where('category_id', $from->id)->orderBy('id')->get();
+
+        foreach ($transactions as $transaction) {
+            $transaction->update(['category_id' => $to->id]);
+        }
+
+        return $transactions->count();
     }
 }

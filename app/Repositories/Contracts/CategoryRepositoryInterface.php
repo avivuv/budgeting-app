@@ -36,6 +36,7 @@ interface CategoryRepositoryInterface extends BaseRepositoryInterface
 
     /**
      * Move all transactions (including soft-deleted) from one category to another (BR-E03).
+     * Saved one by one so every move lands in the activity log (BR-B14).
      */
     public function reassignTransactions(Category $from, Category $to): int;
 }

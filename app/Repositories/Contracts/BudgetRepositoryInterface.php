@@ -20,4 +20,11 @@ interface BudgetRepositoryInterface extends BaseRepositoryInterface
     public function forPeriod(string $period): Collection;
 
     public function findForCategory(int $categoryId, string $period): ?Budget;
+
+    /**
+     * Budgets of a category in every period (BR-E03 merge).
+     *
+     * @return Collection<int, Budget>
+     */
+    public function forCategory(int $categoryId): Collection;
 }

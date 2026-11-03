@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\BudgetController;
-use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\Category\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\ReportController;
@@ -68,6 +68,12 @@ Route::prefix('v1')
             Route::put('wallets/{wallet}', [WalletController::class, 'update'])->name('wallets.update');
             Route::patch('wallets/{wallet}/archive', [WalletController::class, 'archive'])->name('wallets.archive');
             Route::delete('wallets/{wallet}', [WalletController::class, 'destroy'])->name('wallets.destroy');
+
+            Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+            Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::patch('categories/{category}/archive', [CategoryController::class, 'archive'])->name('categories.archive');
+            Route::post('categories/{category}/merge', [CategoryController::class, 'merge'])->name('categories.merge');
+            Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
             Route::post('transactions/parse', [TransactionController::class, 'parse'])->name('transactions.parse');
             Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');

@@ -9,6 +9,7 @@ use App\Enums\CategoryType;
 use App\Events\Category\CategoryChanged;
 use App\Exceptions\Category\CategoryRuleException;
 use App\Models\Category;
+use App\Repositories\Contracts\BudgetRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class CategoryService
 {
     public function __construct(
         private readonly CategoryRepositoryInterface $categories,
+        private readonly BudgetRepositoryInterface $budgets,
     ) {}
 
     /**
@@ -44,10 +46,10 @@ class CategoryService
     {
         $attributes = $data->toModelArray();
 
-        // The type of a category with transactions or children cannot change.
+        // BR-E06: the type of a category with transactions or children cannot change.
         if ($data->type !== $category->type
             && ($this->categories->hasTransactions($category) || $this->categories->hasChildren($category))) {
-            throw CategoryRuleException::parentTypeMismatch();
+            throw CategoryRuleException::typeLocked();
         }
 
         if ($data->parentId !== null && $this->categories->hasChildren($category)) {
@@ -89,7 +91,8 @@ class CategoryService
     }
 
     /**
-     * Move every transaction of $from into $to, then delete $from (BR-E03).
+     * Move every transaction and budget of $from into $to, then delete $from (BR-E03).
+     * A budget for a period $to already has is added to it.
      */
     public function merge(Category $from, Category $to): int
     {
@@ -101,17 +104,38 @@ class CategoryService
             throw CategoryRuleException::mergeTypeMismatch();
         }
 
+        if ($to->is_archived) {
+            throw CategoryRuleException::mergeIntoArchived();
+        }
+
         if ($this->categories->hasChildren($from)) {
             throw CategoryRuleException::hasChildren();
         }
 
         return DB::transaction(function () use ($from, $to): int {
             $moved = $this->categories->reassignTransactions($from, $to);
+            $this->moveBudgets($from, $to);
             $this->categories->delete($from);
             CategoryChanged::dispatch($to);
 
             return $moved;
         });
+    }
+
+    private function moveBudgets(Category $from, Category $to): void
+    {
+        foreach ($this->budgets->forCategory($from->id) as $budget) {
+            $existing = $this->budgets->findForCategory($to->id, $budget->period->toDateString());
+
+            if ($existing === null) {
+                $this->budgets->update($budget, ['category_id' => $to->id]);
+
+                continue;
+            }
+
+            $this->budgets->update($existing, ['amount' => $existing->amount + $budget->amount]);
+            $this->budgets->delete($budget);
+        }
     }
 
     /**
