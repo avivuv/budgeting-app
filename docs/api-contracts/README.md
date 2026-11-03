@@ -98,7 +98,7 @@ Error: tabel status/field/pesan/rule
 | Kategori                               | [categories.md](categories.md)     | [categories.md](../test-cases/categories.md)     | ✅ selesai (M2) |
 | Transaksi                              | [transactions.md](transactions.md) | [transactions.md](../test-cases/transactions.md) | ✅ selesai (M2) |
 | Budget                                 | [budgets.md](budgets.md)           | [budgets.md](../test-cases/budgets.md)           | ✅ selesai (M2) |
-| Ringkasan, Dashboard, Laporan & Export | reports.md                         | reports.md                                       | belum           |
+| Ringkasan, Dashboard, Laporan & Export | [reports.md](reports.md)           | [reports.md](../test-cases/reports.md)           | ✅ selesai (M2) |
 | Tabungan                               | savings.md                         | savings.md                                       | belum           |
 | Scan Struk                             | receipts.md                        | receipts.md                                      | belum           |
 | Keluarga, Anggota & Undangan           | family.md                          | family.md                                        | belum           |

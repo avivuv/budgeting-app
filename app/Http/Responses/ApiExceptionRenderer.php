@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\BackedEnumCaseNotFoundException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -43,7 +44,7 @@ final class ApiExceptionRenderer
             ),
             $e instanceof ModelNotFoundException => $this->message(__('auth.not_found'), 404),
             $e instanceof NotFoundHttpException => $this->message(
-                $e->getPrevious() instanceof ModelNotFoundException ? __('auth.not_found') : ($this->custom($e->getMessage()) ?? __('auth.not_found')),
+                $e->getPrevious() instanceof ModelNotFoundException || $e->getPrevious() instanceof BackedEnumCaseNotFoundException ? __('auth.not_found') : ($this->custom($e->getMessage()) ?? __('auth.not_found')),
                 404,
             ),
             $e instanceof ThrottleRequestsException => $this->throttled($e),

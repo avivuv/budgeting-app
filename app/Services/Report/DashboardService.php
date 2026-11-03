@@ -17,6 +17,7 @@ use App\DTOs\Wallet\WalletItemData;
 use App\Enums\BudgetStatus;
 use App\Enums\CategoryType;
 use App\Enums\TransactionType;
+use App\Exceptions\Report\ReportException;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\Wallet;
@@ -83,6 +84,21 @@ class DashboardService
     public function period(?string $key): Period
     {
         return $this->periods->fromKey($key);
+    }
+
+    /**
+     * REST API: a period that has started; a later one is an error instead of
+     * silently becoming the current period.
+     */
+    public function startedPeriod(?string $key): Period
+    {
+        $period = $this->periods->fromKey($key, allowFuture: true);
+
+        if ($period->key() > $this->currentPeriod()->key()) {
+            throw ReportException::periodNotStarted();
+        }
+
+        return $period;
     }
 
     public function periodData(Period $period): PeriodData

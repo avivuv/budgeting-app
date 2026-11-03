@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\V1\Budget\BudgetController;
 use App\Http\Controllers\Api\V1\Category\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\ReceiptController;
-use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\Report\ReportController;
 use App\Http\Controllers\Api\V1\Transaction\TransactionController;
 use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Middleware\EnsureIdempotency;
@@ -60,7 +60,9 @@ Route::prefix('v1')
             Route::get('transactions/{transaction}/history', [TransactionController::class, 'history'])->name('transactions.history');
             Route::get('tags', [TransactionController::class, 'tags'])->name('tags.index');
             Route::get('summary', [ReportController::class, 'summary'])->name('summary');
+            Route::get('dashboard/{widget}', [ReportController::class, 'widget'])->name('dashboard.widget');
             Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+            Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
             Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
             Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
         });

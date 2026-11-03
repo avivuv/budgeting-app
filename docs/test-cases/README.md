@@ -53,7 +53,7 @@ Urutan mengikuti tahap M1–M2 di [18-api-first-migration.md](../18-api-first-mi
 | Kategori                                             | [categories.md](categories.md)     | ✅ test hijau |
 | Transaksi                                            | [transactions.md](transactions.md) | ✅ test hijau |
 | Budget                                               | [budgets.md](budgets.md)           | ✅ test hijau |
-| Ringkasan, Dashboard, Laporan & Export               | reports.md                         | belum         |
+| Ringkasan, Dashboard, Laporan & Export               | [reports.md](reports.md)           | ✅ test hijau |
 | Tabungan                                             | savings.md                         | belum         |
 | Scan Struk                                           | receipts.md                        | belum         |
 | Keluarga, Anggota & Undangan                         | family.md                          | belum         |

@@ -146,9 +146,9 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | ⬜  | GET/POST/PUT/DELETE | `/savings` · `/savings/{id}`                    | tujuan tabungan (BR-K01..K04)                                      |
 | ⬜  | POST                | `/savings/{id}/contributions`                   | setor ke tabungan                                                  |
 | ✅  | GET                 | `/summary?period=2026-10`                       | ringkasan (saldo, pemasukan, pengeluaran, selisih, Δ%)             |
-| ⬜  | GET                 | `/dashboard/{widget}`                           | widget dashboard (arus kas, kategori, tren, anggota, insight, …)   |
+| ✅  | GET                 | `/dashboard/{widget}`                           | widget dashboard (arus kas, kategori, tren, anggota, insight, …)   |
 | ✅  | GET                 | `/reports/{laporan}?from&to`                    | laporan per jenis (arus kas, kategori, anggota, dompet, budget, …) |
-| ⬜  | GET                 | `/reports/{laporan}/export?format=xlsx` / `pdf` | unduh export dengan filter yang sama                               |
+| ✅  | GET                 | `/reports/{laporan}/export?format=xlsx` / `pdf` | unduh export dengan filter yang sama                               |
 
 ### Struk & notifikasi
 

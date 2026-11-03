@@ -43,9 +43,9 @@ class ExportService
     /**
      * Sheets: Ringkasan, the chosen report, Transaksi, Kategori, Budget.
      */
-    public function excel(ReportTab $tab, CarbonImmutable $from, CarbonImmutable $to, ?int $year = null): BinaryFileResponse
+    public function excel(ReportTab $tab, CarbonImmutable $from, CarbonImmutable $to, ?int $year = null, TransactionType $type = TransactionType::Expense): BinaryFileResponse
     {
-        $report = $this->reports->build($tab, $from, $to, $year);
+        $report = $this->reports->build($tab, $from, $to, $year, $type);
         $table = $this->table($tab, $report);
 
         $sheets = [
@@ -64,9 +64,9 @@ class ExportService
         return Excel::download(new ReportWorkbook($sheets), $this->filename($tab, $report, 'xlsx'));
     }
 
-    public function pdf(ReportTab $tab, CarbonImmutable $from, CarbonImmutable $to, ?int $year = null): Response
+    public function pdf(ReportTab $tab, CarbonImmutable $from, CarbonImmutable $to, ?int $year = null, TransactionType $type = TransactionType::Expense): Response
     {
-        $report = $this->reports->build($tab, $from, $to, $year);
+        $report = $this->reports->build($tab, $from, $to, $year, $type);
 
         return Pdf::loadView('reports.pdf', [
             'family' => $this->tenant->get()->name,
