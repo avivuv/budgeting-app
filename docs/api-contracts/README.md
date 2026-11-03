@@ -93,7 +93,7 @@ Error: tabel status/field/pesan/rule
 
 | Fitur                                  | Kontrak                  | Skenario test                          | Status                  |
 | -------------------------------------- | ------------------------ | -------------------------------------- | ----------------------- |
-| Auth                                   | auth.md                  | auth.md                                | belum                   |
+| Auth                                   | [auth.md](auth.md)       | [auth.md](../test-cases/auth.md)       | ✅ selesai (M1)         |
 | Dompet                                 | [wallets.md](wallets.md) | [wallets.md](../test-cases/wallets.md) | draft — menunggu review |
 | Kategori                               | categories.md            | categories.md                          | belum                   |
 | Transaksi                              | transactions.md          | transactions.md                        | belum                   |

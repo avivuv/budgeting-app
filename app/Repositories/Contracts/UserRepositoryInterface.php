@@ -16,6 +16,11 @@ use Laravel\Sanctum\PersonalAccessToken;
  */
 interface UserRepositoryInterface extends BaseRepositoryInterface
 {
+    /**
+     * Case-insensitive lookup for login (emails are stored lowercase).
+     */
+    public function findByEmail(string $email): ?User;
+
     public function updateAppearance(User $user, Appearance $appearance): User;
 
     /**

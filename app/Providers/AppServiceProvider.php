@@ -71,9 +71,17 @@ class AppServiceProvider extends ServiceProvider
                 && (app(FamilyService::class)->roleOf($tenant->get(), $user)?->canManage() ?? false);
         });
 
-        // REST API: 60 requests per minute per token/user (docs/13-rest-api.md).
-        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)
-            ->by((string) ($request->user()?->currentAccessToken()?->getKey() ?? $request->user()?->getAuthIdentifier() ?? $request->ip())));
+        // REST API: 60 requests per minute per token, or per user for the SPA session (docs/13-rest-api.md).
+        RateLimiter::for('api', function (Request $request): Limit {
+            $user = $request->user();
+            $key = match (true) {
+                $user === null => 'ip:'.$request->ip(),
+                $request->bearerToken() !== null => 'token:'.$user->currentAccessToken()->getKey(),
+                default => 'user:'.$user->getAuthIdentifier(),
+            };
+
+            return Limit::perMinute(60)->by($key);
+        });
 
         // ProcessReceiptJob: stay under the AI provider's free-tier rate (docs/06 §5.1).
         RateLimiter::for('receipts', fn () => Limit::perMinute(max(1, (int) config('receipt.rate_per_minute'))));

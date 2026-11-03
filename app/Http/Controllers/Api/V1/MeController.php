@@ -4,38 +4,25 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Controllers\Api\V1\Auth\Concerns\RespondsWithMe;
 use App\Http\Controllers\Controller;
-use App\Models\Family;
+use App\Http\Resources\MeResource;
 use App\Models\User;
-use App\Services\Family\FamilyService;
-use App\Services\Tenancy\TenantContext;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * The signed-in user. Works without a family (current_family_id null), so
+ * clients can send new users to onboarding (docs/api-contracts/auth.md).
+ */
 class MeController extends Controller
 {
-    public function __construct(
-        private readonly FamilyService $families,
-        private readonly TenantContext $tenant,
-    ) {}
+    use RespondsWithMe;
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): MeResource
     {
         /** @var User $user */
         $user = $request->user();
 
-        return response()->json([
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'current_family_id' => $this->tenant->id(),
-                'families' => $this->families->familiesOf($user)->map(fn (Family $family): array => [
-                    'id' => $family->id,
-                    'name' => $family->name,
-                    'role' => $family->membership?->role->value,
-                ])->values(),
-            ],
-        ]);
+        return $this->me($user);
     }
 }

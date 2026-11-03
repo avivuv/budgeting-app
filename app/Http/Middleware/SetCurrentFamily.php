@@ -13,7 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Resolves the signed-in user's active family into the TenantContext.
- * Users without a family are sent to onboarding.
+ * Users without a family are sent to onboarding, unless the route uses
+ * `family:optional` (e.g. GET /me, which must work before onboarding).
  */
 class SetCurrentFamily
 {
@@ -25,7 +26,7 @@ class SetCurrentFamily
     /**
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ?string $mode = null): Response
     {
         /** @var User $user */
         $user = $request->user();
@@ -42,9 +43,13 @@ class SetCurrentFamily
             $family = $this->families->resolveActive($user);
         }
 
+        if ($family === null && $mode === 'optional') {
+            return $next($request);
+        }
+
         if ($family === null) {
             return $request->is('api/*') || $request->expectsJson()
-                ? response()->json(['message' => 'Buat atau gabung ke keluarga terlebih dahulu.'], 409)
+                ? response()->json(['message' => __('auth.no_family'), 'code' => 'no_family'], 409)
                 : redirect()->route('onboarding.create');
         }
 

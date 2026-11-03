@@ -1,9 +1,11 @@
 <?php
 
 use App\Exceptions\DomainException;
+use App\Http\Middleware\EnsureSessionClient;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetCurrentFamily;
+use App\Http\Responses\ApiExceptionRenderer;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,7 +32,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // The web SPA logs in with the session cookie on /api (Sanctum stateful domains).
+        $middleware->statefulApi();
+
         $middleware->alias([
+            'session.client' => EnsureSessionClient::class,
             'family' => SetCurrentFamily::class,
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
@@ -44,9 +50,12 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-        // Business-rule violations: JSON for the API, form error + toast for the web.
+        // REST API: Indonesian error bodies, business rules carry their rule id.
+        $exceptions->render(fn (Throwable $e, Request $request) => (new ApiExceptionRenderer)->render($e, $request));
+
+        // Business-rule violations on the (legacy Inertia) web: JSON for fetch calls, form error + toast otherwise.
         $exceptions->render(function (DomainException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json([
                     'message' => $e->userMessage(),
                     'errors' => [$e->field() ?? 'general' => [$e->userMessage()]],

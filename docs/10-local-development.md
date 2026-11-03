@@ -149,3 +149,5 @@ pnpm --dir frontend run check        # format + lint SPA (Vite+)
 pnpm --dir frontend run types:check  # vue-tsc
 composer test:api           # API test + catat request/response ke storage/logs/api-trace.log
 ```
+
+Dokumentasi API (OpenAPI, otomatis dari kode): `http://budgeting-app.test/docs/api` (hanya lingkungan lokal). Export ke file: `php artisan scramble:export`.

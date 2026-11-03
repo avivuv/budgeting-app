@@ -48,7 +48,7 @@ Urutan mengikuti tahap M1–M2 di [18-api-first-migration.md](../18-api-first-mi
 
 | Fitur                                                | Dokumen                  | Status                  |
 | ---------------------------------------------------- | ------------------------ | ----------------------- |
-| Auth (login SPA, token Android, 2FA, passkey, reset) | auth.md                  | belum                   |
+| Auth (login SPA, token Android, 2FA, passkey, reset) | [auth.md](auth.md)       | ✅ test hijau           |
 | Dompet                                               | [wallets.md](wallets.md) | draft — menunggu review |
 | Kategori                                             | categories.md            | belum                   |
 | Transaksi                                            | transactions.md          | belum                   |

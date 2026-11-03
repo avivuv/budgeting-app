@@ -21,6 +21,14 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         parent::__construct($model);
     }
 
+    public function findByEmail(string $email): ?User
+    {
+        /** @var User|null $user */
+        $user = $this->query()->where('email', mb_strtolower(trim($email)))->first();
+
+        return $user;
+    }
+
     public function updateAppearance(User $user, Appearance $appearance): User
     {
         $user->forceFill(['appearance' => $appearance])->save();

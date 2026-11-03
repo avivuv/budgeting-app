@@ -145,6 +145,6 @@ Content-Type: application/json
 
 - ⬜ Endpoint `PATCH /wallets/{id}/archive` belum ada.
 - ⬜ `meta.total_balance_formatted` belum ada.
-- ⬜ Error business rule belum menyertakan `rule`.
-- ⬜ Pesan validasi masih bahasa Inggris (`The name field is required.`) karena terjemahan `lang/id` belum ada → ditambahkan di M1 untuk semua fitur.
+- ✅ Error business rule menyertakan `rule` (M1).
+- ✅ Pesan validasi Bahasa Indonesia lewat `lang/id` (M1).
 - ⬜ Request API masih memakai `App\Http\Requests\Web\Wallet\WalletRequest` → pindah ke `Api/V1/Wallet`.

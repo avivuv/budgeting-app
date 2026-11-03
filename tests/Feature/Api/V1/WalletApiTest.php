@@ -69,7 +69,10 @@ it('lists the category tree filtered by type', function () {
 it('returns JSON 409 for users without a family', function () {
     Sanctum::actingAs(User::factory()->create(), ['read']);
 
-    $this->get('/api/v1/me')->assertStatus(409)->assertJsonPath('message', 'Buat atau gabung ke keluarga terlebih dahulu.');
+    $this->get('/api/v1/wallets')
+        ->assertStatus(409)
+        ->assertJsonPath('message', 'Buat atau gabung ke keluarga terlebih dahulu.')
+        ->assertJsonPath('code', 'no_family');
 });
 
 it('rejects owner-only actions for viewers', function () {

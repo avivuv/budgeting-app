@@ -73,7 +73,7 @@ Setiap fase dianggap selesai hanya jika memenuhi _Definition of Done_ di [12-tes
 Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Inertia lama tetap jalan sampai pengganti SPA-nya siap.
 
 - ✅ **M0 Dokumen** — keputusan arsitektur, semua dokumen diperbarui ke API-first, format test case per fitur ([test-cases](test-cases/README.md)), `composer test:api` (trace input/output)
-- ⬜ **M1 Fondasi API** — Fortify headless + Sanctum stateful, `/api/v1/auth/*` (SPA & token Android), error JSON + `rule`, OpenAPI (Scramble), test skenario auth
+- ✅ **M1 Fondasi API** — Sanctum stateful (cookie SPA), `/api/v1/auth/*` (login + 2FA + passkey, register, reset password, verifikasi email, token Android) di atas aksi Fortify, `/me` tanpa keluarga, error JSON Indonesia + `rule` + `code: no_family`, `lang/id`, OpenAPI (Scramble `/docs/api`), test skenario AUTH-01…33 & ERR-01…06 ([kontrak](api-contracts/auth.md), [skenario](test-cases/auth.md))
 - ⬜ **M2 API lengkap + test skenario per fitur** (API contract + dokumen skenario direview dulu, test API lama dirombak)
     - ⬜ Dompet ([kontrak](api-contracts/wallets.md) & [skenario](test-cases/wallets.md) draft)
     - ⬜ Kategori

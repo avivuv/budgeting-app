@@ -18,9 +18,13 @@ return [
     |
     */
 
-    // The web app authenticates with the regular Laravel session (Inertia) and the
-    // REST API uses personal access tokens only, so no stateful SPA domains are needed.
-    'stateful' => [],
+    // The web SPA (same domain, or the Vite dev server) authenticates with the
+    // session cookie; every other client (Android) uses personal access tokens.
+    'stateful' => explode(',', (string) env('SANCTUM_STATEFUL_DOMAINS', sprintf(
+        '%s%s',
+        'localhost,localhost:5173,127.0.0.1,127.0.0.1:8000,::1,',
+        Sanctum::currentApplicationUrlWithPort(),
+    ))),
 
     /*
     |--------------------------------------------------------------------------
