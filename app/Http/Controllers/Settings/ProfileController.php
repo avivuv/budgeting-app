@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Services\User\AccountService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,10 +50,13 @@ class ProfileController extends Controller
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
+        $account = app(AccountService::class);
+        $account->ensureDeletable($user);
 
+        // Sign out first: logging out saves the remember token, which would
+        // write a deleted user back.
         Auth::logout();
-
-        $user->delete();
+        $account->deleteAccount($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

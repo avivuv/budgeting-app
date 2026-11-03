@@ -8,6 +8,7 @@ use App\Enums\Appearance;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Laravel\Passkeys\Passkey;
 use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -86,5 +87,39 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function ownsNotification(User $user, string $id): bool
     {
         return $user->notifications()->whereKey($id)->exists();
+    }
+
+    public function updateProfile(User $user, array $attributes): User
+    {
+        $user->fill($attributes);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return $user;
+    }
+
+    public function updatePassword(User $user, string $password): void
+    {
+        $user->update(['password' => $password]);
+    }
+
+    public function deleteAccount(User $user): void
+    {
+        $user->tokens()->delete();
+        $user->delete();
+    }
+
+    public function passkeys(User $user): Collection
+    {
+        return $user->passkeys()->latest()->get();
+    }
+
+    public function findPasskey(User $user, int $id): ?Passkey
+    {
+        return $user->passkeys()->whereKey($id)->first();
     }
 }

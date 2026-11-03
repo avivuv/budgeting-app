@@ -36,6 +36,16 @@ final class AuthException extends DomainException
         return new self(__('auth.two_factor_expired'), 'general');
     }
 
+    public static function twoFactorAlreadyEnabled(): self
+    {
+        return new self(__('auth.two_factor_already_enabled'), 'general');
+    }
+
+    public static function twoFactorNotEnabled(): self
+    {
+        return new self(__('auth.two_factor_not_enabled'), 'general');
+    }
+
     public function userMessage(): string
     {
         return $this->userMessageText;

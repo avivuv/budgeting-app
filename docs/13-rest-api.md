@@ -85,20 +85,20 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 
 ### Auth & akun
 
-|     | Method            | Path                                                                          | Fungsi                                                        |
-| --- | ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| ✅  | POST              | `/auth/register` · `/auth/login` · `/auth/logout`                             | daftar, login & logout SPA (sesi)                             |
-| ✅  | POST/DELETE       | `/auth/token`                                                                 | buat / cabut token Android                                    |
-| ✅  | POST              | `/auth/two-factor-challenge`                                                  | kode 2FA / recovery code saat login                           |
-| ✅  | POST              | `/auth/passkeys/options` · `/auth/passkeys/login`                             | login passkey (WebAuthn)                                      |
-| ✅  | POST              | `/auth/forgot-password` · `/auth/reset-password`                              | lupa & reset password                                         |
-| ✅  | POST · GET        | `/auth/email/verification-notification` · `/auth/email/verify/{id}/{hash}`    | verifikasi email                                              |
-| ✅  | GET               | `/me`                                                                         | profil + keluarga & role; bisa dipakai sebelum punya keluarga |
-| ⬜  | PATCH/DELETE      | `/me`                                                                         | ubah profil (nama, email, tampilan) / hapus akun              |
-| ⬜  | PUT               | `/me/password`                                                                | ganti password                                                |
-| ⬜  | POST/DELETE · GET | `/me/two-factor` · `/me/two-factor/qr-code` · `/me/two-factor/recovery-codes` | kelola 2FA                                                    |
-| ⬜  | GET/POST/DELETE   | `/me/passkeys`                                                                | kelola passkey                                                |
-| ⬜  | GET/POST/DELETE   | `/me/tokens`                                                                  | kelola token API                                              |
+|     | Method             | Path                                                                            | Fungsi                                                        |
+| --- | ------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| ✅  | POST               | `/auth/register` · `/auth/login` · `/auth/logout`                               | daftar, login & logout SPA (sesi)                             |
+| ✅  | POST/DELETE        | `/auth/token`                                                                   | buat / cabut token Android                                    |
+| ✅  | POST               | `/auth/two-factor-challenge`                                                    | kode 2FA / recovery code saat login                           |
+| ✅  | POST               | `/auth/passkeys/options` · `/auth/passkeys/login`                               | login passkey (WebAuthn)                                      |
+| ✅  | POST               | `/auth/forgot-password` · `/auth/reset-password`                                | lupa & reset password                                         |
+| ✅  | POST · GET         | `/auth/email/verification-notification` · `/auth/email/verify/{id}/{hash}`      | verifikasi email                                              |
+| ✅  | GET                | `/me`                                                                           | profil + keluarga & role; bisa dipakai sebelum punya keluarga |
+| ✅  | PATCH/DELETE       | `/me`                                                                           | ubah profil (nama, email, tampilan) / hapus akun              |
+| ✅  | PUT                | `/me/password`                                                                  | ganti password                                                |
+| ✅  | POST/DELETE · POST | `/me/two-factor` · `/me/two-factor/confirm` · `/me/two-factor/recovery-codes`   | kelola 2FA                                                    |
+| ✅  | GET/DELETE         | `/me/passkeys` (daftar passkey baru: endpoint paket `/user/passkeys`, sesi web) | kelola passkey                                                |
+| ✅  | GET/POST/DELETE    | `/me/tokens`                                                                    | kelola token API                                              |
 
 ### Keluarga & anggota
 

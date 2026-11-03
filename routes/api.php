@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Account\ApiTokenController;
+use App\Http\Controllers\Api\V1\Account\ProfileController;
+use App\Http\Controllers\Api\V1\Account\SecurityController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
@@ -60,6 +63,8 @@ Route::prefix('v1')
     ->group(function () {
         Route::get('invitations/token/{token}', [InvitationController::class, 'show'])->middleware('abilities:read')->name('invitations.token.show');
         Route::get('notifications', [NotificationController::class, 'index'])->middleware('abilities:read')->name('notifications.index');
+        Route::get('me/passkeys', [SecurityController::class, 'passkeys'])->middleware('abilities:read')->name('me.passkeys.index');
+        Route::get('me/tokens', [ApiTokenController::class, 'index'])->middleware('abilities:read')->name('me.tokens.index');
 
         Route::middleware('abilities:write')->group(function () {
             Route::post('families', [FamilyController::class, 'store'])->name('families.store');
@@ -67,6 +72,18 @@ Route::prefix('v1')
             Route::post('families/{family}/leave', [FamilyController::class, 'leave'])->whereNumber('family')->name('families.leave');
             Route::post('invitations/token/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.token.accept');
             Route::post('notifications/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+            // The signed-in user's own account.
+            Route::patch('me', [ProfileController::class, 'update'])->name('me.update');
+            Route::delete('me', [ProfileController::class, 'destroy'])->name('me.destroy');
+            Route::put('me/password', [ProfileController::class, 'password'])->middleware('throttle:6,1')->name('me.password');
+            Route::post('me/two-factor', [SecurityController::class, 'enableTwoFactor'])->name('me.two-factor.enable');
+            Route::post('me/two-factor/confirm', [SecurityController::class, 'confirmTwoFactor'])->middleware('throttle:6,1')->name('me.two-factor.confirm');
+            Route::delete('me/two-factor', [SecurityController::class, 'disableTwoFactor'])->name('me.two-factor.disable');
+            Route::post('me/two-factor/recovery-codes', [SecurityController::class, 'recoveryCodes'])->name('me.two-factor.recovery-codes');
+            Route::delete('me/passkeys/{id}', [SecurityController::class, 'destroyPasskey'])->whereNumber('id')->name('me.passkeys.destroy');
+            Route::post('me/tokens', [ApiTokenController::class, 'store'])->name('me.tokens.store');
+            Route::delete('me/tokens/{token}', [ApiTokenController::class, 'destroy'])->whereNumber('token')->name('me.tokens.destroy');
         });
     });
 

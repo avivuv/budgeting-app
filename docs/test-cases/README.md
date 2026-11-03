@@ -59,4 +59,4 @@ Urutan mengikuti tahap M1–M2 di [18-api-first-migration.md](../18-api-first-mi
 | Keluarga, Anggota & Undangan                         | [family.md](family.md)               | ✅ test hijau |
 | Onboarding                                           | [onboarding.md](onboarding.md)       | ✅ test hijau |
 | Notifikasi                                           | [notifications.md](notifications.md) | ✅ test hijau |
-| Profil, Keamanan & Token                             | settings.md                          | belum         |
+| Profil, Keamanan & Token                             | [settings.md](settings.md)           | ✅ test hijau |

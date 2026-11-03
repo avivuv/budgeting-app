@@ -124,6 +124,7 @@
     },
     "config": {
         "optimize-autoloader": true,
+        "process-timeout": 900,
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {

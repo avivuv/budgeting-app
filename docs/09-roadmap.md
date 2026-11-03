@@ -85,7 +85,7 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
     - ✅ Keluarga, Anggota & Undangan ([kontrak](api-contracts/family.md), [skenario](test-cases/family.md)) — pindah/keluar keluarga, anggota (peran, keluarkan), undangan (kirim, batal, lihat & terima via token) via API; `FamilyTest` FAM-01…28. Pengaturan keluarga (PATCH) menyusul Fase 5
     - ✅ Onboarding ([kontrak](api-contracts/onboarding.md), [skenario](test-cases/onboarding.md)) — `POST /families` (keluarga + dompet & kategori bawaan, jadi aktif), idempoten per user (key tidak berubah saat keluarga aktif berganti); `OnboardingTest` ONB-01…23
     - ✅ Notifikasi ([kontrak](api-contracts/notifications.md), [skenario](test-cases/notifications.md)) — `GET /notifications` (+ `unread_count`, `kind`/`subject` agar klien tahu layar tujuan, waktu ISO) & tandai dibaca; id milik user lain → 404; `NotificationTest` NOT-01…23
-    - ⬜ Profil, Keamanan & Token
+    - ✅ Profil, Keamanan & Token ([kontrak](api-contracts/settings.md), [skenario](test-cases/settings.md)) — profil (nama/email/tampilan), ganti password, hapus akun, 2FA (pasang/konfirmasi/matikan/kode cadangan), daftar & hapus passkey, token API — aksi sensitif minta password; perbaikan: hapus akun tidak lagi "hidup kembali" saat logout, Owner dengan anggota lain ditolak (BR-I01); `SettingsTest` SET-01…27
 - ⬜ **M3 Kerangka SPA** — `frontend/`, router, auth pages, layout, switch keluarga, tema, PWA
 - ⬜ **M4 Pindah halaman per fitur** — halaman SPA + E2E → hapus halaman, controller, route & test Inertia-nya
 - ⬜ **M5 Bersih-bersih** — hapus Inertia, Wayfinder, `resources/js`; update CI & dokumen

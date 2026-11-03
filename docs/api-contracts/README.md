@@ -104,4 +104,4 @@ Error: tabel status/field/pesan/rule
 | Keluarga, Anggota & Undangan           | [family.md](family.md)               | [family.md](../test-cases/family.md)               | ✅ selesai (M2) |
 | Onboarding                             | [onboarding.md](onboarding.md)       | [onboarding.md](../test-cases/onboarding.md)       | ✅ selesai (M2) |
 | Notifikasi                             | [notifications.md](notifications.md) | [notifications.md](../test-cases/notifications.md) | ✅ selesai (M2) |
-| Profil, Keamanan & Token               | settings.md                          | settings.md                                        | belum           |
+| Profil, Keamanan & Token               | [settings.md](settings.md)           | [settings.md](../test-cases/settings.md)           | ✅ selesai (M2) |

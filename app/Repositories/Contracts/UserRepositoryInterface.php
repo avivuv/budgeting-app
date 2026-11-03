@@ -8,6 +8,7 @@ use App\Enums\Appearance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
+use Laravel\Passkeys\Passkey;
 use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -58,4 +59,25 @@ interface UserRepositoryInterface extends BaseRepositoryInterface
     public function markNotificationsRead(User $user, ?string $id = null): void;
 
     public function ownsNotification(User $user, string $id): bool;
+
+    /**
+     * Name/email change; a new email must be verified again.
+     *
+     * @param  array{name?: string, email?: string}  $attributes
+     */
+    public function updateProfile(User $user, array $attributes): User;
+
+    public function updatePassword(User $user, string $password): void;
+
+    /**
+     * Delete the account with its API tokens; transactions keep a null recorder (BR-I04).
+     */
+    public function deleteAccount(User $user): void;
+
+    /**
+     * @return Collection<int, Passkey>
+     */
+    public function passkeys(User $user): Collection;
+
+    public function findPasskey(User $user, int $id): ?Passkey;
 }
