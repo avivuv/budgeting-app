@@ -89,7 +89,7 @@ it('parses the same way through the REST API [BR-B12]', function () {
     $this->postJson('/api/v1/transactions/parse', ['text' => 'tf 500rb bca ke gopay'])
         ->assertOk()
         ->assertJsonPath('data.0.type', 'transfer')
-        ->assertJsonPath('data.0.walletName', 'BCA')
-        ->assertJsonPath('data.0.toWalletName', 'GoPay')
+        ->assertJsonPath('data.0.wallet_name', 'BCA')
+        ->assertJsonPath('data.0.to_wallet_name', 'GoPay')
         ->assertJsonPath('data.0.missing', []);
 });

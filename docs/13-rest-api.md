@@ -122,7 +122,7 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | ✅  | GET             | `/categories?type=expense`                            | kategori (tree)              |
 | ✅  | POST/PUT/DELETE | `/categories` · `/categories/{id}`                    | kelola kategori (+ keywords) |
 | ✅  | PATCH · POST    | `/categories/{id}/archive` · `/categories/{id}/merge` | arsip, gabung (BR-E03)       |
-| ⬜  | GET             | `/tags`                                               | daftar tag                   |
+| ✅  | GET             | `/tags`                                               | daftar tag                   |
 
 ### Transaksi
 
@@ -132,8 +132,8 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | ✅  | POST           | `/transactions`              | buat transaksi                                                                                                                   |
 | ✅  | POST           | `/transactions/parse`        | parse teks bebas → preview per baris + `missing`, tanpa simpan                                                                   |
 | ✅  | GET/PUT/DELETE | `/transactions/{id}`         | detail / ubah / hapus                                                                                                            |
-| ⬜  | POST           | `/transactions/bulk`         | aksi massal: hapus, ganti kategori                                                                                               |
-| ⬜  | GET            | `/transactions/{id}/history` | riwayat perubahan (activity log)                                                                                                 |
+| ✅  | POST           | `/transactions/bulk`         | aksi massal: hapus, ganti kategori                                                                                               |
+| ✅  | GET            | `/transactions/{id}/history` | riwayat perubahan (activity log)                                                                                                 |
 
 ### Budget, tabungan, laporan
 

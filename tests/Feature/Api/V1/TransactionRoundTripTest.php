@@ -128,8 +128,8 @@ it('reads back what the free-text parser previewed, unchanged after saving [BR-B
         'type' => $preview['type'],
         'amount' => $preview['amount'],
         'date' => $preview['date'],
-        'wallet_id' => $preview['walletId'],
-        'category_id' => $preview['categoryId'],
+        'wallet_id' => $preview['wallet_id'],
+        'category_id' => $preview['category_id'],
         'note' => $preview['note'],
     ])->assertCreated()->json('data.id');
 

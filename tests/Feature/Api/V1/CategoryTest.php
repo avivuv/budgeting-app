@@ -191,7 +191,7 @@ describe('positive', function () {
 
         $this->postJson('/api/v1/transactions/parse', ['text' => 'mancing 75rb'])
             ->assertOk()
-            ->assertJsonPath('data.0.categoryId', $hobby->id)
+            ->assertJsonPath('data.0.category_id', $hobby->id)
             ->assertJsonPath('data.0.amount', 75_000);
     });
 });

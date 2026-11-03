@@ -77,7 +77,7 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
 - ⬜ **M2 API lengkap + test skenario per fitur** (API contract + dokumen skenario direview dulu, test API lama dirombak)
     - ✅ Dompet ([kontrak](api-contracts/wallets.md), [skenario](test-cases/wallets.md)) — endpoint arsip, saldo awal minus `-2jt`, `total_balance_formatted`, `WalletTest` WAL-01…20 menggantikan `WalletApiTest`
     - ✅ Kategori ([kontrak](api-contracts/categories.md), [skenario](test-cases/categories.md)) — endpoint kelola/arsip/gabung/hapus, BR-E06 baru, gabung mencatat activity log per transaksi & memindah/menjumlah budget, tujuan arsip ditolak; `CategoryTest` CAT-01…22
-    - ⬜ Transaksi
+    - ✅ Transaksi ([kontrak](api-contracts/transactions.md), [skenario](test-cases/transactions.md)) — aksi massal, riwayat, daftar tag, `meta.daily`, peringatan saldo minus saat ubah, `source` web/api, pratinjau ketik cepat snake_case; `TransactionTest` TRX-01…34 menggantikan `TransactionApiTest`
     - ⬜ Budget
     - ⬜ Ringkasan, Dashboard, Laporan & Export
     - ⬜ Tabungan

@@ -41,7 +41,7 @@ class ActivityService
     ) {}
 
     /**
-     * @return list<array{event: string, title: string, who: string, when: string, changes: list<array{field: string, old: string, new: string}>}>
+     * @return list<array{event: string, title: string, who: string, when: string, at: string|null, changes: list<array{field: string, old: string, new: string}>}>
      */
     public function transactionHistory(Transaction $transaction): array
     {
@@ -89,6 +89,8 @@ class ActivityService
                 },
                 'who' => $userNames[(int) $activity->causer_id] ?? 'Sistem',
                 'when' => $activity->created_at?->translatedFormat('j M Y H:i') ?? '',
+                // Same moment, machine-readable, in the family's timezone (API clients).
+                'at' => $activity->created_at?->copy()->setTimezone($this->tenant->get()->timezone)->toIso8601String(),
                 'changes' => $changes,
             ];
         }
