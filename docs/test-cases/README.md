@@ -52,7 +52,7 @@ Urutan mengikuti tahap M1–M2 di [18-api-first-migration.md](../18-api-first-mi
 | Dompet                                               | [wallets.md](wallets.md)           | ✅ test hijau |
 | Kategori                                             | [categories.md](categories.md)     | ✅ test hijau |
 | Transaksi                                            | [transactions.md](transactions.md) | ✅ test hijau |
-| Budget                                               | budgets.md                         | belum         |
+| Budget                                               | [budgets.md](budgets.md)           | ✅ test hijau |
 | Ringkasan, Dashboard, Laporan & Export               | reports.md                         | belum         |
 | Tabungan                                             | savings.md                         | belum         |
 | Scan Struk                                           | receipts.md                        | belum         |

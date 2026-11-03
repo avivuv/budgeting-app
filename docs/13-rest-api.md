@@ -141,8 +141,8 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | --- | ------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
 | ✅  | GET                 | `/budgets?period=2026-10`                       | budget + realisasi + status                                        |
 | ✅  | PUT                 | `/budgets`                                      | set budget (bulk)                                                  |
-| ⬜  | POST                | `/budgets/copy`                                 | salin dari periode lalu                                            |
-| ⬜  | DELETE              | `/budgets/{id}`                                 | hapus budget                                                       |
+| ✅  | POST                | `/budgets/copy`                                 | salin dari periode lalu                                            |
+| ✅  | DELETE              | `/budgets/{id}`                                 | hapus budget                                                       |
 | ⬜  | GET/POST/PUT/DELETE | `/savings` · `/savings/{id}`                    | tujuan tabungan (BR-K01..K04)                                      |
 | ⬜  | POST                | `/savings/{id}/contributions`                   | setor ke tabungan                                                  |
 | ✅  | GET                 | `/summary?period=2026-10`                       | ringkasan (saldo, pemasukan, pengeluaran, selisih, Δ%)             |

@@ -4,7 +4,7 @@ use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
-use App\Http\Controllers\Api\V1\BudgetController;
+use App\Http\Controllers\Api\V1\Budget\BudgetController;
 use App\Http\Controllers\Api\V1\Category\CategoryController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\ReceiptController;
@@ -83,6 +83,8 @@ Route::prefix('v1')
             Route::put('transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
             Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
             Route::put('budgets', [BudgetController::class, 'update'])->name('budgets.update');
+            Route::post('budgets/copy', [BudgetController::class, 'copy'])->name('budgets.copy');
+            Route::delete('budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
 
             Route::post('receipts', [ReceiptController::class, 'store'])->name('receipts.store');
             Route::patch('receipts/{receipt}', [ReceiptController::class, 'update'])->name('receipts.update');

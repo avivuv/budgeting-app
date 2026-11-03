@@ -89,7 +89,7 @@ class BudgetService
      * its parent also has one, as the parent's spending already includes it.
      *
      * @param  list<BudgetItemData>  $items
-     * @return array{amount: int, spent: int, remaining: int, percentage: float|null, status: string, amountFormatted: string, spentFormatted: string, remainingFormatted: string, dailyAllowanceFormatted: string}
+     * @return array{amount: int, spent: int, remaining: int, percentage: float|null, status: string, statusLabel: string, amountFormatted: string, spentFormatted: string, remainingFormatted: string, dailyAllowance: int, dailyAllowanceFormatted: string}
      */
     public function totals(array $items, Period $period): array
     {
@@ -112,17 +112,21 @@ class BudgetService
         }
 
         $remaining = BudgetCalculator::remaining($amount, $spent);
+        $status = BudgetCalculator::status($amount, $spent);
+        $daily = BudgetCalculator::dailyAllowance($amount, $spent, $period, $this->periods->today());
 
         return [
             'amount' => $amount,
             'spent' => $spent,
             'remaining' => $remaining,
             'percentage' => BudgetCalculator::percentage($amount, $spent),
-            'status' => BudgetCalculator::status($amount, $spent)->value,
+            'status' => $status->value,
+            'statusLabel' => $status->label(),
             'amountFormatted' => MoneyFormatter::format($amount),
             'spentFormatted' => MoneyFormatter::format($spent),
             'remainingFormatted' => MoneyFormatter::format($remaining),
-            'dailyAllowanceFormatted' => MoneyFormatter::format(BudgetCalculator::dailyAllowance($amount, $spent, $period, $this->periods->today())),
+            'dailyAllowance' => $daily,
+            'dailyAllowanceFormatted' => MoneyFormatter::format($daily),
         ];
     }
 
@@ -135,6 +139,32 @@ class BudgetService
         $period = $this->periods->fromKey($key, allowFuture: true);
 
         return $period->key() > $next->key() ? $next : $period;
+    }
+
+    /**
+     * BR-F08 for the REST API: past periods, the current one and the next one;
+     * further ahead is rejected instead of silently replaced.
+     */
+    public function budgetPeriod(?string $key): Period
+    {
+        $next = $this->periods->next($this->periods->current());
+        $period = $this->periods->fromKey($key, allowFuture: true);
+
+        if ($period->key() > $next->key()) {
+            throw BudgetRuleException::periodTooFar();
+        }
+
+        return $period;
+    }
+
+    /**
+     * The next period that may still be opened from this one (BR-F08), or null.
+     */
+    public function nextPlannableKey(Period $period): ?string
+    {
+        $limit = $this->periods->next($this->periods->current());
+
+        return $period->key() < $limit->key() ? $this->periods->next($period)->key() : null;
     }
 
     public function find(int $id): Budget
@@ -162,6 +192,10 @@ class BudgetService
         $date = $this->periodDate($period);
         $existing = $this->budgets->findForCategory($category->id, $date);
 
+        if ($existing === null && $category->is_archived) {
+            throw BudgetRuleException::archivedCategory();
+        }
+
         $budget = $existing !== null
             ? $this->budgets->update($existing, ['amount' => $amount])
             : $this->budgets->create(['category_id' => $category->id, 'period' => $date, 'amount' => $amount]);
@@ -174,14 +208,19 @@ class BudgetService
 
     /**
      * Set several budgets of one period, all or nothing (REST API bulk update).
+     * A broken rule names its row, e.g. "budgets.1.category_id".
      *
      * @param  list<array{category_id: int, amount: int}>  $rows
      */
     public function setMany(array $rows, Period $period): void
     {
         DB::transaction(function () use ($rows, $period): void {
-            foreach ($rows as $row) {
-                $this->set($row['category_id'], $period, $row['amount']);
+            foreach ($rows as $index => $row) {
+                try {
+                    $this->set($row['category_id'], $period, $row['amount']);
+                } catch (BudgetRuleException $e) {
+                    throw $e->forRow('budgets', $index);
+                }
             }
         });
     }

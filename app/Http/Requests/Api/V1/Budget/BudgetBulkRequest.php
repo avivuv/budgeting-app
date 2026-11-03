@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Api\V1;
+namespace App\Http\Requests\Api\V1\Budget;
 
 use App\Http\Requests\Concerns\ParsesAmounts;
 use App\Support\Money\AmountParser;
@@ -49,6 +49,14 @@ class BudgetBulkRequest extends FormRequest
     public function attributes(): array
     {
         return ['budgets' => 'budget', 'budgets.*.category_id' => 'kategori', 'budgets.*.amount' => 'nominal budget', 'period' => 'periode'];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return ['period.date_format' => 'Format periode tidak valid.'];
     }
 
     /**

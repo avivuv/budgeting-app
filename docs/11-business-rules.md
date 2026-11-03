@@ -78,6 +78,8 @@ Rule diimplementasikan di **Service** (bukan controller/handler) agar berlaku sa
 | BR-F05 | Notifikasi 80% dan 100% masing-masing dikirim **maksimal sekali per periode**. Jika realisasi turun di bawah ambang (transaksi dihapus/diedit), flag di-reset sehingga bisa terkirim lagi. |
 | BR-F06 | Sisa budget harian = `max(sisa, 0) / jumlah hari tersisa di periode (termasuk hari ini)`, dibulatkan ke bawah.                                                                             |
 | BR-F07 | "Salin dari bulan lalu" hanya membuat budget untuk kategori yang belum punya budget di periode tujuan.                                                                                     |
+| BR-F08 | Budget bisa diatur untuk periode lalu, periode berjalan, dan **satu** periode ke depan; lebih jauh ditolak.                                                                                |
+| BR-F09 | Budget **baru** tidak bisa dibuat untuk kategori yang diarsipkan; budget yang sudah ada tetap bisa diubah/dihapus.                                                                         |
 
 ## G. Transaksi Berulang
 

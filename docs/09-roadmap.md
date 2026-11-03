@@ -78,7 +78,7 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
     - ✅ Dompet ([kontrak](api-contracts/wallets.md), [skenario](test-cases/wallets.md)) — endpoint arsip, saldo awal minus `-2jt`, `total_balance_formatted`, `WalletTest` WAL-01…20 menggantikan `WalletApiTest`
     - ✅ Kategori ([kontrak](api-contracts/categories.md), [skenario](test-cases/categories.md)) — endpoint kelola/arsip/gabung/hapus, BR-E06 baru, gabung mencatat activity log per transaksi & memindah/menjumlah budget, tujuan arsip ditolak; `CategoryTest` CAT-01…22
     - ✅ Transaksi ([kontrak](api-contracts/transactions.md), [skenario](test-cases/transactions.md)) — aksi massal, riwayat, daftar tag, `meta.daily`, peringatan saldo minus saat ubah, `source` web/api, pratinjau ketik cepat snake_case; `TransactionTest` TRX-01…34 menggantikan `TransactionApiTest`
-    - ⬜ Budget
+    - ✅ Budget ([kontrak](api-contracts/budgets.md), [skenario](test-cases/budgets.md)) — salin & hapus via API, response snake_case `data`+`meta` (periode, total, kategori tersedia, `can_manage`), error per baris `budgets.N.*`, BR-F08 (maks satu periode ke depan → 422) & BR-F09 (kategori arsip) baru; `BudgetTest` BUD-01…29
     - ⬜ Ringkasan, Dashboard, Laporan & Export
     - ⬜ Tabungan
     - ⬜ Scan Struk

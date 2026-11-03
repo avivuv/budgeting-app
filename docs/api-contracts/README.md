@@ -97,7 +97,7 @@ Error: tabel status/field/pesan/rule
 | Dompet                                 | [wallets.md](wallets.md)           | [wallets.md](../test-cases/wallets.md)           | ✅ selesai (M2) |
 | Kategori                               | [categories.md](categories.md)     | [categories.md](../test-cases/categories.md)     | ✅ selesai (M2) |
 | Transaksi                              | [transactions.md](transactions.md) | [transactions.md](../test-cases/transactions.md) | ✅ selesai (M2) |
-| Budget                                 | budgets.md                         | budgets.md                                       | belum           |
+| Budget                                 | [budgets.md](budgets.md)           | [budgets.md](../test-cases/budgets.md)           | ✅ selesai (M2) |
 | Ringkasan, Dashboard, Laporan & Export | reports.md                         | reports.md                                       | belum           |
 | Tabungan                               | savings.md                         | savings.md                                       | belum           |
 | Scan Struk                             | receipts.md                        | receipts.md                                      | belum           |
