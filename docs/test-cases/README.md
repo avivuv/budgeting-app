@@ -46,17 +46,17 @@ composer test:api        # API test + catat setiap request/response ke storage/l
 
 Urutan mengikuti tahap M1–M2 di [18-api-first-migration.md](../18-api-first-migration.md).
 
-| Fitur                                                | Dokumen                  | Status                  |
-| ---------------------------------------------------- | ------------------------ | ----------------------- |
-| Auth (login SPA, token Android, 2FA, passkey, reset) | [auth.md](auth.md)       | ✅ test hijau           |
-| Dompet                                               | [wallets.md](wallets.md) | draft — menunggu review |
-| Kategori                                             | categories.md            | belum                   |
-| Transaksi                                            | transactions.md          | belum                   |
-| Budget                                               | budgets.md               | belum                   |
-| Ringkasan, Dashboard, Laporan & Export               | reports.md               | belum                   |
-| Tabungan                                             | savings.md               | belum                   |
-| Scan Struk                                           | receipts.md              | belum                   |
-| Keluarga, Anggota & Undangan                         | family.md                | belum                   |
-| Onboarding                                           | onboarding.md            | belum                   |
-| Notifikasi                                           | notifications.md         | belum                   |
-| Profil, Keamanan & Token                             | settings.md              | belum                   |
+| Fitur                                                | Dokumen                  | Status        |
+| ---------------------------------------------------- | ------------------------ | ------------- |
+| Auth (login SPA, token Android, 2FA, passkey, reset) | [auth.md](auth.md)       | ✅ test hijau |
+| Dompet                                               | [wallets.md](wallets.md) | ✅ test hijau |
+| Kategori                                             | categories.md            | belum         |
+| Transaksi                                            | transactions.md          | belum         |
+| Budget                                               | budgets.md               | belum         |
+| Ringkasan, Dashboard, Laporan & Export               | reports.md               | belum         |
+| Tabungan                                             | savings.md               | belum         |
+| Scan Struk                                           | receipts.md              | belum         |
+| Keluarga, Anggota & Undangan                         | family.md                | belum         |
+| Onboarding                                           | onboarding.md            | belum         |
+| Notifikasi                                           | notifications.md         | belum         |
+| Profil, Keamanan & Token                             | settings.md              | belum         |

@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\TransactionController;
-use App\Http\Controllers\Api\V1\WalletController;
+use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Middleware\EnsureIdempotency;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passkeys\Http\Controllers\PasskeyLoginController;
@@ -66,6 +66,7 @@ Route::prefix('v1')
         Route::middleware('abilities:write')->group(function () {
             Route::post('wallets', [WalletController::class, 'store'])->name('wallets.store');
             Route::put('wallets/{wallet}', [WalletController::class, 'update'])->name('wallets.update');
+            Route::patch('wallets/{wallet}/archive', [WalletController::class, 'archive'])->name('wallets.archive');
             Route::delete('wallets/{wallet}', [WalletController::class, 'destroy'])->name('wallets.destroy');
 
             Route::post('transactions/parse', [TransactionController::class, 'parse'])->name('transactions.parse');

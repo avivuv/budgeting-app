@@ -118,7 +118,7 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 | --- | --------------- | ----------------------------------------------------- | ---------------------------- |
 | ✅  | GET             | `/wallets`                                            | dompet + saldo + total       |
 | ✅  | POST/PUT/DELETE | `/wallets` · `/wallets/{id}`                          | kelola dompet (owner/admin)  |
-| ⬜  | PATCH           | `/wallets/{id}/archive`                               | arsip / aktifkan             |
+| ✅  | PATCH           | `/wallets/{id}/archive`                               | arsip / aktifkan             |
 | ✅  | GET             | `/categories?type=expense`                            | kategori (tree)              |
 | ⬜  | POST/PUT/DELETE | `/categories` · `/categories/{id}`                    | kelola kategori (+ keywords) |
 | ⬜  | PATCH · POST    | `/categories/{id}/archive` · `/categories/{id}/merge` | arsip, gabung (BR-E03)       |

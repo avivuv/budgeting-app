@@ -91,17 +91,17 @@ Error: tabel status/field/pesan/rule
 
 ## 3. Daftar kontrak
 
-| Fitur                                  | Kontrak                  | Skenario test                          | Status                  |
-| -------------------------------------- | ------------------------ | -------------------------------------- | ----------------------- |
-| Auth                                   | [auth.md](auth.md)       | [auth.md](../test-cases/auth.md)       | ✅ selesai (M1)         |
-| Dompet                                 | [wallets.md](wallets.md) | [wallets.md](../test-cases/wallets.md) | draft — menunggu review |
-| Kategori                               | categories.md            | categories.md                          | belum                   |
-| Transaksi                              | transactions.md          | transactions.md                        | belum                   |
-| Budget                                 | budgets.md               | budgets.md                             | belum                   |
-| Ringkasan, Dashboard, Laporan & Export | reports.md               | reports.md                             | belum                   |
-| Tabungan                               | savings.md               | savings.md                             | belum                   |
-| Scan Struk                             | receipts.md              | receipts.md                            | belum                   |
-| Keluarga, Anggota & Undangan           | family.md                | family.md                              | belum                   |
-| Onboarding                             | onboarding.md            | onboarding.md                          | belum                   |
-| Notifikasi                             | notifications.md         | notifications.md                       | belum                   |
-| Profil, Keamanan & Token               | settings.md              | settings.md                            | belum                   |
+| Fitur                                  | Kontrak                  | Skenario test                          | Status          |
+| -------------------------------------- | ------------------------ | -------------------------------------- | --------------- |
+| Auth                                   | [auth.md](auth.md)       | [auth.md](../test-cases/auth.md)       | ✅ selesai (M1) |
+| Dompet                                 | [wallets.md](wallets.md) | [wallets.md](../test-cases/wallets.md) | ✅ selesai (M2) |
+| Kategori                               | categories.md            | categories.md                          | belum           |
+| Transaksi                              | transactions.md          | transactions.md                        | belum           |
+| Budget                                 | budgets.md               | budgets.md                             | belum           |
+| Ringkasan, Dashboard, Laporan & Export | reports.md               | reports.md                             | belum           |
+| Tabungan                               | savings.md               | savings.md                             | belum           |
+| Scan Struk                             | receipts.md              | receipts.md                            | belum           |
+| Keluarga, Anggota & Undangan           | family.md                | family.md                              | belum           |
+| Onboarding                             | onboarding.md            | onboarding.md                          | belum           |
+| Notifikasi                             | notifications.md         | notifications.md                       | belum           |
+| Profil, Keamanan & Token               | settings.md              | settings.md                            | belum           |

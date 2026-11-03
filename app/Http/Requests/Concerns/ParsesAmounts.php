@@ -33,4 +33,31 @@ trait ParsesAmounts
 
         $this->merge($parsed);
     }
+
+    /**
+     * Like parseAmounts(), but a leading minus is kept: "-2jt" → -2000000.
+     * Only for balances that may be negative, e.g. a credit card's opening bill.
+     *
+     * @param  list<string>  $fields
+     */
+    protected function parseSignedAmounts(array $fields): void
+    {
+        $parsed = [];
+
+        foreach ($fields as $field) {
+            $value = $this->input($field);
+
+            if (! is_string($value) || trim($value) === '') {
+                continue;
+            }
+
+            $value = trim($value);
+            $negative = str_starts_with($value, '-');
+            $amount = AmountParser::parse($negative ? substr($value, 1) : $value);
+
+            $parsed[$field] = $amount === null ? $value : ($negative ? -$amount : $amount);
+        }
+
+        $this->merge($parsed);
+    }
 }

@@ -2,13 +2,13 @@
 
 Skenario test: [test-cases/wallets.md](../test-cases/wallets.md) · Rule: BR-C01…C06, BR-B05 · Konvensi umum: [README](README.md)
 
-| Method | Path                    | Fungsi                          | Peran         | Ability | Status  |
-| ------ | ----------------------- | ------------------------------- | ------------- | ------- | ------- |
-| GET    | `/wallets`              | daftar dompet + saldo + total   | semua anggota | `read`  | ✅ ada  |
-| POST   | `/wallets`              | buat dompet                     | Owner, Admin  | `write` | ✅ ada  |
-| PUT    | `/wallets/{id}`         | ubah dompet                     | Owner, Admin  | `write` | ✅ ada  |
-| PATCH  | `/wallets/{id}/archive` | arsipkan / aktifkan             | Owner, Admin  | `write` | ⬜ baru |
-| DELETE | `/wallets/{id}`         | hapus dompet yang belum dipakai | Owner, Admin  | `write` | ✅ ada  |
+| Method | Path                    | Fungsi                          | Peran         | Ability | Status |
+| ------ | ----------------------- | ------------------------------- | ------------- | ------- | ------ |
+| GET    | `/wallets`              | daftar dompet + saldo + total   | semua anggota | `read`  | ✅ ada |
+| POST   | `/wallets`              | buat dompet                     | Owner, Admin  | `write` | ✅ ada |
+| PUT    | `/wallets/{id}`         | ubah dompet                     | Owner, Admin  | `write` | ✅ ada |
+| PATCH  | `/wallets/{id}/archive` | arsipkan / aktifkan             | Owner, Admin  | `write` | ✅ ada |
+| DELETE | `/wallets/{id}`         | hapus dompet yang belum dipakai | Owner, Admin  | `write` | ✅ ada |
 
 ## Objek `Wallet`
 
@@ -113,7 +113,7 @@ Content-Type: application/json
 
 ---
 
-### PATCH `/wallets/{id}/archive` — arsipkan / aktifkan ⬜
+### PATCH `/wallets/{id}/archive` — arsipkan / aktifkan
 
 **Body**
 
@@ -141,10 +141,12 @@ Content-Type: application/json
 | 403    | —         | Kamu tidak punya akses untuk aksi ini.                                      | BR-B09 |
 | 404    | —         | Data tidak ditemukan.                                                       | BR-I06 |
 
-## Selisih dengan implementasi saat ini (dibereskan di M2 — Dompet)
+## Riwayat penyesuaian (M2 — Dompet, 3 Nov 2026)
 
-- ⬜ Endpoint `PATCH /wallets/{id}/archive` belum ada.
-- ⬜ `meta.total_balance_formatted` belum ada.
+- ✅ Endpoint `PATCH /wallets/{id}/archive` ditambahkan.
+- ✅ `meta.total_balance_formatted` ditambahkan.
 - ✅ Error business rule menyertakan `rule` (M1).
 - ✅ Pesan validasi Bahasa Indonesia lewat `lang/id` (M1).
-- ⬜ Request API masih memakai `App\Http\Requests\Web\Wallet\WalletRequest` → pindah ke `Api/V1/Wallet`.
+- ✅ Request API pindah ke `Api/V1/Wallet/WalletRequest`; aturan dipakai bersama web lewat trait `WalletRules`.
+- ✅ Saldo awal minus yang diketik (`-2jt`) kini diterima; sebelumnya ditolak.
+- ✅ Saldo awal tidak terbaca → pesan "Saldo awal tidak valid."

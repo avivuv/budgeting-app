@@ -75,7 +75,7 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
 - ✅ **M0 Dokumen** — keputusan arsitektur, semua dokumen diperbarui ke API-first, format test case per fitur ([test-cases](test-cases/README.md)), `composer test:api` (trace input/output)
 - ✅ **M1 Fondasi API** — Sanctum stateful (cookie SPA), `/api/v1/auth/*` (login + 2FA + passkey, register, reset password, verifikasi email, token Android) di atas aksi Fortify, `/me` tanpa keluarga, error JSON Indonesia + `rule` + `code: no_family`, `lang/id`, OpenAPI (Scramble `/docs/api`), test skenario AUTH-01…33 & ERR-01…06 ([kontrak](api-contracts/auth.md), [skenario](test-cases/auth.md))
 - ⬜ **M2 API lengkap + test skenario per fitur** (API contract + dokumen skenario direview dulu, test API lama dirombak)
-    - ⬜ Dompet ([kontrak](api-contracts/wallets.md) & [skenario](test-cases/wallets.md) draft)
+    - ✅ Dompet ([kontrak](api-contracts/wallets.md), [skenario](test-cases/wallets.md)) — endpoint arsip, saldo awal minus `-2jt`, `total_balance_formatted`, `WalletTest` WAL-01…20 menggantikan `WalletApiTest`
     - ⬜ Kategori
     - ⬜ Transaksi
     - ⬜ Budget
