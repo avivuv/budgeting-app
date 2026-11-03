@@ -75,7 +75,7 @@ Error validasi / business rule (pelanggaran business rule menyertakan `rule` aga
 | 422             | validasi / business rule                        |
 | 429             | rate limit / kuota struk habis                  |
 
-**Idempotensi (BR-B13):** semua `POST` yang membuat data (transaksi, struk, konfirmasi struk, setoran tabungan, …) menerima header `Idempotency-Key: <uuid>`. Request ulang dengan key sama dalam 24 jam mengembalikan response pertama tanpa membuat data baru (middleware `EnsureIdempotency`, disimpan di Redis per `family + user + key`).
+**Idempotensi (BR-B13):** semua `POST` yang membuat data (transaksi, struk, konfirmasi struk, setoran tabungan, …) menerima header `Idempotency-Key: <uuid>`. Request ulang dengan key sama dalam 24 jam mengembalikan response pertama tanpa membuat data baru (middleware `EnsureIdempotency`, disimpan di Redis per `family + user + key`; endpoint tanpa keluarga aktif — buat keluarga, terima undangan — per `user + key`).
 
 Nominal selalu integer rupiah; tanggal `YYYY-MM-DD`; datetime ISO 8601 dengan offset zona keluarga. Response memakai **API Resource** (`app/Http/Resources`).
 
@@ -104,7 +104,7 @@ Semua path di bawah `/api/v1`. ✅ = sudah ada · ⬜ = ditambah saat migrasi ([
 
 |     | Method           | Path                                                               | Fungsi                                                |
 | --- | ---------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
-| ⬜  | POST             | `/families`                                                        | buat keluarga (onboarding: dompet & kategori default) |
+| ✅  | POST             | `/families`                                                        | buat keluarga (onboarding: dompet & kategori default) |
 | ⬜  | PATCH            | `/families/{id}`                                                   | pengaturan keluarga (nama, zona waktu, awal periode)  |
 | ✅  | PUT              | `/families/{id}/switch`                                            | jadikan keluarga aktif                                |
 | ✅  | POST             | `/families/{id}/leave`                                             | keluar dari keluarga                                  |

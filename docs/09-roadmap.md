@@ -83,7 +83,7 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
     - ✅ Tabungan ([kontrak](api-contracts/savings.md), [skenario](test-cases/savings.md)) — CRUD + setor/ambil via API (idempoten), aturan form dipakai bersama web lewat trait; `SavingGoalTest` SAV-01…27
     - ✅ Scan Struk ([kontrak](api-contracts/receipts.md), [skenario](test-cases/receipts.md)) — daftar struk + kuota, gambar struk via API, `receipt_date` konsisten dengan PATCH, label status & pesan; `ReceiptTest` RCP-01…29 menggantikan `ReceiptApiTest`
     - ✅ Keluarga, Anggota & Undangan ([kontrak](api-contracts/family.md), [skenario](test-cases/family.md)) — pindah/keluar keluarga, anggota (peran, keluarkan), undangan (kirim, batal, lihat & terima via token) via API; `FamilyTest` FAM-01…28. Pengaturan keluarga (PATCH) menyusul Fase 5
-    - ⬜ Onboarding
+    - ✅ Onboarding ([kontrak](api-contracts/onboarding.md), [skenario](test-cases/onboarding.md)) — `POST /families` (keluarga + dompet & kategori bawaan, jadi aktif), idempoten per user (key tidak berubah saat keluarga aktif berganti); `OnboardingTest` ONB-01…23
     - ⬜ Notifikasi
     - ⬜ Profil, Keamanan & Token
 - ⬜ **M3 Kerangka SPA** — `frontend/`, router, auth pages, layout, switch keluarga, tema, PWA

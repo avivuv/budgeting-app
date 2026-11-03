@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Family;
 
 use App\Http\Controllers\Api\V1\Auth\Concerns\RespondsWithMe;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Family\FamilyRequest;
 use App\Models\User;
 use App\Services\Family\FamilyService;
 use App\Services\Family\MembershipService;
@@ -24,6 +25,22 @@ class FamilyController extends Controller
         private readonly FamilyService $families,
         private readonly MembershipService $members,
     ) {}
+
+    /**
+     * Onboarding: the creator becomes the only owner and the family becomes
+     * active, with the default wallet and categories (BR-I01).
+     */
+    public function store(FamilyRequest $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $family = $this->families->create($request->toData(), $user);
+
+        return $this->me($user, stored: true)
+            ->additional(['message' => "{$family->name} siap digunakan."])
+            ->response()
+            ->setStatusCode(201);
+    }
 
     public function switch(Request $request, int $family): JsonResponse
     {

@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
  * BR-B13: a POST repeated with the same Idempotency-Key (per family + user)
  * within 24 hours returns the first response instead of creating data again.
  * Requests without the header are processed normally.
+ *
+ * Routes that work without (or change) the active family use the "user"
+ * scope, so creating a family does not change the key of its retry.
  */
 class EnsureIdempotency
 {
@@ -26,8 +29,9 @@ class EnsureIdempotency
 
     /**
      * @param  Closure(Request): (Response)  $next
+     * @param  'family'|'user'  $scope
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string $scope = 'family'): Response
     {
         $key = $request->header('Idempotency-Key');
 
@@ -41,7 +45,7 @@ class EnsureIdempotency
 
         $cacheKey = sprintf(
             'idempotency:%d:%d:%s:%s',
-            $this->tenant->has() ? $this->tenant->id() : 0,
+            $scope === 'family' && $this->tenant->has() ? $this->tenant->id() : 0,
             $request->user()?->getAuthIdentifier() ?? 0,
             $request->path(),
             hash('sha256', $key),

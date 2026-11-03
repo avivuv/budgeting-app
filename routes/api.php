@@ -55,11 +55,12 @@ Route::get('v1/me', MeController::class)
 // Works on any family of the user, or before joining one (invitation by token, BR-I07).
 Route::prefix('v1')
     ->name('api.v1.')
-    ->middleware(['auth:sanctum', 'family:optional', 'throttle:api'])
+    ->middleware(['auth:sanctum', 'family:optional', 'throttle:api', EnsureIdempotency::class.':user'])
     ->group(function () {
         Route::get('invitations/token/{token}', [InvitationController::class, 'show'])->middleware('abilities:read')->name('invitations.token.show');
 
         Route::middleware('abilities:write')->group(function () {
+            Route::post('families', [FamilyController::class, 'store'])->name('families.store');
             Route::put('families/{family}/switch', [FamilyController::class, 'switch'])->whereNumber('family')->name('families.switch');
             Route::post('families/{family}/leave', [FamilyController::class, 'leave'])->whereNumber('family')->name('families.leave');
             Route::post('invitations/token/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.token.accept');
