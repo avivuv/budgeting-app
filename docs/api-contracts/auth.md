@@ -24,16 +24,17 @@ Dua cara masuk ([13-rest-api](../13-rest-api.md#1-autentikasi--tenant)):
 
 ## Objek `Me`
 
-| Field                | Tipe            | Keterangan                                                            |
-| -------------------- | --------------- | --------------------------------------------------------------------- |
-| `id`                 | integer         |                                                                       |
-| `name`               | string          |                                                                       |
-| `email`              | string          |                                                                       |
-| `email_verified`     | boolean         |                                                                       |
-| `two_factor_enabled` | boolean         | 2FA aktif & terkonfirmasi                                             |
-| `appearance`         | enum            | `light` · `dark` · `system`                                           |
-| `current_family_id`  | integer \| null | `null` → belum punya keluarga, arahkan ke onboarding                  |
-| `families`           | array           | `{ id, name, role }`, `role`: `owner` · `admin` · `member` · `viewer` |
+| Field                  | Tipe            | Keterangan                                                                                                                                                                     |
+| ---------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                   | integer         |                                                                                                                                                                                |
+| `name`                 | string          |                                                                                                                                                                                |
+| `email`                | string          |                                                                                                                                                                                |
+| `email_verified`       | boolean         |                                                                                                                                                                                |
+| `two_factor_enabled`   | boolean         | 2FA aktif & terkonfirmasi                                                                                                                                                      |
+| `appearance`           | enum            | `light` · `dark` · `system`                                                                                                                                                    |
+| `current_family_id`    | integer \| null | `null` → belum punya keluarga, arahkan ke onboarding                                                                                                                           |
+| `families`             | array           | `{ id, name, role, role_label, can: { write, manage } }`, `role`: `owner` · `admin` · `member` · `viewer`; `can` dihitung backend (BR-B09) — klien hanya menyembunyikan tombol |
+| `unread_notifications` | integer         | jumlah notifikasi belum dibaca (badge lonceng)                                                                                                                                 |
 
 ```json
 {
@@ -45,7 +46,16 @@ Dua cara masuk ([13-rest-api](../13-rest-api.md#1-autentikasi--tenant)):
         "two_factor_enabled": false,
         "appearance": "system",
         "current_family_id": 1,
-        "families": [{ "id": 1, "name": "Keluarga Demo", "role": "owner" }]
+        "families": [
+            {
+                "id": 1,
+                "name": "Keluarga Demo",
+                "role": "owner",
+                "role_label": "Pemilik",
+                "can": { "write": true, "manage": true }
+            }
+        ],
+        "unread_notifications": 0
     }
 }
 ```

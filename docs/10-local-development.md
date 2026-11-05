@@ -35,7 +35,7 @@ mysql -uroot -e "CREATE DATABASE budgeting_app; CREATE DATABASE budgeting_app_lo
 
 ```bash
 composer install
-pnpm --dir frontend install
+pnpm install              # workspace: root (halaman lama) + frontend/ (SPA)
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
@@ -93,7 +93,9 @@ TELEGRAM_MODE=polling
 ## 5. Menjalankan Harian
 
 ```bash
-composer run dev        # API server + queue + logs + Vite SPA (frontend/, proxy /api & /sanctum)
+composer run dev        # server + queue + Vite halaman lama + Vite SPA (frontend/, http://localhost:5173/app/)
+pnpm --dir frontend build   # build SPA → public/spa, dibuka di http://budgeting-app.test/app/
+pnpm --dir frontend api:types   # perbarui frontend/src/core/api/schema.d.ts dari OpenAPI (butuh PHP 8.4: env PHP=...)
 php artisan schedule:work   # scheduler (pembersihan log 30 hari, backup, recurring)
 ```
 

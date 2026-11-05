@@ -81,6 +81,20 @@ jobs:
       - name: Frontend tests (Vitest)
         run: pnpm run test
 
+      - name: SPA format & lint
+        run: pnpm --dir frontend run check
+
+      - name: SPA type check
+        run: pnpm --dir frontend run types:check
+
+      - name: SPA tests (Vitest)
+        run: pnpm --dir frontend run test
+
+      - name: SPA API types match the OpenAPI document
+        run: |
+          pnpm --dir frontend run api:types
+          git diff --exit-code frontend/src/core/api/schema.d.ts
+
   e2e:
     # Browser tests against the real app and its own database (docs/12 §2.5).
     runs-on: ubuntu-24.04
@@ -134,6 +148,9 @@ jobs:
 
       - name: Build frontend
         run: pnpm run build
+
+      - name: Build web SPA
+        run: pnpm --dir frontend run build
 
       - name: E2E tests (Playwright)
         run: pnpm run test:e2e

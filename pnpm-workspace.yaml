@@ -1,5 +1,10 @@
 packages:
     - '.'
+    - 'frontend'
 
 publicHoistPattern:
     - '@inertiajs/core'
+
+# vue-demi's postinstall only switches Vue 2/3 builds; the default fits Vue 3.
+allowBuilds:
+    vue-demi: false

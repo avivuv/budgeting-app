@@ -37,6 +37,10 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    // The web SPA (frontend/) runs its own tests.
+    test: {
+        include: ['resources/js/**/*.test.ts'],
+    },
     server: {
         watch: {
             ignored: [
@@ -50,6 +54,9 @@ export default defineConfig({
     },
     lint: {
         ignorePatterns: [
+            // Generated / copied files of the web SPA (frontend/ is a workspace package).
+            'frontend/src/core/api/schema.d.ts',
+            'frontend/src/core/components/ui/**',
             'vendor/**',
             'node_modules/**',
             'public/**',
@@ -73,6 +80,9 @@ export default defineConfig({
         singleAttributePerLine: false,
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
+            // Generated / copied files of the web SPA (frontend/ is a workspace package).
+            'frontend/src/core/api/schema.d.ts',
+            'frontend/src/core/components/ui/**',
             '.github/**',
             'composer.json',
             'resources/js/components/ui/*',

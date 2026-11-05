@@ -3,7 +3,7 @@
 Satu repository berisi dua aplikasi yang hanya terhubung lewat **REST API `/api/v1`**:
 
 - **Backend** — Laravel di root repo: REST API, auth (Fortify headless + Sanctum), queue, scheduler, webhook Telegram. Tidak me-render halaman.
-- **Frontend web** — SPA Vue 3 di `frontend/`, di-build ke `public/app/` dan dilayani di domain yang sama.
+- **Frontend web** — SPA Vue 3 di `frontend/`, di-build ke `public/spa/` dan dilayani di domain yang sama (halaman di `/app/...` selama migrasi, `/` setelah M5).
 
 Aplikasi **Android (Kotlin)** akan menjadi klien ketiga di repo terpisah, memakai API & spec OpenAPI yang sama. Alasan arsitektur: [18-api-first-migration.md](18-api-first-migration.md).
 
@@ -18,7 +18,7 @@ budgeting-app/
 ├── docs/                     # 📚 dokumentasi project + docs/test-cases (skenario per fitur)
 ├── frontend/                 # 🖥️ FRONTEND — SPA Vue 3 + TypeScript (package.json sendiri)
 ├── lang/id/                  # teks Bahasa Indonesia (validasi, pesan API, bot)
-├── public/                   # index.php + public/app (build SPA, di-ignore git)
+├── public/                   # index.php + public/spa (build SPA, di-ignore git)
 ├── resources/
 │   ├── prompts/              # prompt AI (receipt.md)
 │   └── views/                # Blade: template PDF & email saja
@@ -111,7 +111,7 @@ resources/views/
 routes/
 ├── api.php                   # /api/v1 (auth, me, families, wallets, ... per domain)
 ├── telegram.php              # POST /telegram/webhook
-├── spa.php                   # fallback: semua path non-API → public/app/index.html
+├── web.php                   # selama migrasi: route `app/{path?}` → SpaController (public/spa/index.html + file PWA)
 └── console.php               # jadwal scheduler
 
 storage/app/private/receipts/{family_id}/{yyyy}/{mm}/

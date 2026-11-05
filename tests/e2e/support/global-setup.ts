@@ -10,6 +10,12 @@ export default function globalSetup(): void {
         throw new Error('Run "pnpm run build" before the E2E tests.');
     }
 
+    if (!existsSync('public/spa/index.html')) {
+        throw new Error(
+            'Run "pnpm --dir frontend build" before the E2E tests.',
+        );
+    }
+
     const env = { ...process.env, ...e2eEnv };
     const run = (args: string[]) =>
         execFileSync(php, args, { env, stdio: 'inherit' });

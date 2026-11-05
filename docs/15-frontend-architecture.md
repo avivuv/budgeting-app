@@ -30,7 +30,7 @@ Web adalah **SPA terpisah** di folder `frontend/` yang hanya berbicara dengan ba
 ```
 frontend/
 ├── index.html
-├── vite.config.ts               # proxy /api & /sanctum → backend saat dev; build ke ../public/app
+├── vite.config.ts               # proxy /api & /sanctum → backend saat dev; build ke ../public/spa (halaman di /app selama migrasi)
 ├── public/                      # manifest.webmanifest, sw.js, offline.html, ikon
 └── src/
     ├── main.ts                  # createApp + router + pinia + vue-query

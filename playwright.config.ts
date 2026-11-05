@@ -37,7 +37,7 @@ export default defineConfig({
         {
             name: 'desktop',
             dependencies: ['setup'],
-            testIgnore: /\.phone\.e2e\.ts/,
+            testIgnore: [/\.phone\.e2e\.ts/, /\.spa\.e2e\.ts/],
             use: {
                 ...devices['Desktop Chrome'],
                 ...chrome,
@@ -53,6 +53,18 @@ export default defineConfig({
                 ...devices['Pixel 7'],
                 ...chrome,
                 storageState: 'tests/e2e/.auth/owner.json',
+            },
+        },
+        {
+            // Web SPA under /app (frontend/); signs in by itself.
+            name: 'spa',
+            testMatch: /\.spa\.e2e\.ts/,
+            use: {
+                ...devices['Desktop Chrome'],
+                ...chrome,
+                viewport: { width: 1366, height: 900 },
+                // Same attribute as the components (data-test="...").
+                testIdAttribute: 'data-test',
             },
         },
     ],

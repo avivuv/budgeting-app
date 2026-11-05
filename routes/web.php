@@ -11,12 +11,16 @@ use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\Receipt\ReceiptController;
 use App\Http\Controllers\Web\Report\ReportController;
 use App\Http\Controllers\Web\Savings\SavingGoalController;
+use App\Http\Controllers\Web\SpaController;
 use App\Http\Controllers\Web\Transaction\TransactionController;
 use App\Http\Controllers\Web\Wallet\WalletController;
 use Illuminate\Support\Facades\Route;
 
 // No public landing page: guests end up on the login page, members on the dashboard.
 Route::redirect('/', '/dashboard')->name('home');
+
+// Web SPA (frontend/) during the migration; the SPA does its own auth checks.
+Route::get('app/{path?}', SpaController::class)->where('path', '.*')->name('spa');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Before a family exists.

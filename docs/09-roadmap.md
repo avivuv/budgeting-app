@@ -86,7 +86,9 @@ Detail & alasan: [18-api-first-migration.md](18-api-first-migration.md). Web Ine
     - ✅ Onboarding ([kontrak](api-contracts/onboarding.md), [skenario](test-cases/onboarding.md)) — `POST /families` (keluarga + dompet & kategori bawaan, jadi aktif), idempoten per user (key tidak berubah saat keluarga aktif berganti); `OnboardingTest` ONB-01…23
     - ✅ Notifikasi ([kontrak](api-contracts/notifications.md), [skenario](test-cases/notifications.md)) — `GET /notifications` (+ `unread_count`, `kind`/`subject` agar klien tahu layar tujuan, waktu ISO) & tandai dibaca; id milik user lain → 404; `NotificationTest` NOT-01…23
     - ✅ Profil, Keamanan & Token ([kontrak](api-contracts/settings.md), [skenario](test-cases/settings.md)) — profil (nama/email/tampilan), ganti password, hapus akun, 2FA (pasang/konfirmasi/matikan/kode cadangan), daftar & hapus passkey, token API — aksi sensitif minta password; perbaikan: hapus akun tidak lagi "hidup kembali" saat logout, Owner dengan anggota lain ditolak (BR-I01); `SettingsTest` SET-01…27
-- ⬜ **M3 Kerangka SPA** — `frontend/`, router, auth pages, layout, switch keluarga, tema, PWA
+- ✅ **M3 Kerangka SPA** — selesai 5 Nov 2026: `frontend/` (pnpm workspace, Vite+, Vue Router, Pinia, TanStack Query, tipe dari OpenAPI), client API (CSRF, `X-Family-Id`, `Idempotency-Key`, reaksi 401/409/403/429), halaman masuk/daftar/2FA/lupa & reset password/verifikasi email, onboarding, layout (sidebar, bottom nav, tombol +, ganti keluarga, tema, lonceng), beranda ringkasan periode, PWA; dilayani di `/app` (build di `public/spa`), menu yang belum pindah membuka halaman lama; Vitest 26 + E2E `spa` 5 hijau
+    - `GET /me` menambah `role_label`, `can.write/manage` per keluarga dan `unread_notifications`
+    - Catatan untuk M4: payload laporan/dashboard (`SnakeCase`) belum bertipe di OpenAPI — beri tipe saat modulnya dipindah
 - ⬜ **M4 Pindah halaman per fitur** — halaman SPA + E2E → hapus halaman, controller, route & test Inertia-nya
 - ⬜ **M5 Bersih-bersih** — hapus Inertia, Wayfinder, `resources/js`; update CI & dokumen
 - 🎯 Setelah M2: API lengkap → aplikasi Android bisa mulai dikerjakan

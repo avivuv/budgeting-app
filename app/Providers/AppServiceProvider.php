@@ -11,6 +11,7 @@ use App\Services\Tenancy\TenantContext;
 use App\Support\Inertia\ModulePageFinder;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // `composer run dev` also starts the web SPA dev server (frontend/, http://localhost:5173/app/).
+        DevCommands::register('pnpm --dir frontend run dev', 'spa');
 
         // Owner/admin of the active family: wallets, categories, members (docs/03 §4).
         Gate::define('manage-family', function (User $user): bool {

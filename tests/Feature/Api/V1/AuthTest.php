@@ -69,7 +69,10 @@ describe('positive', function () {
             ->assertJsonPath('data.id', $ayah->id)
             ->assertJsonPath('data.name', 'Ayah')
             ->assertJsonPath('data.current_family_id', $family->id)
-            ->assertJsonPath('data.families.0.role', 'owner');
+            ->assertJsonPath('data.families.0.role', 'owner')
+            ->assertJsonPath('data.families.0.role_label', 'Pemilik')
+            ->assertJsonPath('data.families.0.can', ['write' => true, 'manage' => true])
+            ->assertJsonPath('data.unread_notifications', 0);
         $this->assertAuthenticatedAs($ayah, 'web');
 
         spa()->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.email', 'ayah@budgeting.test');

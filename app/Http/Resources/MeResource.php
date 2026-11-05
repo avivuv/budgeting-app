@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use App\Models\Family;
 use App\Models\User;
+use App\Services\User\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
@@ -37,12 +38,20 @@ class MeResource extends JsonResource
             'email_verified' => $this->email_verified_at !== null,
             'two_factor_enabled' => $this->resource->hasEnabledTwoFactorAuthentication(),
             'appearance' => $this->appearance->value,
+            /** @var int|null */
             'current_family_id' => $this->currentFamilyId,
             'families' => $this->families->map(fn (Family $family): array => [
                 'id' => $family->id,
                 'name' => $family->name,
                 'role' => $family->membership?->role->value,
+                'role_label' => $family->membership?->role->label(),
+                'can' => [
+                    'write' => $family->membership?->role->canWrite() ?? false,
+                    'manage' => $family->membership?->role->canManage() ?? false,
+                ],
             ])->values()->all(),
+            /** @var int */
+            'unread_notifications' => app(NotificationService::class)->unreadCount($this->resource),
         ];
     }
 }

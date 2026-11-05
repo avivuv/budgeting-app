@@ -46,3 +46,4 @@ yarn-error.log
 /tests/e2e/.auth
 /test-results
 /playwright-report
+/public/spa
